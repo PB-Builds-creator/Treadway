@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f5f4f1" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#141513" media="(prefers-color-scheme: dark)">
+  <link rel="stylesheet" href="styles.css">
+  <title>Set up Cairn on a phone</title>
+  <style>
+    body{padding:0}
+    .wrap{max-width:520px;margin:0 auto;padding:32px 22px 60px}
+    .head{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+    .kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:700}
+    h1{font-size:27px;font-weight:660;letter-spacing:-.02em;margin:0;text-wrap:balance}
+    .lead{color:var(--muted);font-size:15px;line-height:1.5;margin:2px 0 20px}
+    ol{list-style:none;counter-reset:s;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+    li{counter-increment:s;position:relative;background:var(--surface);border:1px solid var(--line);
+       border-radius:16px;padding:16px 16px 16px 58px;box-shadow:var(--shadow)}
+    li::before{content:counter(s);position:absolute;left:14px;top:14px;width:30px;height:30px;border-radius:50%;
+       background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px}
+    li b{display:block;font-size:16px;font-weight:600;margin-bottom:3px}
+    li span{color:var(--muted);font-size:14px;line-height:1.5}
+    .k{background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-weight:600;color:var(--ink);white-space:nowrap}
+    .done{margin-top:22px;background:var(--accent-soft);border:1px solid var(--line);border-radius:16px;padding:16px 18px;font-size:14.5px;line-height:1.5}
+    .note{color:var(--faint);font-size:13px;line-height:1.5;margin-top:18px}
+    a{color:var(--accent);font-weight:600}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div class="kicker">Cairn · one-time setup</div>
+      <h1>Set up Cairn on a new phone</h1>
+    </div>
+    <p class="lead">Takes about two minutes. Do these in order on the phone you're setting up. You'll only ever do this once per phone.</p>
+
+    <ol>
+      <li><b>Open the app in Safari</b><span>Go to <a href="https://cairn.surge.sh">cairn.surge.sh</a> in Safari.</span></li>
+      <li><b>Sign in</b><span>Enter your email and password. (You'll only type these once — the app stays signed in after this.)</span></li>
+      <li><b>Set your 4-digit code</b><span>When asked, pick your unlock code and enter it twice to confirm. From now on the app opens to this code — no password.</span></li>
+      <li><b>Add it to your Home Screen</b><span>Tap the <span class="k">Share</span> button (the square with an up-arrow) → <span class="k">Add to Home Screen</span> → <span class="k">Add</span>. This is required for reminders to work.</span></li>
+      <li><b>Open Cairn from the Home Screen icon</b><span>Not from Safari — tap the new Cairn icon on your Home Screen. Enter your code.</span></li>
+      <li><b>Turn on reminders</b><span>Tap <span class="k">Settings</span> → <span class="k">Reminders</span> → <span class="k">Allow</span>. A "Reminders on" note pops up — that means it worked.</span></li>
+    </ol>
+
+    <div class="done"><b>That's it.</b> This phone is now set up, private to you, and will get your reminders. Nothing else to configure.</div>
+
+    <p class="note">Same six steps work for any future phone or tablet. Reminders are turned on per-device, so each phone you want nudges on does step 6 once.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- iCloud: CloudKit private database mirroring for SwiftData sync. -->
+    <key>com.apple.developer.icloud-services</key>
+    <array>
+        <string>CloudKit</string>
+    </array>
+    <key>com.apple.developer.icloud-container-identifiers</key>
+    <array>
+        <string>iCloud.com.paxton.cairn</string>
+    </array>
+
+    <!-- Remote notifications drive CloudKit sync pushes. -->
+    <key>aps-environment</key>
+    <string>development</string>
+
+    <!-- Shared app group: app ⇄ widgets ⇄ intents (widget snapshot, settings). -->
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.com.paxton.cairn</string>
+    </array>
+
+    <!-- Keychain sharing for the small amount of sensitive preference state. -->
+    <key>keychain-access-groups</key>
+    <array>
+        <string>$(AppIdentifierPrefix)com.paxton.cairn</string>
+    </array>
+
+    <!-- macOS App Sandbox: outbound network for CloudKit; user-selected files for import/export. -->
+    <key>com.apple.security.app-sandbox</key>
+    <true/>
+    <key>com.apple.security.network.client</key>
+    <true/>
+    <key>com.apple.security.files.user-selected.read-write</key>
+    <true/>
+</dict>
+</plist>

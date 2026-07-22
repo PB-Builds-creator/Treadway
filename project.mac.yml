@@ -1,0 +1,80 @@
+# Free-tier, Mac-only project spec for Cairn.
+#
+# Builds ONLY the macOS app with a free Apple ID ("Personal Team") — it drops the
+# three capabilities Apple gates behind the paid $99/yr program (iCloud/CloudKit,
+# Push, App Groups) and the widget extension (which needs App Groups). Data is
+# stored locally on-device; local notifications and Touch ID app-lock still work.
+#
+# Generate with:   xcodegen generate --spec project.mac.yml
+# Then open Cairn.xcodeproj, set your Team to your personal Apple ID, and Run.
+#
+# The full multiplatform + sync + widgets project is still in `project.yml`.
+
+name: Cairn
+options:
+  bundleIdPrefix: com.paxton
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "6.0"
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_STRICT_CONCURRENCY: complete
+    GENERATE_INFOPLIST_FILE: YES
+    # LOCAL_ONLY disables the CloudKit/app-group container path (paid-gated + would
+    # trap without entitlements). Data is stored locally on-device.
+    SWIFT_ACTIVE_COMPILATION_CONDITIONS: LOCAL_ONLY
+    # No entitlements file => no paid-gated capabilities => builds on a free team.
+
+packages:
+  CairnCore:
+    path: CairnCore
+
+targets:
+  Cairn:
+    type: application
+    supportedDestinations: [macOS]
+    sources:
+      - App
+    dependencies:
+      - package: CairnCore
+        product: CairnCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.paxton.cairn
+        INFOPLIST_KEY_CFBundleDisplayName: Cairn
+        INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.productivity"
+        INFOPLIST_KEY_NSFaceIDUsageDescription: "Cairn uses Touch ID to keep your routine private."
+        # No CODE_SIGN_ENTITLEMENTS on purpose (free-team friendly).
+
+  CairnCoreTests:
+    type: bundle.unit-test
+    supportedDestinations: [macOS]
+    sources: [CairnCore/Tests/CairnCoreTests]
+    dependencies:
+      - package: CairnCore
+        product: CairnCore
+
+  CairnUITests:
+    type: bundle.ui-testing
+    supportedDestinations: [macOS]
+    sources: [UITests]
+    dependencies:
+      - target: Cairn
+
+schemes:
+  Cairn:
+    build:
+      targets:
+        Cairn: all
+    run:
+      config: Debug
+    test:
+      targets:
+        - CairnCoreTests
+        - CairnUITests

@@ -1,0 +1,23 @@
+# Xcode / SwiftPM
+.build/
+DerivedData/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+xcuserdata/
+.swiftpm/
+# XcodeGen output (regenerate with `xcodegen generate`)
+Cairn.xcodeproj/
+# macOS
+.DS_Store
+
+# SECRETS — never commit. VAPID private key + CRON_SECRET.
+# Web/ is deployed publicly, so nothing secret may ever live there either.
+*KEEP-SECRET*
+.env
+.env.*
+*.pem
+supabase/.temp/
+
+# Node
+node_modules/
+npm-debug.log*

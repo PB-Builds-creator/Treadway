@@ -1,0 +1,99 @@
+# XcodeGen project definition for Cairn.
+# Generate the .xcodeproj with:   brew install xcodegen && xcodegen generate
+# (A manual "create targets by hand in Xcode" fallback is in README.md.)
+
+name: Cairn
+options:
+  bundleIdPrefix: com.paxton
+  deploymentTarget:
+    iOS: "17.0"
+    macOS: "14.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "6.0"
+    DEVELOPMENT_TEAM: "" # <-- set your 10-char Team ID here (see README → Signing)
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_STRICT_CONCURRENCY: complete
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    GENERATE_INFOPLIST_FILE: YES
+
+packages:
+  CairnCore:
+    path: CairnCore
+
+targets:
+  # ─────────────────────────────────────────── App (iOS + iPadOS + macOS)
+  Cairn:
+    type: application
+    supportedDestinations: [iOS, iPad, macOS]
+    sources:
+      - App
+    dependencies:
+      - package: CairnCore
+        product: CairnCore
+      - target: CairnWidgets
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.paxton.cairn
+        INFOPLIST_KEY_CFBundleDisplayName: Cairn
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_NSFaceIDUsageDescription: "Cairn uses Face ID to keep your personal routine private."
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.productivity"
+        CODE_SIGN_ENTITLEMENTS: App/Resources/Cairn.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+
+  # ─────────────────────────────────────────── Widget extension
+  CairnWidgets:
+    type: app-extension
+    supportedDestinations: [iOS, iPad, macOS]
+    sources:
+      - Widgets
+      # The widget reuses the shared App Intents source directly.
+      - path: App/Intents
+        buildPhase: sources
+    dependencies:
+      - package: CairnCore
+        product: CairnCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.paxton.cairn.widgets
+        CODE_SIGN_ENTITLEMENTS: Widgets/CairnWidgets.entitlements
+        INFOPLIST_KEY_CFBundleDisplayName: Cairn
+        INFOPLIST_KEY_NSExtension_NSExtensionPointIdentifier: com.apple.widgetkit-extension
+
+  # ─────────────────────────────────────────── Unit tests (run in Xcode ⌘U)
+  CairnCoreTests:
+    type: bundle.unit-test
+    supportedDestinations: [iOS, macOS]
+    sources: [CairnCore/Tests/CairnCoreTests]
+    dependencies:
+      - package: CairnCore
+        product: CairnCore
+
+  # ─────────────────────────────────────────── UI tests
+  CairnUITests:
+    type: bundle.ui-testing
+    supportedDestinations: [iOS, macOS]
+    sources: [UITests]
+    dependencies:
+      - target: Cairn
+
+schemes:
+  Cairn:
+    build:
+      targets:
+        Cairn: all
+        CairnWidgets: all
+    run:
+      config: Debug
+    test:
+      targets:
+        - CairnCoreTests
+        - CairnUITests
