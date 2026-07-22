@@ -90,6 +90,9 @@ There are **two deliverables**:
   while auth/data load behind it, and is capped below 900ms; the tour overlay likewise survives
   app re-renders so its spotlight can travel between targets. All JS motion exits through
   `prefersReduce()` and CSS is covered by the existing reduced-motion rule.
+- **Completion motion is deliberately causal:** `mSetStatus` captures rows, renders the new
+  state, starts FLIP, then lets the ring sweep follow 90ms later. Ring/streak/hydration previous
+  values live in globals because their DOM nodes do not survive `render()`.
 
 ## Rules (product)
 - New members ALWAYS start with a blank task list, then a spotlight product tour (`runTour`) that drives the real app. No

@@ -256,7 +256,8 @@ async function flushOutbox(){
 function setSync(on){syncOn=on;const el=document.getElementById("syncdot");if(el)el.className="syncdot"+(on?"":" off");}
 
 /* transient one-shot animation flags (consumed by the next render) */
-let justCompletedId=null, justAddedId=null, ringLast=0, launchEl=null, launchTimer=0, launchStarted=0;
+let justCompletedId=null, justAddedId=null, ringLast=0, ringWait=0, streakLast=null, waterLast=null, waterPulse=false, rowStagger=0;
+let launchEl=null, launchTimer=0, launchStarted=0;
 function prefersReduce(){return !!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches);}
 function cairnHtml(cls=""){return `<div class="cairnstack ${cls}"><i></i><i></i><i></i><i></i><i></i></div>`;}
 function startLaunch(){
@@ -308,12 +309,13 @@ function mSetStatus(taskId,ymd,st){
   if(!state.completions[ymd])state.completions[ymd]={};
   if(st===null)delete state.completions[ymd][taskId];else state.completions[ymd][taskId]=st;
   justCompletedId=(st==="done"&&ymd===todayStr())?taskId:null;
+  ringWait=(st==="done"&&first)?90:0;
   cacheSave();render();justCompletedId=null;playFlip(first);
   if(st===null) push(()=>SB.from("completions").delete().match({user_id:userId,task_id:taskId,day:ymd}));
   else push(()=>SB.from("completions").upsert({user_id:userId,task_id:taskId,day:ymd,status:st,updated_at:new Date().toISOString()},{onConflict:"user_id,task_id,day"}));
   pushDailyStatus();   // keep the shared "today" signal fresh for my partner
 }
-function mAddWater(oz){if(!(oz>0))return;const t=todayStr();state.hydration[t]=(state.hydration[t]||0)+oz;cacheSave();render();
+function mAddWater(oz){if(!(oz>0))return;const t=todayStr();state.hydration[t]=(state.hydration[t]||0)+oz;waterPulse=true;cacheSave();render();waterPulse=false;
   push(()=>SB.from("hydration").upsert({user_id:userId,day:t,oz:state.hydration[t],updated_at:new Date().toISOString()},{onConflict:"user_id,day"}));}
 function mUpsertTask(t){const i=state.tasks.findIndex(x=>x.id===t.id);
   if(i>=0)state.tasks[i]=t;else{t.sort_index=state.tasks.length;state.tasks.push(t);justAddedId=t.id;}
@@ -684,12 +686,14 @@ function render(){
   setAccent();
   const keepScroll = tab===lastRenderedTab;                 // same tab => don't jump to top
   const prev = keepScroll ? ((root.querySelector(".scroll")||{}).scrollTop||0) : 0;
+  const tabs=["today","week","history","settings"],from=lastRenderedTab?tabs.indexOf(lastRenderedTab):-1,to=tabs.indexOf(tab);
+  const dir=from<0?"":to>from?" dir-left":" dir-right";
   let body=tab==="today"?todayView():tab==="week"?weekView():tab==="history"?historyView():settingsView();
-  root.innerHTML=`<div class="screen"><div class="scroll${keepScroll?"":" enter"}">${body}</div>${tabbar()}</div>`;
+  root.innerHTML=`<div class="screen"><div class="scroll${keepScroll?"":" enter"}${keepScroll?"":dir}">${body}</div>${tabbar()}</div>`;
   const ns=root.querySelector(".scroll"); if(ns&&prev)ns.scrollTop=prev;
   bindApp();
   lastRenderedTab=tab;
-  if(tab==="today")animateRing();
+  if(tab==="today"){animateRing();animateStreak();animateHydration();}
   if(tab==="settings")updateReminderLabel();
   if(tab==="history"&&!state.totalsLoaded)loadTotals();
   resolveLaunch();
@@ -698,31 +702,46 @@ function render(){
 function animateRing(){
   const ring=root.querySelector(".ring");if(!ring)return;
   const target=+ring.dataset.pct||0, rest=ring.dataset.rest==="1", lbl=ring.querySelector(".lbl b");
-  const from=ringLast; ringLast=target;
+  const from=ringLast,delay=ringWait;ringLast=target;ringWait=0;
   if(rest){ring.style.setProperty("--v",0);return;}
   if(prefersReduce()||Math.round(from)===Math.round(target)){
     ring.style.setProperty("--v",target);if(lbl)lbl.textContent=Math.round(target)+"%";
     if(target>=100&&from<100)ring.classList.add("complete");return;
   }
-  const t0=performance.now(),dur=680;
+  const mark=[25,50,75,100].filter(x=>from<x&&target>=x).pop()||0;
+  function run(){if(!ring.isConnected)return;const t0=performance.now(),dur=680;
   function step(now){const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3),v=from+(target-from)*e;
     ring.style.setProperty("--v",v);if(lbl)lbl.textContent=Math.round(v)+"%";
     if(p<1)requestAnimationFrame(step);
-    else if(target>=100&&from<100){ring.classList.add("complete");celebrateBurst();if(navigator.vibrate)navigator.vibrate([12,40,12]);}}
-  requestAnimationFrame(step);
+    else if(mark){ring.classList.add(mark===100?"complete":"milestone");celebrateBurst(mark);if(mark===100&&navigator.vibrate)navigator.vibrate([12,40,12]);}}
+  requestAnimationFrame(step);}
+  if(delay)setTimeout(run,delay);else run();
 }
-function celebrateBurst(){
+function celebrateBurst(mark=100){
   if(prefersReduce())return;
   const ring=root.querySelector(".ring");if(!ring)return;
   const r=ring.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
   const cs=getComputedStyle(document.documentElement);
-  const colors=[(cs.getPropertyValue("--accent")||"#5b7089").trim(),"#4f8a63","#a5834a"];
-  const wrap=document.createElement("div");wrap.className="burst";
-  for(let k=0;k<14;k++){const dot=document.createElement("i");const ang=(k/14)*Math.PI*2,dist=34+Math.random()*30;
+  const colors=mark===100?["#b99654","#d6ba76","#8c713d"]:[(cs.getPropertyValue("--accent")||"#5b7089").trim(),"#a5834a"];
+  const wrap=document.createElement("div"),n=mark===100?12:6;wrap.className="burst "+(mark===100?"full":"small");
+  for(let k=0;k<n;k++){const dot=document.createElement("i");const ang=(k/n)*Math.PI*2,dist=(mark===100?34:23)+Math.random()*(mark===100?24:10);
     dot.style.left=cx+"px";dot.style.top=cy+"px";dot.style.background=colors[k%colors.length];
     dot.style.setProperty("--dx",(Math.cos(ang)*dist).toFixed(1)+"px");dot.style.setProperty("--dy",(Math.sin(ang)*dist).toFixed(1)+"px");
     wrap.appendChild(dot);}
   document.body.appendChild(wrap);setTimeout(()=>wrap.remove(),950);
+}
+function animateStreak(){
+  const el=root.querySelector(".streaknum");if(!el)return;
+  const target=+el.dataset.streak||0,from=streakLast;streakLast=target;
+  if(from===null||target<=from||prefersReduce()){el.textContent=target;return;}
+  el.innerHTML=`<i class="old">${from}</i><i class="new">${target}</i>`;el.classList.add("rolling");
+  setTimeout(()=>{if(el.isConnected){el.classList.remove("rolling");el.textContent=target;}},420);
+}
+function animateHydration(){
+  const hyd=root.querySelector(".hyd[data-pct]"),fill=hyd&&hyd.querySelector(".bar i");if(!fill)return;
+  const target=+hyd.dataset.pct||0,from=waterLast;waterLast=target;
+  fill.style.transform=`scaleX(${target/100})`;
+  if(from!==null&&target!==from&&!prefersReduce())fill.animate([{transform:`scaleX(${from/100})`},{transform:`scaleX(${target/100})`}],{duration:620,easing:"cubic-bezier(.2,.8,.25,1)"});
 }
 
 /* ---------- Today ---------- */
@@ -730,7 +749,7 @@ function todayView(){
   const t=todayStr(),{done,total,frac}=dayFraction(t),pct=Math.round(frac*100),streak=currentStreak();
   const rest=isRestDay(t);
   const summary=total===0?"Nothing scheduled today.":done===total?"All done for today.":frac>=.75?`Almost there — ${total-done} to go.`:frac>=.4?`Good progress — ${total-done} remaining.`:`${total-done} to complete today.`;
-  const due=dueTasks(t);
+  const due=dueTasks(t);rowStagger=0;
   const doneItems=due.filter(x=>statusOf(t,x.id)==="done");
   const pending=due.filter(x=>statusOf(t,x.id)!=="done");
   let groups="";
@@ -751,7 +770,7 @@ function todayView(){
     <div class="sumtext"><h2>${rest?"Resting today.":summary}</h2>
       <p>${rest?"Your streak is protected — no pressure.":`${done} completed · ${total-done} remaining`}</p>
       <div class="chips" style="margin-top:9px">
-        ${streak>0?`<span class="streakchip">🔥 ${streak}-day streak</span>`:""}
+        ${streak>0?`<span class="streakchip">🔥 <b class="streaknum" data-streak="${streak}">${streak}</b>-day streak</span>`:""}
         ${(()=>{const due=dueTasks(t),keys=due.filter(x=>x.keystone);const allDone=due.length&&due.every(x=>statusOf(t,x.id)==="done");return (keys.length&&!allDone&&keys.every(x=>statusOf(t,x.id)==="done"))?'<span class="streakchip">✓ Core done</span>':"";})()}
         <button class="restbtn ${rest?'on':''}" data-act="restday">${rest?'🌙 Resting — tap to resume':'Rest day'}</button>
         ${canSaveStreak()?`<button class="restbtn savebtn" data-act="savestreak">💾 Save streak</button>`:""}
@@ -771,12 +790,12 @@ function emptyToday(){
 /* Your own order wins — time is only a reminder, never a sort key. */
 function bySort(a,b){return (a.sort_index||0)-(b.sort_index||0);}
 function byTime(a,b){const ta=a.time||"99:99",tb=b.time||"99:99";return ta<tb?-1:ta>tb?1:0;}
-function rowHtml(t){const done=statusOf(todayStr(),t.id)==="done";const subs=[];
+function rowHtml(t){const done=statusOf(todayStr(),t.id)==="done",ri=rowStagger++;const subs=[];
   if(t.time)subs.push(fmt12(t.time));if(t.hydration)subs.push(`${hydOz(todayStr())} / ${state.goalOz} oz`);
   if(t.measureUnit)subs.push(`${valueFor(t.id,todayStr())} ${escapeHtml(t.measureUnit)}`);
   const overdue=!done && t.time && hmToMin(t.time)!==null && hmToMin(t.time) < nowMinutes();
   if(overdue)subs.push('<span style="color:var(--warn);font-weight:600">overdue</span>');
-  return `<div class="rowwrap ${t.id===justAddedId?"justadd":""}" data-rid="${t.id}">
+  return `<div class="rowwrap ${t.id===justAddedId?"justadd":""}" data-rid="${t.id}" style="--row-i:${ri}">
     <div class="rowacts"><div class="ract edit">${ICON.pencil}</div><div class="ract del">${ICON.trash}</div></div>
     <div class="row tap ${done?"done":""} ${t.id===justCompletedId?"justdone":""}" data-act="${t.measureUnit?"measure":"toggle"}" data-id="${t.id}">
     <div class="check">${ICON.check}</div>
@@ -784,8 +803,8 @@ function rowHtml(t){const done=statusOf(todayStr(),t.id)==="done";const subs=[];
     ${t.appUrl?`<button class="openapp" data-act="openapp" data-url="${escapeAttr(t.appUrl)}" aria-label="Open app">↗</button>`:""}
     ${t.pri&&!done?'<span class="pri">!</span>':""}<div class="rowsym">${symChar(t.sym)}</div></div></div>`;}
 function hydCard(){const o=hydOz(todayStr()),g=state.goalOz,pct=Math.min(100,Math.round(o/g*100));
-  return `<div class="hyd"><div class="top"><span>💧 ${o} / ${g} oz</span><span class="pct">${pct}%</span></div>
-    <div class="bar"><i style="width:${pct}%"></i></div>
+  return `<div class="hyd ${waterPulse?"pour":""}" data-pct="${pct}"><div class="top"><span>💧 ${o} / ${g} oz</span><span class="pct">${pct}%</span></div>
+    <div class="bar"><i></i><em></em></div>
     <div class="adds">${[8,16,20,24].map(n=>`<button data-act="water" data-oz="${n}">+${n}</button>`).join("")}
     <button class="more" data-act="water-custom">＋</button></div></div>`;}
 
@@ -942,7 +961,8 @@ function settingsView(){
   </div>`;}
 
 function tabbar(){const T=[["today","Today"],["week","Week"],["history","History"],["settings","Settings"]];
-  return `<div class="tabs">${T.map(([k,l])=>`<button class="tab ${tab===k?"on":""}" data-tab="${k}">${ICON[k]}<span>${l}</span></button>`).join("")}</div>`;}
+  const now=T.findIndex(x=>x[0]===tab),prev=Math.max(0,T.findIndex(x=>x[0]===lastRenderedTab)),moving=lastRenderedTab&&lastRenderedTab!==tab;
+  return `<div class="tabs${moving?" moving":""}" style="--tab-x:${now*100}%;--tab-from-x:${prev*100}%">${T.map(([k,l])=>`<button class="tab ${tab===k?"on":""}" data-tab="${k}">${ICON[k]}<span>${l}</span></button>`).join("")}</div>`;}
 
 /* =====================================================================
    EVENTS
@@ -1022,6 +1042,7 @@ function bindRowGestures(){
       setTimeout(()=>suppressClick=false,300);
       if(g)dropTask(wrap.dataset.rid,g,beforeId);
       else if(idx!==target)commitReorder(items.map(it=>it.dataset.rid),idx,target);
+      if((g||idx!==target)&&navigator.vibrate)navigator.vibrate(8);
     }
     wrap.addEventListener("pointerdown",e=>{
       if(e.button&&e.button!==0)return;
@@ -1188,6 +1209,14 @@ function openSheet(html){
     if(dy>90)close();else{sheet.style.transform="";bg.style.opacity="";}};
   grab.addEventListener("pointerup",endDrag);
   grab.addEventListener("pointercancel",endDrag);
+  /* A restrained top-edge pull gives scroll sheets native-feeling resistance. */
+  let pullY=0,pulling=false;
+  sheet.addEventListener("touchstart",e=>{if(sheet.scrollTop<=0&&e.touches.length===1){pullY=e.touches[0].clientY;pulling=true;}},{passive:true});
+  sheet.addEventListener("touchmove",e=>{if(!pulling||sheet.scrollTop>0)return;const dy=e.touches[0].clientY-pullY;if(dy<=0)return;
+    if(e.cancelable)e.preventDefault();const y=Math.min(28,Math.pow(dy,.72));sheet.style.transition="none";sheet.style.transform=`translateY(${y}px)`;
+    bg.style.opacity=String(Math.max(.88,1-y/240));},{passive:false});
+  sheet.addEventListener("touchend",()=>{if(!pulling)return;pulling=false;sheet.style.transition="transform .32s cubic-bezier(.2,.8,.25,1)";sheet.style.transform="";bg.style.opacity="";});
+  sheet.addEventListener("touchcancel",()=>{pulling=false;sheet.style.transform="";bg.style.opacity="";});
   return {bg,close};}
 function accentSheet(){const s=openSheet(`<h3>Accent color</h3><div class="chips">${Object.entries(ACCENTS).map(([k,v])=>
   `<button class="chip ${state.accent===k?"on":""}" data-a="${k}" style="border-color:${v}"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${v};vertical-align:-1px;margin-right:6px"></span>${k}</button>`).join("")}</div>`);

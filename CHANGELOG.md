@@ -9,6 +9,12 @@ _Concise milestone log, newest first. Keep to meaningful milestones._
   travels/morphs between targets, gently pulses the highlighted control, carries progress dots,
   staggers the welcome copy, and closes by completing the same cairn stack. All paths honor
   reduced motion and keep animation state outside the render-replaced app DOM.
+- **Flagship motion pass, phase 2:** synchronized completion FLIP with the decelerating ring and
+  odometer, added restrained 25/50/75% acknowledgements plus weighted gold stone fragments at
+  100%, and made streak increments roll. Hydration now fills by transform with a slow liquid
+  glint and add-water ripple. Lists enter in 30ms row staggers; tabs transition directionally
+  with a traveling indicator; drag lift grows its shadow and haptics on drop; toasts rise from
+  the bottom edge; empty states breathe; and sheet scroll tops gain resisted rubber-banding.
 - **Project put under git** (local repo, no remote). Baseline `9f7f24b`, 92 files. `.gitignore`
   extended to exclude secrets (`*KEEP-SECRET*`, `.env*`, `*.pem`) on top of the existing build
   artifact rules; verified the VAPID/CRON secret file is untracked. Rollback path now exists for

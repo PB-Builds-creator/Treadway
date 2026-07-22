@@ -50,3 +50,7 @@ _Last updated: 2026-07-22. Brief rationale for choices that aren't obvious from 
   overlays sit outside `#app`; anything that crosses `render()` keeps its state in globals. The
   cold launch is skippable, runs only when the script boots, and self-dismisses below 900ms so it
   never gates data loading or interaction. Reduced-motion bypasses JS motion entirely.
+
+- **Navigation has restrained spatial logic.** Today → Week → History → Settings moves left;
+  the reverse moves right, and the tab indicator travels from its remembered prior index. Task
+  completion leads the row FLIP, then the ring follows, so the two effects read as cause/effect.
