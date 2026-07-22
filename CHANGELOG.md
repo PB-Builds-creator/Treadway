@@ -16,7 +16,8 @@ _Concise milestone log, newest first. Keep to meaningful milestones._
   credentials removed. Both Edge Functions were deployed and their unauthorized boundaries
   verified; the web release is live, four production asset hashes match local exactly, and live
   375×812 sign-in/privacy checks have no browser errors or overflow. Product activation still
-  requires the one manual `cairn-product-upgrade.sql` migration and cron-secret rotation.
+  requires the one manual `cairn-product-upgrade.sql` migration plus VAPID/cron credential
+  rotation and reminder resubscription.
 - **Swipe/drag performance pass:** pointer movement now records only the newest finger position
   and paints at most once per animation frame instead of writing transforms and action classes on
   every raw event. Row and reorder motion use compositor-friendly `translate3d`; swipe direction

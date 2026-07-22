@@ -32,8 +32,9 @@ claims. `send-reminders` and authenticated `delete-account` are deployed; unauth
 correctly return 403 and 401. The web release is live at `https://cairn.surge.sh`; app.js,
 styles.css, privacy.html, and sw.js production hashes exactly matched local, and live sign-in plus
 privacy passed at 375×812 with no browser logs or horizontal overflow. The user still needs to
-apply `cairn-product-upgrade.sql`, rotate/reschedule the cron secret, confirm Auth redirects, and
-perform the real-account/real-iPhone checks listed in TODO.md.
+apply `cairn-product-upgrade.sql`, rotate the historically tracked VAPID key pair and CRON_SECRET,
+update/reschedule push delivery, confirm Auth redirects, and perform the real-account/real-iPhone
+checks listed in TODO.md.
 
 ## What this is
 A private daily-discipline / checklist app for Paxton (owner) + his girlfriend, on a

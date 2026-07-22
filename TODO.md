@@ -24,8 +24,11 @@ non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action`
 ## Blocked / waiting on the user
 - Run only `cairn-product-upgrade.sql`; `access-hub.sql` is retired. Then verify the
   owner admin, a pending throwaway signup, mutual partner nudge, and reciprocal unlink.
-- Rotate the live `CRON_SECRET`, update the Edge secret, and reschedule the cron invocation with
-  the new value entered only in Supabase SQL Editor. Tracked files deliberately use placeholders.
+- Rotate the historically tracked VAPID key pair and `CRON_SECRET`: update the Edge secrets,
+  replace `VAPID_PUBLIC_KEY` in `Web/config.js` with the new public key and redeploy, then
+  reschedule the cron invocation with the new cron value entered only in Supabase SQL Editor.
+  Both phones must turn Reminders off/on afterward so their subscriptions use the new VAPID key.
+  Tracked files deliberately contain no private values.
 - Password recovery requires the Supabase Auth Site URL and redirect allowlist to include
   `https://cairn.surge.sh`.
 - Before a public paid launch, replace the explicitly early-access privacy overview with a formal
