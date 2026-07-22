@@ -97,6 +97,9 @@ There are **two deliverables**:
   water/rest hierarchy; `.pathsection` presents remaining tasks as one marked path; hydration is
   a compact daily rhythm and the synced note is elevated into a real reflection ritual. This is
   presentation only—task order, mutations, recurrence, streaks, and storage are unchanged.
+- **The web shell is a real viewport-height flex chain:** `#app → #root → .screen → .scroll` all
+  carry a constrained height/min-height, so `.scroll` (not the document) owns scrolling and the
+  floating tabs remain at the phone edge. Do not remove `#root`'s flex/min-height rules.
 
 ## Rules (product)
 - New members ALWAYS start with a blank task list, then a spotlight product tour (`runTour`) that drives the real app. No

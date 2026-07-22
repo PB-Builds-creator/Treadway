@@ -515,6 +515,9 @@ body.dragging-row,body.dragging-row *{-webkit-user-select:none!important;user-se
 body.dragging-row{cursor:grabbing}
 
 /* ============ Today · the daily ritual ============ */
+#app{height:100vh;height:100dvh;min-height:0;overflow:hidden}
+@media(min-width:520px){#app{height:calc(100vh - 44px);min-height:0}}
+#root{flex:1;display:flex;min-height:0}.screen{width:100%;height:100%}
 .scroll{padding-bottom:112px}
 .daystone{position:relative;isolation:isolate;overflow:hidden;margin:12px 12px 0;padding:18px 17px 14px;
   border:1px solid color-mix(in srgb,var(--accent) 22%,var(--line));border-radius:24px;
@@ -559,7 +562,11 @@ body.dragging-row{cursor:grabbing}
 .restcontrol>span:last-child{display:flex;flex-direction:column}.restcontrol b{font-size:11.5px;font-weight:680;line-height:1.1}.restcontrol small{font-size:9.5px;color:var(--faint);margin-top:2px}
 .corebadge{display:flex;align-items:center;gap:5px;color:var(--good);font-size:11px;font-weight:680;margin-left:auto;white-space:nowrap}
 .corebadge i{font-style:normal;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--good) 16%,transparent)}
+.heldbadge{display:flex;align-items:center;gap:6px;margin-left:auto;color:#a5834a;font-size:11px;font-weight:720;white-space:nowrap}
+.heldbadge i{font-style:normal;font-size:9px;animation:sealsettle .48s cubic-bezier(.2,.78,.25,1)}
 .savecontrol{margin-left:auto;padding:8px 10px;border:1px solid color-mix(in srgb,var(--accent) 50%,var(--line));border-radius:11px;color:var(--accent);font-size:11px;font-weight:680}
+.nextmarker{min-width:0;margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;text-align:right}.nextmarker small{color:var(--faint);font-size:8.5px;font-weight:720;letter-spacing:.11em;text-transform:uppercase}
+.nextmarker b{display:block;max-width:128px;margin-top:2px;font-size:11.5px;font-weight:660;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .partnercard{margin:12px 16px 0;padding:11px 13px;border-radius:17px;box-shadow:none;background:color-mix(in srgb,var(--surface) 90%,var(--accent-soft))}
 .partnercard .pav{width:32px;height:32px}.partnercard .pmain>span{font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);font-weight:750;margin:0}
@@ -622,3 +629,4 @@ body.dragging-row{cursor:grabbing}
 @keyframes heroambient{0%,100%{transform:translate(0,0) scale(1);opacity:.62}50%{transform:translate(-12px,10px) scale(1.07);opacity:.9}}
 @keyframes metricsettle{0%{opacity:.6;transform:translateY(5px)}65%{opacity:1;transform:translateY(-1px)}100%{transform:none}}
 @keyframes pathbreath{0%,100%{transform:scale(1);opacity:.72}50%{transform:scale(1.22);opacity:1}}
+@keyframes sealsettle{from{opacity:0;transform:translateY(-5px) rotate(-18deg)}to{opacity:1;transform:none}}

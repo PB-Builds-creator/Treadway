@@ -10,6 +10,9 @@ _Concise milestone log, newest first. Keep to meaningful milestones._
   placed-stones ledger; the synced note is now a deliberate reflection ritual; and the tab bar is
   a floating piece of persistent app chrome. Existing mutations, ordering, offline sync, gestures,
   tour selectors, and reduced-motion guarantees are preserved.
+  Browser review also exposed and fixed the app shell growing to document height: `#app` now
+  constrains itself to the actual viewport so `.scroll` is the native-style scroller and the
+  floating tab bar remains present at the bottom instead of appearing after all page content.
 - **Flagship motion pass, phase 1:** added a sub-900ms, tap-to-skip cold launch ritual whose five
   weighted stones settle into a cairn while data loads behind it; when Today is ready in time,
   the stack travels into the progress ring as a shared element. The tutorial spotlight now

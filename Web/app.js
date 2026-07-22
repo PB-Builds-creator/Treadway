@@ -753,13 +753,15 @@ function animateHydration(){
 function todayView(){
   const t=todayStr(),{done,total,frac}=dayFraction(t),pct=Math.round(frac*100),streak=currentStreak();
   const rest=isRestDay(t);
-  const summary=total===0?"The day is open.":done===total?"The path is clear.":frac>=.75?"Close the loop.":frac>=.4?"The day is taking shape.":"Set the first stone.";
+  const summary=total===0?"The day is open.":done===total?"The day is held.":frac>=.75?"Close the loop.":frac>=.4?"The day is taking shape.":"Set the first stone.";
   const due=dueTasks(t);rowStagger=0;
   const doneItems=due.filter(x=>statusOf(t,x.id)==="done");
   const pending=due.filter(x=>statusOf(t,x.id)!=="done");
   const water=hydOz(t),waterPct=Math.min(100,Math.round(water/state.goalOz*100));
   const keys=due.filter(x=>x.keystone),allDone=due.length&&due.every(x=>statusOf(t,x.id)==="done");
   const coreDone=keys.length&&!allDone&&keys.every(x=>statusOf(t,x.id)==="done");
+  const next=pending.slice().sort(bySort)[0],saveReady=canSaveStreak();
+  const daySignal=allDone?'<span class="heldbadge"><i>◆</i> Day held</span>':coreDone?'<span class="corebadge"><i>✓</i> Core held</span>':saveReady?'<button class="savecontrol" data-act="savestreak">Save streak</button>':next&&!rest?`<span class="nextmarker"><small>Next marker</small><b>${escapeHtml(next.title)}</b></span>`:total===0?'<span class="nextmarker"><small>First marker</small><b>Add one thing</b></span>':"";
   let groups="",gi=0;
   for(const g of GROUPS){const items=pending.filter(x=>x.group===g.k).sort(bySort);if(!items.length)continue;
     groups+=`<div class="pathgroup" style="--group-i:${gi++}"><div class="grouphead"><span class="pathnode"></span><span class="ghname">${g.t}</span><span class="n">${items.length} ${items.length===1?"marker":"markers"}</span></div><div class="card pathcard" data-group="${g.k}">${items.map(rowHtml).join("")}</div></div>`;}
@@ -782,14 +784,13 @@ function todayView(){
       <div class="daystat"><span>Water</span><strong>${waterPct}<small>%</small></strong></div>
     </div>
     <div class="daycontrols"><button class="restcontrol ${rest?'on':''}" data-act="restday"><span class="restmoon">${rest?'☀':'◐'}</span><span><b>${rest?'Resume today':'Rest day'}</b><small>${rest?'Return to the path':'Protect the streak'}</small></span></button>
-      ${coreDone?'<span class="corebadge"><i>✓</i> Core held</span>':""}
-      ${canSaveStreak()?`<button class="savecontrol" data-act="savestreak">Save streak</button>`:""}
+      ${daySignal}
     </div>
   </section>
   ${partnerCard()}
   ${hyTask?`<section class="rhythmblock">${hydCard()}</section>`:""}
-  <section class="pathsection"><div class="sectionhead"><div><span>The path</span><h3>${pending.length?`${pending.length} ${pending.length===1?"marker remains":"markers remain"}`:"Nothing left unfinished"}</h3></div><span class="sectioncount">${pct}%</span></div>
-    ${groups||(total===0?emptyToday():'<div class="pathclear"><span>✓</span><div><b>The path is clear.</b><small>Everything asked of today is held.</small></div></div>')}
+  <section class="pathsection"><div class="sectionhead"><div><span>The path</span><h3>${total===0?"Start with one marker":pending.length?`${pending.length} ${pending.length===1?"marker remains":"markers remain"}`:"Nothing left unfinished"}</h3></div><span class="sectioncount">${total?pct+"%":"Open"}</span></div>
+    ${groups||(total===0?emptyToday():'<div class="pathclear"><span>✓</span><div><b>Every stone is placed.</b><small>Nothing asked of today was left behind.</small></div></div>')}
   </section>
   ${completed}
   ${noteCard()}
@@ -797,7 +798,7 @@ function todayView(){
 }
 function emptyToday(){
   const starters=[["Drink water","drop",1],["Workout","dumbbell",0],["Read","book",0],["Sleep","moon",0],["Pray","hands",0]];
-  return `<div class="empty">Nothing here yet.<br>Tap <b>＋</b> up top to add your first task.
+  return `<div class="empty">Choose one stone to begin the path.<br>Use <b>＋</b>, or start here.
     <div class="starters">${starters.map(([t,s,h])=>`<button class="chip starter" data-act="starter" data-starter="${escapeAttr(t)}" data-sym="${s}" data-hyd="${h}">${symChar(s)} ${t}</button>`).join("")}</div></div>`;
 }
 /* Your own order wins — time is only a reminder, never a sort key. */
