@@ -23,6 +23,7 @@ let authMode = "signin";
 let syncOn = navigator.onLine;
 let outbox = [];                  // queued writes when offline / on error
 let access = { status: "approved", isAdmin: false }; // membership gate
+let closeDataReady = true;         // false until the optional Close migration reaches this project
 let unlocked = false;             // PIN-lock state (per app session)
 let entry = "", setupFirst = null, hiddenAt = 0, passwordRecovery = false;
 const LOCK_GRACE = 60000;         // re-lock after 60s in the background
@@ -169,11 +170,19 @@ async function loadAll(){
 }
 async function loadNotes(){
   const since=addDays(todayStr(),-90);
+  const cachedState=cacheLoad(),cached=(cachedState&&cachedState.notes)||{};
   let r=await SB.from("notes").select("day,text,close_data").eq("user_id",userId).gte("day",since);
-  if(r.error&&/close_data/i.test((r.error.message||"")+" "+(r.error.details||"")))
+  const legacy=!!(r.error&&/close_data/i.test((r.error.message||"")+" "+(r.error.details||"")));
+  if(legacy)
     r=await SB.from("notes").select("day,text").eq("user_id",userId).gte("day",since);
   if(r.error)throw r.error;
-  state.notes={};for(const n of (r.data||[]))state.notes[n.day]={text:n.text||"",win:n.close_data?.win||"",tomorrow:n.close_data?.tomorrow||"",closedAt:n.close_data?.closedAt||""};
+  closeDataReady=!legacy;state.notes={};const carry=[];for(const n of (r.data||[])){
+    const local=closeForCached(cached[n.day]),remote=n.close_data||{},carryLocal=!legacy&&remote.v!==1&&!!(local.win||local.tomorrow||local.closedAt);
+    state.notes[n.day]={text:n.text||"",win:(legacy||carryLocal?local.win:remote.win)||"",tomorrow:(legacy||carryLocal?local.tomorrow:remote.tomorrow)||"",closedAt:(legacy||carryLocal?local.closedAt:remote.closedAt)||""};
+    if(carryLocal)carry.push({user_id:userId,day:n.day,text:n.text||"",close_data:{v:1,win:local.win,tomorrow:local.tomorrow,closedAt:local.closedAt},updated_at:new Date().toISOString()});
+  }
+  if(legacy)for(const [day,value] of Object.entries(cached)){if(!state.notes[day])state.notes[day]=closeForCached(value);}
+  if(carry.length){const saved=await SB.from("notes").upsert(carry,{onConflict:"user_id,day"});if(saved.error){closeDataReady=false;setSync(false);}}
 }
 async function loadSummaryTime(){
   try{const {data}=await SB.from("reminder_settings").select("summary_time,quiet_start,quiet_end").eq("user_id",userId).maybeSingle();
@@ -199,17 +208,22 @@ function mSetValue(taskId,ymd,val){
   if(val>0)push(()=>SB.from("completions").upsert({user_id:userId,task_id:taskId,day:ymd,status:"done",updated_at:new Date().toISOString()},{onConflict:"user_id,task_id,day"}));
   else push(()=>SB.from("completions").delete().match({user_id:userId,task_id:taskId,day:ymd}));
 }
-function closeFor(ymd){const v=(state.notes&&state.notes[ymd])||{};
+function closeForCached(v){v=v||{};
   if(typeof v==="string")return{text:v,win:"",tomorrow:"",closedAt:""};
   return{text:v.text||"",win:v.win||"",tomorrow:v.tomorrow||"",closedAt:v.closedAt||""};}
+function closeFor(ymd){return closeForCached(state.notes&&state.notes[ymd]);}
 function noteFor(ymd){return closeFor(ymd).text;}
 function setClose(ymd,c){
   if(!state.notes)state.notes={};
+  const wasClosed=!!closeFor(ymd).closedAt;
   const has=(c.text||c.win||c.tomorrow),closedAt=has?(c.closedAt||new Date().toISOString()):"";
-  state.notes[ymd]={text:c.text||"",win:c.win||"",tomorrow:c.tomorrow||"",closedAt};cacheSave();render();
+  state.notes[ymd]={text:c.text||"",win:c.win||"",tomorrow:c.tomorrow||"",closedAt};if(has&&!wasClosed)justClosedDay=ymd;cacheSave();render();
   const updated_at=new Date().toISOString(),close_data={v:1,win:c.win||"",tomorrow:c.tomorrow||"",closedAt};
-  push(()=>SB.from("notes").upsert({user_id:userId,day:ymd,text:c.text||"",updated_at},{onConflict:"user_id,day"}));
-  push(()=>SB.from("notes").update({close_data,updated_at}).match({user_id:userId,day:ymd}));
+  push(async()=>{const full=await SB.from("notes").upsert({user_id:userId,day:ymd,text:c.text||"",close_data,updated_at},{onConflict:"user_id,day"});
+    if(!full.error){closeDataReady=true;return full;}
+    const missing=/close_data/i.test((full.error.message||"")+" "+(full.error.details||""));if(!missing)return full;
+    closeDataReady=false;const legacy=await SB.from("notes").upsert({user_id:userId,day:ymd,text:c.text||"",updated_at},{onConflict:"user_id,day"});
+    return legacy.error?legacy:{error:full.error};});
 }
 function setNote(ymd,text){const c=closeFor(ymd);setClose(ymd,{...c,text});}
 
@@ -221,12 +235,14 @@ async function loadCouple(){
     state.nudgeSentToday=false;state.partnerNudge=null;
     if(state.partnerId){
       const t=todayStr();
-      const [{data:pp},{data:ps},{data:sent},{data:received}]=await Promise.all([
+      const [{data:partnerProfile},{data:legacyProfile},{data:ps},{data:sent},{data:received}]=await Promise.all([
+        SB.rpc("get_partner_profile"),
         SB.from("profiles").select("name,accent").eq("user_id",state.partnerId).maybeSingle(),
         SB.from("daily_status").select("done,total,all_done").eq("user_id",state.partnerId).eq("day",t).maybeSingle(),
-        SB.from("nudges").select("id,status,created_at").eq("sender_id",userId).eq("recipient_id",state.partnerId).eq("day",t).maybeSingle(),
-        SB.from("nudges").select("id,status,created_at").eq("sender_id",state.partnerId).eq("recipient_id",userId).eq("day",t).maybeSingle()
+        SB.from("nudges").select("id,status,created_at").eq("sender_id",userId).eq("recipient_id",state.partnerId).eq("day",t).neq("status","canceled").maybeSingle(),
+        SB.from("nudges").select("id,status,created_at").eq("sender_id",state.partnerId).eq("recipient_id",userId).eq("day",t).neq("status","canceled").maybeSingle()
       ]);
+      const pp=partnerProfile&&partnerProfile.ok?partnerProfile:legacyProfile;
       state.partnerName=(pp&&pp.name)||"Your partner";
       state.partnerStatus=ps||null;
       state.nudgeSentToday=!!sent;state.partnerNudge=received||null;
@@ -269,7 +285,7 @@ async function flushOutbox(){
 function setSync(on){syncOn=on;const el=document.getElementById("syncdot");if(el)el.className="syncdot"+(on?"":" off");}
 
 /* transient one-shot animation flags (consumed by the next render) */
-let justCompletedId=null, justAddedId=null, ringLast=0, ringWait=0, streakLast=null, waterLast=null, waterPulse=false, rowStagger=0;
+let justCompletedId=null, justAddedId=null, justClosedDay=null, ringLast=0, ringWait=0, streakLast=null, waterLast=null, waterPulse=false, rowStagger=0;
 let launchEl=null, launchTimer=0, launchStarted=0;
 function prefersReduce(){return !!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches);}
 function cairnHtml(cls=""){return `<div class="cairnstack ${cls}"><i></i><i></i><i></i><i></i><i></i></div>`;}
@@ -393,9 +409,9 @@ async function boot(){
   if(!session){renderAuth();return;}
   await enterApp();
 }
-SB.auth.onAuthStateChange((e,s)=>{session=s;userId=s?.user?.id||null;
+SB.auth.onAuthStateChange((e,s)=>{const previousId=userId;session=s;userId=s?.user?.id||null;
   if(e==="PASSWORD_RECOVERY"&&s){passwordRecovery=true;setTimeout(renderPasswordRecovery,0);}
-  else if(e==="SIGNED_OUT"){state=null;unlocked=false;outbox=[];}
+  else if(e==="SIGNED_OUT"){clearDeviceData(previousId);state=null;unlocked=false;outbox=[];setTimeout(()=>{if(!session)renderAuth();},0);}
 });
 
 async function loadAccess(){
@@ -438,7 +454,7 @@ async function doAuth(email,password,name){
     const {data,error}=await fn;
     if(error)throw error;
     if(!data.session){ // e.g. email confirmation still on
-      err.textContent="Check your email to confirm, then sign in. (Or turn off 'Confirm email' in Supabase → Authentication.)";
+      err.textContent="Check your email to confirm, then sign in.";
       btn.disabled=false;btn.textContent=labelFor();return;
     }
     session=data.session;userId=session.user.id;
@@ -642,10 +658,10 @@ function renderPending(){
     <h1>${denied?"Not approved":"Waiting for approval"}</h1>
     <p>${denied?"The owner hasn't granted you access to Cairn.":"Your request was sent. You'll get in as soon as the owner approves you — check back shortly."}</p>
     ${denied?"":'<button class="btn" id="pg-check">Check again</button>'}
-    <button class="swap" id="pg-out">Sign out</button>
+    <button class="swap" id="pg-out">Sign out</button><button class="swap pendingdelete" id="pg-delete">Delete my account</button>
   </div></div>`;
   const c=document.getElementById("pg-check");if(c)c.onclick=()=>enterApp();
-  document.getElementById("pg-out").onclick=signOut;
+  document.getElementById("pg-out").onclick=signOut;document.getElementById("pg-delete").onclick=deleteAccountSheet;
 }
 function renderAccessError(){setAccent();root.innerHTML=`<div class="screen"><div class="auth"><div class="glyph">${ICON.lock}</div>
   <h1>Couldn't verify access</h1><p>Cairn kept your private data closed because the account check didn't finish.</p>
@@ -856,7 +872,6 @@ function emptyToday(){
 }
 /* Your own order wins — time is only a reminder, never a sort key. */
 function bySort(a,b){return (a.sort_index||0)-(b.sort_index||0);}
-function byTime(a,b){const ta=a.time||"99:99",tb=b.time||"99:99";return ta<tb?-1:ta>tb?1:0;}
 function rowHtml(t){const done=statusOf(todayStr(),t.id)==="done",ri=rowStagger++;const subs=[];
   if(t.time)subs.push(fmt12(t.time));if(t.hydration)subs.push(`${hydOz(todayStr())} / ${state.goalOz} oz`);
   if(t.measureUnit)subs.push(`${valueFor(t.id,todayStr())} ${escapeHtml(t.measureUnit)}`);
@@ -903,12 +918,13 @@ function partnerCard(){
 function carriedStone(){const c=closeFor(addDays(todayStr(),-1));if(!c.tomorrow)return "";
   return `<section class="carryblock"><span class="carrymark">◆</span><div><span>Carried from last night</span><b>${escapeHtml(c.tomorrow)}</b></div></section>`;}
 function closeCard(){
-  const t=todayStr(),c=closeFor(t),closed=!!c.closedAt,ready=daySuccess(t)||nowMinutes()>=hmToMin(state.summaryTime||"21:30");
-  const body=closed?`<div class="closewords">${c.win?`<span><small>WIN</small>${escapeHtml(c.win)}</span>`:""}${c.text?`<span><small>HONEST LINE</small>${escapeHtml(c.text)}</span>`:""}</div>`:
+  const t=todayStr(),c=closeFor(t),closed=!!c.closedAt,remembered=!!(c.text||c.win||c.tomorrow),ready=daySuccess(t)||nowMinutes()>=hmToMin(state.summaryTime||"21:30");
+  const justSealed=closed&&justClosedDay===t;if(justSealed)justClosedDay=null;
+  const body=(closed||remembered)&&!!(c.win||c.text)?`<div class="closewords">${c.win?`<span><small>WIN</small>${escapeHtml(c.win)}</span>`:""}${c.text?`<span><small>HONEST LINE</small>${escapeHtml(c.text)}</span>`:""}</div>`:
     `<p>One win. One honest line. Tomorrow’s first stone.</p>`;
-  return `<section class="closeblock ${closed?"closed":""} ${ready?"ready":""}"><div class="sectionhead"><div><span>Cairn Close</span><h3>${closed?"The day is sealed.":"Close the loop."}</h3></div><span class="closemark">${closed?"◆":"✦"}</span></div>
-    <button class="closecard" data-act="close-day"><div class="closehead"><span>${closed?"CLOSED "+isoTime(c.closedAt):ready?"READY WHEN YOU ARE":"20 SECONDS"}</span><b>${closed?"Keep what mattered.":"Leave the day lighter."}</b></div>${body}
-      <div class="closefoot"><span>${c.tomorrow?`Tomorrow · ${escapeHtml(c.tomorrow)}`:closed?"No intention set for tomorrow.":"Nothing here is shared with your partner."}</span><i>${closed?"Reopen":"Begin"} ›</i></div></button></section>`;
+  return `<section class="closeblock ${closed?"closed":""} ${justSealed?"justsealed":""} ${ready?"ready":""}"><div class="sectionhead"><div><span>Cairn Close</span><h3>${closed?"The day is sealed.":remembered?"Finish the close.":"Close the loop."}</h3></div><span class="closemark">${closed?"◆":"✦"}</span></div>
+    <button class="closecard" data-act="close-day"><div class="closehead"><span>${closed?"CLOSED "+isoTime(c.closedAt):remembered?"REFLECTION SAVED":ready?"READY WHEN YOU ARE":"20 SECONDS"}</span><b>${closed?"Keep what mattered.":remembered?"The honest line is safe.":"Leave the day lighter."}</b></div>${body}
+      <div class="closefoot"><span>${c.tomorrow?`Tomorrow · ${escapeHtml(c.tomorrow)}`:closed?"No intention set for tomorrow.":remembered?"Add a win and tomorrow’s first stone.":"Nothing here is shared with your partner."}</span><i>${closed?"Reopen":remembered?"Finish":"Begin"} ›</i></div></button></section>`;
 }
 function editCloseSheet(){
   const t=todayStr(),c=closeFor(t);
@@ -982,7 +998,7 @@ function weeklyTrail(){
   for(let i=6;i>=0;i--){const ymd=addDays(t,-i),f=dayFraction(ymd),protectedDay=isProtected(ymd),c=closeFor(ymd);
     if(!protectedDay){sched+=f.total;done+=f.done;for(const tk of dueTasks(ymd)){const ok=statusOf(ymd,tk.id)==="done";
       (per[tk.id]=per[tk.id]||{title:tk.title,d:0,n:0}).n++;if(ok)per[tk.id].d++;}}
-    if(protectedDay||daySuccess(ymd))held++;if(c.closedAt||c.text||c.win||c.tomorrow)closed++;
+    if(protectedDay||daySuccess(ymd))held++;if(c.closedAt)closed++;
     if(state.goalOz>0&&hydOz(ymd)>=state.goalOz)water++;
     if(c.win)quotes.push({day:WD_SHORT[weekdayOf(ymd)],kind:"Win",text:c.win});else if(c.text)quotes.push({day:WD_SHORT[weekdayOf(ymd)],kind:"Line",text:c.text});
     const cls=protectedDay?"rest":f.total&&f.done===f.total?"held":f.done?"partial":"open";
@@ -992,13 +1008,14 @@ function weeklyTrail(){
   const best=arr.slice().sort((a,b)=>(b.d/b.n)-(a.d/a.n))[0],focus=arr.slice().sort((a,b)=>(a.d/a.n)-(b.d/b.n))[0];
   const next=closeFor(t).tomorrow,range=`${addDays(t,-6).slice(5).replace("-","/")} – ${t.slice(5).replace("-","/")}`;
   return `<section class="trailsection"><div class="sectionhead"><div><span>Weekly Trail</span><h3>What the last seven days became.</h3></div><span class="sectioncount">${range}</span></div>
-    <div class="trailcard"><div class="trailtop"><div><strong class="tnum">${done}</strong><span>of ${sched} stones placed</span></div><b class="tnum">${pct}%</b></div>
+    <div class="trailcard"><div class="trailtop"><div><strong class="tnum">${done}</strong><span>of ${sched} current-path stones</span></div><b class="tnum">${pct}%</b></div>
       <div class="trailrail">${days.join("")}</div>
       <div class="trailstats"><span><b>${held}</b> days held</span><span><b>${closed}</b> days closed</span><span><b>${water}</b> water goals</span></div>
       <div class="trailread"><p>${best&&best.d?`Your strongest rhythm was <b>${escapeHtml(best.title)}</b> at ${best.d}/${best.n}.`:"The trail is still waiting for its first clear rhythm."}</p>
         <p>${focus&&focus.d/focus.n<1?`Next foothold: <b>${escapeHtml(focus.title)}</b>.`:"Keep the shape of this week."}</p></div>
       ${quotes.length?`<div class="trailmemories"><span>What stayed with you</span>${quotes.slice(-3).map(q=>`<blockquote><small>${q.day} · ${q.kind}</small>${escapeHtml(q.text)}</blockquote>`).join("")}</div>`:""}
       ${next?`<div class="trailnext"><span>Tomorrow’s first stone</span><b>${escapeHtml(next)}</b></div>`:""}
+      <small class="trailbasis">Task edits reshape this rolling view.</small>
     </div></section>`;
 }
 async function exportNotes(){let r=await SB.from("notes").select("day,text,close_data").order("day");
@@ -1296,7 +1313,7 @@ function privacySheet(){
       <div><i>◆</i><span><b>Partner sharing stays narrow.</b><small>Name, daily counts, and a fixed Proud nudge only. Never tasks or journal text.</small></span></div>
       <div><i>◆</i><span><b>Honest limitation.</b><small>Your journal is access-controlled and sent over HTTPS, but it is not end-to-end encrypted.</small></span></div></div>
     <button class="btn ghost" id="dp-export">Download my data</button><button class="btn ghost" id="dp-password">Change password</button>
-    <button class="swap privacylink" id="dp-policy">Read the full privacy notice</button>
+    <button class="swap privacylink" id="dp-policy">Read the privacy overview</button>
     <div class="dangerzone"><span>Danger zone</span><p>Deleting your account permanently removes its profile, tasks, history, hydration, and reflections.</p>
       <button class="btn danger" id="dp-delete">Delete account</button></div>`);
   s.bg.querySelector("#dp-export").onclick=exportData;
@@ -1312,14 +1329,19 @@ function changePasswordSheet(){const s=openSheet(`<span class="sheeteyebrow">Sec
     if(a.length<8){er.textContent="Use at least 8 characters.";return;}if(a!==b){er.textContent="Passwords don't match.";return;}
     const {error}=await SB.auth.updateUser({password:a});if(error){er.textContent=friendlyAuthError(error);return;}s.close();showToast("Password updated");};
 }
+function finishAccountDeletion(id,s){outbox=[];clearDeviceData(id);try{SB.auth.signOut({scope:"local"});}catch(_){}state=null;session=null;userId=null;unlocked=false;s.close();renderAuth("Your Cairn account and data were deleted.");}
 function deleteAccountSheet(){const s=openSheet(`<span class="sheeteyebrow">Permanent</span><h3>Delete your account</h3>
-  <p class="closeprompt">This cannot be undone. Your synced Cairn data and this device's private cache will be removed.</p>
+  <p class="closeprompt">This cannot be undone. Re-enter your password to remove your synced Cairn data and this device's private cache.</p>
+  <div class="field"><label>Current password</label><input id="da-password" type="password" autocomplete="current-password"></div>
   <div class="field"><label>Type DELETE to confirm</label><input id="da-confirm" autocomplete="off" placeholder="DELETE"></div>
   <div class="err" id="da-err"></div><button class="btn danger" id="da-go">Delete everything</button>`);
-  const btn=s.bg.querySelector("#da-go");btn.onclick=async()=>{const er=s.bg.querySelector("#da-err");if(s.bg.querySelector("#da-confirm").value!=="DELETE"){er.textContent="Type DELETE exactly.";return;}
-    btn.disabled=true;btn.textContent="Deleting…";const id=userId;const {error}=await SB.functions.invoke("delete-account",{body:{confirm:"DELETE"}});
-    if(error){er.textContent="Couldn't delete the account. Nothing was removed.";btn.disabled=false;btn.textContent="Delete everything";return;}
-    outbox=[];clearDeviceData(id);try{await SB.auth.signOut({scope:"local"});}catch(_){}state=null;session=null;userId=null;unlocked=false;s.close();renderAuth("Your Cairn account and data were deleted.");};
+  const btn=s.bg.querySelector("#da-go");btn.onclick=async()=>{const er=s.bg.querySelector("#da-err"),password=s.bg.querySelector("#da-password").value;
+    if(!password){er.textContent="Enter your current password.";return;}if(s.bg.querySelector("#da-confirm").value!=="DELETE"){er.textContent="Type DELETE exactly.";return;}
+    btn.disabled=true;btn.textContent="Verifying…";const email=session?.user?.email;const verified=email&&await SB.auth.signInWithPassword({email,password});
+    if(!verified||verified.error){er.textContent="That password couldn't be verified.";btn.disabled=false;btn.textContent="Delete everything";return;}
+    const id=userId;btn.textContent="Deleting…";const {error}=await SB.functions.invoke("delete-account",{body:{confirm:"DELETE"}});
+    if(error){er.textContent="Couldn't confirm deletion. Reopen Cairn to check your account before trying again.";btn.disabled=false;btn.textContent="Delete everything";return;}
+    finishAccountDeletion(id,s);};
 }
 
 /* ---------- Sheets ---------- */
@@ -1365,15 +1387,15 @@ function accentSheet(){const s=openSheet(`<h3>Accent color</h3><div class="chips
   `<button class="chip ${state.accent===k?"on":""}" data-a="${k}" style="border-color:${v}"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${v};vertical-align:-1px;margin-right:6px"></span>${k}</button>`).join("")}</div>`);
   s.bg.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{state.accent=b.dataset.a;s.close();mSaveProfile();});}
 function nudgeSheet(){if(!state.partnerId)return;
-  const name=escapeHtml(state.partnerName||"Your partner"),sent=state.nudgeSentToday;
+  const rawName=state.partnerName||"Your partner",name=escapeHtml(rawName),nameLabel=escapeHtml(rawName.toUpperCase()),sent=state.nudgeSentToday;
   const s=openSheet(`<span class="sheeteyebrow">Together</span><h3>${sent?"Shared today":"Send a quiet signal"}</h3>
-    <div class="nudgepreview"><span>♥</span><div><small>TO ${name.toUpperCase()}</small><b>Proud of you.</b></div></div>
+    <div class="nudgepreview"><span>♥</span><div><small>TO ${nameLabel}</small><b>Proud of you.</b></div></div>
     <p class="closeprompt">A single private nudge. It shares no tasks, progress details, or journal text. One per day.</p>
     <div class="err" id="ng-err"></div><button class="btn" id="ng-send" ${sent?"disabled":""}>${sent?"Already shared":"Send Proud of you"}</button>`);
   const btn=s.bg.querySelector("#ng-send");if(sent)return;
   btn.onclick=async()=>{const er=s.bg.querySelector("#ng-err");if(!navigator.onLine){er.textContent="Reconnect before sending — nudges never queue for later.";return;}
     btn.disabled=true;btn.textContent="Sending…";const {data,error}=await SB.rpc("send_partner_nudge");
-    if(error||!data||!data.ok){er.textContent=(data&&data.error)||"Couldn't send the nudge. Nothing was queued.";btn.disabled=false;btn.textContent="Send Proud of you";return;}
+    if(error||!data||!data.ok){await loadCouple();if(state.nudgeSentToday){s.close();render();showToast("Proud of you shared");return;}er.textContent=(data&&data.error)||"Couldn't confirm the nudge. Reopen Cairn before trying again — it will not queue on this device.";btn.disabled=false;btn.textContent="Send Proud of you";return;}
     state.nudgeSentToday=true;cacheSave();s.close();render();showToast(data.already_sent?"Already shared today":"Proud of you shared");};
 }
 function partnerSheet(){
@@ -1433,7 +1455,7 @@ function membersSheet(){
 }
 async function unlinkPartner(){
   if(!navigator.onLine){alert("Reconnect before unlinking so access is removed for both people at once.");return false;}
-  const {data,error}=await SB.rpc("unlink_partner");if(error||!data||!data.ok){alert("Couldn't unlink. Nothing changed.");return false;}
+  const {data,error}=await SB.rpc("unlink_partner");if(error||!data||!data.ok){alert("Couldn't confirm unlinking. Reopen Cairn to check the link before trying again.");return false;}
   state.partnerId=null;state.partnerName=null;state.partnerStatus=null;state.partnerNudge=null;state.nudgeSentToday=false;cacheSave();render();return true;
 }
 function manageSheet(){

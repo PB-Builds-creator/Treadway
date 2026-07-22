@@ -62,7 +62,9 @@ Deno.serve(async (req) => {
 
   for (const n of pendingNudges ?? []) {
     const { data: links } = await sb.from("couple_links").select("user_id,partner_id").in("user_id", [n.sender_id, n.recipient_id]);
-    const mutual = (links ?? []).some((x) => x.user_id === n.sender_id && x.partner_id === n.recipient_id)
+    const { data: members } = await sb.from("access").select("user_id,status").in("user_id", [n.sender_id, n.recipient_id]);
+    const approved = (members ?? []).filter((x) => x.status === "approved").length === 2;
+    const mutual = approved && (links ?? []).some((x) => x.user_id === n.sender_id && x.partner_id === n.recipient_id)
       && (links ?? []).some((x) => x.user_id === n.recipient_id && x.partner_id === n.sender_id);
     if (!mutual) { await sb.from("nudges").update({ status: "canceled" }).eq("id", n.id); continue; }
 
@@ -73,7 +75,10 @@ Deno.serve(async (req) => {
     const { data: sender } = await sb.from("profiles").select("name").eq("user_id", n.sender_id).maybeSingle();
     const kind = `nudge:${n.id}`;
     const { error: logErr } = await sb.from("reminder_log").insert({ user_id: n.recipient_id, kind, day: n.day });
-    if (logErr) { await sb.from("nudges").update({ status: "sent", delivered_at: new Date().toISOString() }).eq("id", n.id); continue; }
+    if (logErr) {
+      if (logErr.code !== "23505") console.error("nudge reminder claim failed", n.id, logErr.code);
+      continue;
+    }
 
     let delivered = 0;
     for (const sub of subs) {

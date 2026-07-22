@@ -6,10 +6,10 @@ _Last updated: 2026-07-22. Keep prioritized; delete done items (they go to CHANG
 - Build three web-first lanes together: **Cairn Close + Weekly Trail**, **private partner Proud
   nudge**, and **commercial trust/account controls**. Native widgets and HealthKit are explicitly
   postponed until an Apple Developer account exists.
-- Checkpoint `5923dbd` contains migration-safe structured-close loading, nudge state probing,
-  safer access/sign-out/password recovery, and first-run promise. The current uncommitted slice
-  adds all three feature UIs, product SQL, reminder nudge delivery, delete-account service,
-  complete export, privacy notice, and CSS. It is not QA'd or deployed yet; see `PROJECT_CONTEXT`.
+- Checkpoints `5923dbd` and `e92bdc9` contain the foundation and complete surfaces. Mobile browser
+  visual QA and independent security/persistence reviews are complete; the working tree contains
+  their final fixes. Remaining: static checks, deploy both Edge Functions, deploy the web app,
+  verify the live hashes/shell, finalize docs/commit, then report the manual steps.
 - Final delivery must put every SQL/Supabase/manual action in one checklist at the end; do not
   interrupt the user with piecemeal database instructions.
 
@@ -30,22 +30,23 @@ If a gesture fails, the likely culprit is touch-scroll stealing the gesture — 
 non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action` on `.rowwrap`.
 
 ## Blocked / waiting on the user
-- **Access hub not active until 2 steps are done** (code deployed):
-  1. Run `access-hub.sql` in Supabase (assumes owner email `paxtonraithel@gmail.com`; has a
-     fallback line to set admin by email).
-  2. Re-enable Supabase Auth → "Allow new users to sign up". **Do the SQL first.**
-  - Verify: owner sees Settings → "Members · admin"; a throwaway signup lands as `pending`.
-- **Her phone unavailable** → couple layer (pairing + partner card) and her reminders untested.
+- Run only `cairn-product-upgrade.sql` after delivery; `access-hub.sql` is retired. Then verify the
+  owner admin, a pending throwaway signup, mutual partner nudge, and reciprocal unlink.
+- Rotate the live `CRON_SECRET`, update the Edge secret, and reschedule the cron invocation with
+  the new value entered only in Supabase SQL Editor. Tracked files deliberately use placeholders.
+- Password recovery requires the Supabase Auth Site URL and redirect allowlist to include
+  `https://cairn.surge.sh`.
+- **Her phone unavailable** → real two-phone nudge, couple, and push behavior remains untested.
 
 ## Next features (not yet built)
-1. **"Proud of you" nudge** (couple layer) — send partner an encouragement push. Needs a
-   `nudges` table + edge-fn work (extend `send-reminders`). Last real couple-layer gap.
-2. Dropping into an **empty/absent category** isn't possible (groups only render when they have
+1. Dropping into an **empty/absent category** isn't possible (groups only render when they have
    tasks). Workaround: change group in Edit. Could render placeholder drop zones during a drag.
 
 ## Known caveats
-- `loadAccess` fails OPEN (errors → approved) so the owner is never locked out; a transient error
-  could let a pending user slip through. Fine at friends scale.
+- Access checks fail closed on unknown server errors. A cached previously-approved user can still
+  open their cached offline view, while server RLS remains authoritative for all remote data.
+- Weekly Trail replays the current active task definitions across seven days; adding or archiving
+  tasks intentionally reshapes the rolling view and the UI states this.
 - App-URL scheme presets (mfp://, youversion://, instagram://) are best guesses.
 - Web push needs the PWA added to the Home Screen on iOS.
 - Reorder pushes an upsert for every active task (fine at personal scale).

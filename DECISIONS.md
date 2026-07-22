@@ -17,6 +17,11 @@ _Last updated: 2026-07-22. Brief rationale for choices that aren't obvious from 
   journal payload. It must call a direct RPC rather than the offline outbox so an old message can
   never surprise-send later. Unlinking must clear both sides atomically before this ships.
 
+- **Partner profile sharing is a narrow RPC, not row-level profile access.** Postgres RLS grants
+  whole rows, so a profile SELECT policy would expose settings beyond name/accent to a determined
+  client. `get_partner_profile()` verifies a reciprocal approved link and returns only those two
+  presentation fields; partner daily counts remain in the purpose-built `daily_status` table.
+
 - **Commercial trust means accurate boundaries before billing.** This pass does not invent a
   paid plan without a provider, price, or legal setup. It instead hardens approval in Postgres,
   makes access verification fail closed (with a legacy-table-missing compatibility exception),
@@ -57,9 +62,15 @@ _Last updated: 2026-07-22. Brief rationale for choices that aren't obvious from 
   non-negotiables (`keystone`) done. Rest days + saved days are neutral (skip). Streak-save is
   stingy: once per calendar month AND only offered when it would actually extend the streak.
 
-- **Access hub gate fails OPEN** (loadAccess error → approved) so the owner is never locked out
-  by a transient error; the trade-off (a pending user could slip through on error) is fine at
-  friends scale. Self-approval blocked by the insert RLS policy (pending + is_admin=false only).
+- **Access is fail-closed, with bounded offline continuity.** Unknown membership-check errors do
+  not unlock the app. A device that previously confirmed approval may open its account-scoped
+  cached view offline, while server RLS still rejects any no-longer-approved remote access.
+  Migration reruns never promote pending users; only the known owner is force-restored as admin.
+
+- **Current privacy copy is explicitly early access.** It accurately names the main processors,
+  sharing boundary, local cache, non-E2E limitation, and account controls without pretending a
+  public commercial policy exists. Operator identity, support contact, formal terms, and notice
+  process are required before a public paid launch.
 
 - **Themes: accent syncs (identity), light/dark/oled is device-local (preference).** Accent
   lives in the profile; theme in localStorage.

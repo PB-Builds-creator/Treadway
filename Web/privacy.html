@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f5f4f1">
   <link rel="stylesheet" href="styles.css">
-  <title>Privacy · Cairn</title>
+  <title>Privacy overview · Cairn</title>
 </head>
 <body>
   <div id="app"><main class="privacy-page">
     <a class="privacy-back" href="./">← Cairn</a>
-    <span class="sheeteyebrow">Plain-language notice</span>
+    <span class="sheeteyebrow">Early-access overview</span>
     <h1>Privacy in Cairn</h1>
     <p class="privacy-lead">A daily journal should be quiet, useful, and honest about where its data goes.</p>
 
@@ -18,8 +18,11 @@
     <section><h2>Why it is used</h2><p>This data powers your daily path, history, Weekly Trail, syncing, reminders, exports, and the partner features you explicitly enable. Cairn does not include advertising or behavioral analytics.</p></section>
     <section><h2>Partner sharing</h2><p>When two accounts link, each person may see the other’s profile name and daily completion counts. A Proud nudge contains the sender’s name and the fixed words “Proud of you.” Tasks, task titles, hydration, measured values, and journal text are never shared with a partner.</p></section>
     <section><h2>Where data lives</h2><p>Synced records are stored in the app’s Supabase project and protected by authenticated row-level access rules. A local cache also remains on signed-in devices so the interface can open quickly. Signing out or deleting the account clears that account’s Cairn cache from the device.</p></section>
+    <section><h2>Services and retention</h2><p>Supabase provides account, database, and server-function infrastructure; Surge serves the static web app; and the device’s browser push service carries requested notifications. Cairn keeps synced records while your account exists. Provider backups and operational logs may remain for limited periods under those providers’ own policies.</p></section>
     <section><h2>Security limits</h2><p>Connections use HTTPS and account access rules separate members’ records. Reflections are not end-to-end encrypted. Reminder notifications may reveal a task title, or a partner’s name with a Proud nudge, on the device lock screen.</p></section>
     <section><h2>Your controls</h2><p>Settings → Data &amp; privacy lets you download your Cairn data, change your password, read this notice, or permanently delete your account and synced records. Partner links can be removed from Settings; unlinking revokes the relationship for both accounts.</p></section>
+
+    <section><h2>Early-access status</h2><p>This is the privacy overview for Cairn’s private early-access release, not a finalized public-sale privacy policy. Before a public commercial launch, Cairn will publish the operator identity, a support contact, effective terms, and a formal notice-change process. Early-access members can contact the person who invited them.</p></section>
 
     <p class="privacy-date">Last updated July 22, 2026</p>
   </main></div>

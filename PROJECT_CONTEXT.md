@@ -3,36 +3,33 @@
 _Handoff doc. Read this + TODO.md + DECISIONS.md + CHANGELOG.md, then the code._
 _Last updated: 2026-07-22._
 
-## ACTIVE WORK — three web-first product lanes (not deployed yet)
+## ACTIVE WORK — three web-first product lanes (final verification; not deployed yet)
 The user explicitly asked to build three sellability upgrades together while postponing all
 native/widget/HealthKit work until they buy the Apple Developer account. The clean checkpoint
-before this pass is `4d6d367` (`Smooth row gestures`). The working tree currently has an
-**uncommitted first slice in `Web/app.js`**; syntax and diff checks pass.
+before this pass is `4d6d367` (`Smooth row gestures`); implementation checkpoints are `5923dbd`
+and `e92bdc9`. The working tree contains the final review fixes and handoff updates.
 
-Already changed in this in-progress slice:
-- Journal state now normalizes old cached string notes and new structured closes. `loadNotes`
-  requests optional `notes.close_data`, falls back to the old columns when the migration is not
-  present, and `setClose` keeps the legacy `text` write separate so reflections still sync.
-- Couple loading now probes today's sent/received `nudges` rows without making the existing
-  partner card depend on the not-yet-created table.
-- Auth now preserves signup names in Supabase user metadata, supports recovery-email password
-  reset, clears account-scoped cache/outbox on sign-out, and verifies access fail-closed except
-  for the specifically detected legacy state where the access table does not exist yet.
-- First run now shows a concise product promise before creating the required blank profile; the
-  spotlight tour is marked complete only when it is actually skipped/finished.
+Implemented and visually QA'd at 375×812 in Light/OLED:
+- Cairn Close with a win, honest line, tomorrow's first stone, yesterday carry-forward, legacy
+  reflection compatibility, a single structured upsert, local preservation/retry before the
+  optional column exists, and one-shot seal motion.
+- Rolling Weekly Trail with seven-day rhythm, closes, water goals, memories, next foothold, and an
+  explicit note that task edits reshape this current-path view.
+- Fixed once-daily mutual-partner Proud nudge, explicit confirmation, no offline queue, reciprocal
+  unlink, quiet-hour delivery, and server checks that reveal no tasks/progress/journal content.
+- Hardened approval/RLS, narrow partner-profile RPC, signup-name preservation, password recovery
+  and change, full JSON export, password-reauthenticated account deletion (also available to
+  pending/denied users), public early-access privacy overview, and cache/outbox cleanup on every
+  sign-out path.
+- Canonical product SQL in `cairn-product-upgrade.sql`; obsolete `access-hub.sql` and top-level
+  reminder function are inert pointers. Tracked setup docs contain placeholders, not credentials.
 
-The second, still-uncommitted slice now builds the remaining product surfaces: Cairn Close,
-yesterday's carried intention, rolling Weekly Trail, fixed once-daily Proud nudge confirmation,
-direct nudge/unlink RPC calls, full JSON data download, Data & Privacy/password/delete-account UI,
-public `privacy.html`, all related CSS, `cairn-product-upgrade.sql`, nudge delivery in
-`send-reminders`, and the authenticated `delete-account` Edge Function. Two setup SQL files also
-had a committed cron secret replaced with `<CRON_SECRET>`; the live secret must be rotated.
-
-Still required before this pass is complete: build a representative local QA fixture, visually
-test Today/Close/Week/Trail/Settings/privacy/auth/onboarding in Light + OLED at 375×812, test old
-string notes and the missing-`close_data` fallback, audit all server code/SQL, fix findings,
-complete handoff docs/commits, deploy both Edge Functions and the web app, then give the user one
-consolidated SQL/manual checklist. Do not deploy the current unverified working tree.
+Independent reviews found and this tree fixes: the first-Close insert/update race, false Close
+sync before migration, repeated seal animation, legacy notes counted as closed, arbitrary couple
+probing, whole-profile partner reads, rerun auto-approval, relink overwrite, broad nudge grants,
+false delivery on reminder-log errors, pending-user deletion gap, and categorical network-failure
+claims. Still required: final syntax/diff/static checks, Edge Function deploys, web deploy, live
+hash/shell verification, final docs/commit, and one consolidated SQL/manual checklist.
 
 ## What this is
 A private daily-discipline / checklist app for Paxton (owner) + his girlfriend, on a
@@ -48,7 +45,7 @@ There are **two deliverables**:
 ## Web app — architecture
 - **No framework, no build step.** Plain static files served by Surge.
   - `Web/index.html` — shell; loads Supabase UMD from CDN, `config.js`, `styles.css`, `app.js`; registers `sw.js`.
-  - `Web/app.js` — the ENTIRE app (~1200 lines, vanilla JS). State + logic + all screens.
+  - `Web/app.js` — the ENTIRE app (~1550 lines, vanilla JS). State + logic + all screens.
   - `Web/styles.css` — design system via CSS custom properties (tokens).
   - `Web/config.js` — Supabase URL + publishable key + VAPID public key (all safe to expose).
   - `Web/sw.js` — service worker: network-first shell cache + web-push handlers.
@@ -89,18 +86,20 @@ There are **two deliverables**:
 - **Version control:** local git repo (no remote). Baseline commit `9f7f24b`, 2026-07-22.
   Commit before risky edits; `git diff`/`git checkout -- <file>` is the rollback path for
   `Web/app.js`. Ignored: `.build/` (113M), `Cairn.xcodeproj/` (XcodeGen output), secrets, `.DS_Store`.
-- **SQL migrations** live in `Cairn/*.sql`; run by the user in the Supabase SQL Editor. All run
-  EXCEPT `access-hub.sql` (see TODO — user must run it + re-enable signups).
+- **SQL migrations** live in `Cairn/*.sql`; run by the user in the Supabase SQL Editor. The one
+  pending migration for this pass is `cairn-product-upgrade.sql`. `access-hub.sql` is retired and
+  must not be run.
 
 ## Testing
 - `node --check Web/app.js` for syntax.
 - Pure logic tested headlessly: read app.js, stub browser globals (window/document/navigator/
   localStorage/Notification), strip the trailing boot guard, `eval(src + tests)`. See git history
   / prior `/tmp/test_*.js`. Streak/grace/keystone logic all verified this way.
-- **Visual QA IS possible:** the in-app Browser tools work on the LIVE site. `preview_start`
-  with `url:"https://cairn.surge.sh"`, then `javascript_tool` to inject a signed-in `state`
-  (set globals `userId/session/access/unlocked/tab/state`, call `render()`), then `screenshot`.
-  This is how the spotlight tour was verified. Can't log in (no creds) — inject state instead.
+- **Visual QA:** use a temporary local static server and a small Supabase stub in `/tmp` to inject
+  representative signed-in state; never commit the fixture. The current pass covered Today,
+  unsealed/sealed/legacy Close, Close editor, Trail, Settings/privacy, auth, onboarding, long
+  hostile-looking text, missing-`close_data` fallback, Light, and OLED at 375×812 without browser
+  logs or horizontal overflow. Live shell/hash verification still follows deployment.
 - Real device feel (gestures, iOS push, PWA) still needs the user.
 
 ## Row gestures & ordering (recent, non-obvious)

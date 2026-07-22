@@ -28,7 +28,6 @@ revoke all on function public.is_admin() from public;
 revoke all on function public.user_is_approved(uuid) from public;
 revoke all on function public.is_approved() from public;
 grant execute on function public.is_admin() to authenticated;
-grant execute on function public.user_is_approved(uuid) to authenticated;
 grant execute on function public.is_approved() to authenticated;
 
 drop policy if exists sel on public.access;
@@ -41,13 +40,20 @@ drop policy if exists upd on public.access;
 create policy upd on public.access for update to authenticated
   using (public.is_admin()) with check (public.is_admin());
 
+-- Preserve the private beta's current members only on the first migration run.
+-- Later re-runs must never promote newly pending applicants.
+do $$
+begin
+  if not exists(select 1 from public.access) then
+    insert into public.access (user_id,email,status,is_admin,decided_at)
+    select id,email,'approved',(email = 'paxtonraithel@gmail.com'),now() from auth.users
+    on conflict (user_id) do nothing;
+  end if;
+end $$;
+-- The known owner is always restored as an approved admin without changing anyone else.
 insert into public.access (user_id,email,status,is_admin,decided_at)
-select id,email,'approved',(email = 'paxtonraithel@gmail.com'),now() from auth.users
-on conflict (user_id) do update set
-  email = excluded.email,
-  status = case when public.access.status = 'pending' then 'approved' else public.access.status end,
-  is_admin = public.access.is_admin or excluded.is_admin,
-  decided_at = coalesce(public.access.decided_at,now());
+select id,email,'approved',true,now() from auth.users where email='paxtonraithel@gmail.com'
+on conflict (user_id) do update set email=excluded.email,status='approved',is_admin=true,decided_at=now();
 
 -- Existing owner-only tables now enforce approval in Postgres, not just the UI.
 do $$
@@ -65,7 +71,8 @@ alter table public.notes add column if not exists close_data jsonb not null defa
 -- ── Reciprocal couple privacy ──────────────────────────────────────
 create or replace function public.are_partners(p_a uuid,p_b uuid)
 returns boolean language sql security definer stable set search_path = public as $$
-  select public.user_is_approved(p_a) and public.user_is_approved(p_b)
+  select auth.uid() is not null and (auth.uid() = p_a or auth.uid() = p_b)
+    and public.user_is_approved(p_a) and public.user_is_approved(p_b)
     and exists(select 1 from public.couple_links where user_id = p_a and partner_id = p_b)
     and exists(select 1 from public.couple_links where user_id = p_b and partner_id = p_a);
 $$;
@@ -85,23 +92,40 @@ drop policy if exists partner_read on public.daily_status;
 create policy partner_read on public.daily_status for select to authenticated
   using (public.are_partners(auth.uid(),user_id));
 drop policy if exists partner_read on public.profiles;
-create policy partner_read on public.profiles for select to authenticated
-  using (public.are_partners(auth.uid(),user_id));
+
+-- Profiles contain private settings beyond name/accent. Expose only the two fields
+-- used by the partner card through a reciprocal, caller-bound function.
+create or replace function public.get_partner_profile()
+returns json language plpgsql security definer stable set search_path = public as $$
+declare caller uuid := auth.uid(); target uuid; partner_name text; partner_accent text;
+begin
+  if caller is null or not public.is_approved() then return json_build_object('ok',false); end if;
+  select partner_id into target from public.couple_links where user_id=caller;
+  if target is null or not public.are_partners(caller,target) then return json_build_object('ok',false); end if;
+  select name,accent into partner_name,partner_accent from public.profiles where user_id=target;
+  return json_build_object('ok',true,'name',partner_name,'accent',partner_accent);
+end $$;
+revoke all on function public.get_partner_profile() from public;
+grant execute on function public.get_partner_profile() to authenticated;
 
 create or replace function public.link_partner(p_code text)
 returns json language plpgsql security definer set search_path = public as $$
-declare target uuid;
+declare caller uuid := auth.uid(); target uuid; caller_partner uuid; target_partner uuid;
 begin
-  if not public.is_approved() then return json_build_object('ok',false,'error','Account is not approved.'); end if;
-  select user_id into target from public.couple_links
+  if caller is null or not public.is_approved() then return json_build_object('ok',false,'error','Account is not approved.'); end if;
+  select user_id,partner_id into target,target_partner from public.couple_links
    where code = p_code and code_expires > now() and user_id <> auth.uid()
-     and public.user_is_approved(user_id);
+     and public.user_is_approved(user_id) for update;
   if target is null then return json_build_object('ok',false,'error','That code is invalid or expired.'); end if;
+  select partner_id into caller_partner from public.couple_links where user_id=caller for update;
+  if caller_partner is not null or target_partner is not null then
+    return json_build_object('ok',false,'error','One of these accounts is already linked. Unlink first.');
+  end if;
   insert into public.couple_links(user_id,partner_id,code,code_expires,updated_at)
-    values(auth.uid(),target,null,null,now())
+    values(caller,target,null,null,now())
     on conflict(user_id) do update set partner_id=excluded.partner_id,code=null,code_expires=null,updated_at=now();
   insert into public.couple_links(user_id,partner_id,code,code_expires,updated_at)
-    values(target,auth.uid(),null,null,now())
+    values(target,caller,null,null,now())
     on conflict(user_id) do update set partner_id=excluded.partner_id,code=null,code_expires=null,updated_at=now();
   return json_build_object('ok',true);
 end $$;
@@ -139,7 +163,7 @@ alter table public.nudges enable row level security;
 drop policy if exists linked_read on public.nudges;
 create policy linked_read on public.nudges for select to authenticated
   using ((sender_id=auth.uid() or recipient_id=auth.uid()) and public.are_partners(sender_id,recipient_id));
-revoke insert,update,delete on public.nudges from anon,authenticated;
+revoke all on table public.nudges from anon,authenticated;
 grant select on public.nudges to authenticated;
 
 create or replace function public.send_partner_nudge()
