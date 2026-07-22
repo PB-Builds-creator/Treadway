@@ -53,6 +53,11 @@ _Last updated: 2026-07-22. Brief rationale for choices that aren't obvious from 
   Spotlight geometry is assigned once per step, then travels through a FLIP-style transform;
   the drag shadow is a static shadow layer whose transform/opacity sells the rise.
 
+- **Direct-manipulation gestures paint once per display frame.** Pointer events can arrive faster
+  than the screen refreshes, so swipe and drag handlers only retain the newest coordinates and a
+  single `requestAnimationFrame` performs compositor-friendly transforms. Gesture-only
+  `will-change` avoids keeping every task row promoted while idle.
+
 - **Navigation has restrained spatial logic.** Today → Week → History → Settings moves left;
   the reverse moves right, and the tab indicator travels from its remembered prior index. Task
   completion leads the row FLIP, then the ring follows, so the two effects read as cause/effect.

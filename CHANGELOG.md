@@ -3,6 +3,14 @@
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
 ## 2026-07-22
+- **Swipe/drag performance pass:** pointer movement now records only the newest finger position
+  and paints at most once per animation frame instead of writing transforms and action classes on
+  every raw event. Row and reorder motion use compositor-friendly `translate3d`; swipe direction
+  and armed-state classes change only when their thresholds actually change; `will-change` is
+  scoped to the active gesture so idle lists keep no unnecessary layers. The final pointer
+  position is flushed before a drag drop is resolved. At 375×812, short-swipe snap-back, right-
+  swipe Edit, left-swipe Delete, and Undo all passed with no current browser errors. Real-iPhone
+  frame pacing remains the decisive check.
 - **Today command-center redesign:** replaced the scattered header/summary/chips with one unified
   "day stone" that clearly orders date + sync, progress, daily message, completion/streak/water
   metrics, and rest/save controls. Remaining task groups now read as a continuous marked path;

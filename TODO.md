@@ -6,8 +6,10 @@ _Last updated: 2026-07-22. Keep prioritized; delete done items (they go to CHANG
 Everything below is verified with synthetic pointer events in a desktop browser only.
 1. **Hold-to-drag reorder** — press ~0.4s, row lifts, drag, release. Should stay put.
 2. **Drag between categories** — drop on another group's card; it should adopt that category.
-3. **Swipe** right = blue pencil (edit), left = red trash (delete + undo toast).
-4. **Undo toast** on delete ("Deleted — Undo") — never visually confirmed at all.
+3. **Swipe** right = blue pencil (edit), left = red trash (delete + undo toast). The rAF-batched,
+   transform-only path passes at 375×812 in browser QA; confirm actual iPhone frame pacing.
+4. **Undo toast** on delete ("Deleted — Undo") — visually confirmed in mobile browser QA and
+   restored the exact row; still confirm real touch timing.
 5. **Sheet notch** drag-down-to-dismiss + no background scrolling behind sheets.
 6. **Flagship motion feel** — cold-launch skip/shared-ring handoff and moving tutorial spotlight
    need real iPhone timing/visual confirmation; browser QA cannot establish touch feel or 60fps.

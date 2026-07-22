@@ -483,13 +483,14 @@
 .rowwrap.armed .ract{transform:scale(1.16)}
 .rowwrap .row{position:relative;z-index:1;background:var(--surface);
   transition:transform .3s cubic-bezier(.2,.85,.3,1),background .16s ease}
-.rowwrap .row.swiping{transition:background .16s ease}
+.rowwrap .row.swiping{transition:none;will-change:transform;backface-visibility:hidden}
 .rowwrap.dragging{overflow:visible;z-index:6;transition:none}
 .rowwrap.dragging .row{transform:scale(1.035);border-radius:13px;
   animation:rowlift .2s cubic-bezier(.2,.75,.25,1)}
 .rowwrap.dragging .row::after{content:"";position:absolute;inset:0;border-radius:13px;box-shadow:0 16px 38px rgba(0,0,0,.32);pointer-events:none;z-index:-1;animation:shadowlift .2s cubic-bezier(.2,.75,.25,1)}
 @keyframes rowlift{from{transform:scale(.995)}to{transform:scale(1.035)}}
 @keyframes shadowlift{from{opacity:.15;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.rowwrap.dragging,.rowwrap.shiftable{will-change:transform}
 .rowwrap.shiftable{transition:transform .22s cubic-bezier(.2,.85,.3,1)}
 .card{overflow:visible}
 .sheet-bg{animation:fadein .2s ease}

@@ -1002,8 +1002,38 @@ let suppressClick=false;
 function bindRowGestures(){
   root.querySelectorAll(".rowwrap").forEach(wrap=>{
     const row=wrap.querySelector(".row");if(!row)return;
-    let sx=0,sy=0,mode="",lp=null,ctx=null,pid=null;
+    let sx=0,sy=0,mode="",lp=null,ctx=null,pid=null,frame=0;
+    let swipeX=0,swipeDir=0,swipeArmed=false,dragX=0,dragY=0;
     const ACT=78;
+    function paintDrag(x,y){
+      if(!ctx)return;
+      ctx.px=x;ctx.py=y;
+      const dy=y-sy;
+      wrap.style.transform=`translate3d(0,${dy}px,0)`;
+      const tgt=Math.max(0,Math.min(ctx.items.length-1,ctx.idx+Math.round(dy/ctx.h)));
+      ctx.target=tgt;
+      ctx.items.forEach((it,i)=>{
+        if(it===wrap)return;let sh=0;
+        if(ctx.idx<tgt&&i>ctx.idx&&i<=tgt)sh=-ctx.h;
+        else if(ctx.idx>tgt&&i<ctx.idx&&i>=tgt)sh=ctx.h;
+        it.style.transform=sh?`translate3d(0,${sh}px,0)`:"";
+      });
+    }
+    function paintGesture(){
+      frame=0;
+      if(mode==="swipe"){
+        row.style.transform=`translate3d(${swipeX}px,0,0)`;
+        const dir=swipeX>14?1:swipeX<-14?-1:0;
+        if(dir!==swipeDir){
+          swipeDir=dir;
+          wrap.classList.toggle("sw-r",dir===1);wrap.classList.toggle("sw-l",dir===-1);
+        }
+        const armed=Math.abs(swipeX)>=ACT;
+        if(armed!==swipeArmed){swipeArmed=armed;wrap.classList.toggle("armed",armed);}
+      }else if(mode==="drag")paintDrag(dragX,dragY);
+    }
+    function queuePaint(){if(!frame)frame=requestAnimationFrame(paintGesture);}
+    function clearPaint(){if(frame){cancelAnimationFrame(frame);frame=0;}}
     function startDrag(){
       mode="drag";suppressClick=true;
       try{const sel=window.getSelection&&window.getSelection();if(sel&&sel.removeAllRanges)sel.removeAllRanges();}catch(_){}
@@ -1012,27 +1042,15 @@ function bindRowGestures(){
       try{if(pid!==null)wrap.setPointerCapture(pid);}catch(_){}
       const card=wrap.parentElement,items=[...card.querySelectorAll(".rowwrap")];
       ctx={items,idx:items.indexOf(wrap),h:wrap.getBoundingClientRect().height,target:items.indexOf(wrap)};
+      dragX=sx;dragY=sy;
       wrap.classList.add("dragging");
       items.forEach(it=>{if(it!==wrap)it.classList.add("shiftable");});
-    }
-    function dragMove(e){
-      if(!ctx)return;
-      ctx.px=e.clientX;ctx.py=e.clientY;
-      const dy=e.clientY-sy;
-      wrap.style.transform=`translateY(${dy}px)`;
-      let tgt=Math.max(0,Math.min(ctx.items.length-1,ctx.idx+Math.round(dy/ctx.h)));
-      ctx.target=tgt;
-      ctx.items.forEach((it,i)=>{
-        if(it===wrap)return;let sh=0;
-        if(ctx.idx<tgt&&i>ctx.idx&&i<=tgt)sh=-ctx.h;
-        else if(ctx.idx>tgt&&i<ctx.idx&&i>=tgt)sh=ctx.h;
-        it.style.transform=sh?`translateY(${sh}px)`:"";
-      });
     }
     function endDrag(e){
       document.body.classList.remove("dragging-row");
       if(!ctx)return;
-      const px=(e&&e.clientX!=null)?e.clientX:ctx.px, py=(e&&e.clientY!=null)?e.clientY:ctx.py;
+      const px=(e&&e.clientX!=null)?e.clientX:dragX, py=(e&&e.clientY!=null)?e.clientY:dragY;
+      clearPaint();paintDrag(px,py);
       /* Resolve the drop while the dragged row is hidden from hit-testing, so we see
          the card underneath. Dropping on another group's card re-homes the task. */
       let g=null,beforeId=null;
@@ -1060,6 +1078,7 @@ function bindRowGestures(){
     wrap.addEventListener("pointerdown",e=>{
       if(e.button&&e.button!==0)return;
       sx=e.clientX;sy=e.clientY;mode="";pid=e.pointerId;
+      swipeX=0;swipeDir=0;swipeArmed=false;
       row.classList.add("swiping");
       lp=setTimeout(()=>{if(mode==="")startDrag();},420);
     });
@@ -1070,24 +1089,23 @@ function bindRowGestures(){
         else if(Math.abs(dy)>10){mode="scroll";clearTimeout(lp);row.classList.remove("swiping");}
       }
       if(mode==="swipe"){e.preventDefault();
-        const c=Math.max(-118,Math.min(118,dx));
-        row.style.transform=`translateX(${c}px)`;
-        wrap.classList.toggle("sw-r",c>14);wrap.classList.toggle("sw-l",c<-14);
-        wrap.classList.toggle("armed",Math.abs(c)>=ACT);
-      }else if(mode==="drag"){e.preventDefault();dragMove(e);}
+        swipeX=Math.max(-118,Math.min(118,dx));queuePaint();
+      }else if(mode==="drag"){e.preventDefault();dragX=e.clientX;dragY=e.clientY;queuePaint();}
     });
     const finish=e=>{
       clearTimeout(lp);
       if(mode==="swipe"){
-        const dx=(e.clientX||sx)-sx;
+        const dx=((e&&e.clientX!=null)?e.clientX:sx)-sx;
+        clearPaint();
         row.classList.remove("swiping");row.style.transform="";
         wrap.classList.remove("sw-r","sw-l","armed");
+        swipeX=0;swipeDir=0;swipeArmed=false;
         suppressClick=true;setTimeout(()=>suppressClick=false,320);
         const id=wrap.dataset.rid;
         if(dx>ACT){const t=state.tasks.find(x=>x.id===id);if(t)setTimeout(()=>editSheet(t),140);}
         else if(dx<-ACT)setTimeout(()=>mDeleteWithUndo(id),140);
       }else if(mode==="drag")endDrag(e);
-      else row.classList.remove("swiping");
+      else{clearPaint();row.classList.remove("swiping");}
       mode="";
     };
     wrap.addEventListener("pointerup",finish);

@@ -81,7 +81,10 @@ There are **two deliverables**:
   horizontal ≥10px → swipe (right = edit, left = delete, 78px commit threshold);
   420ms stationary hold → drag reorder (elevate + neighbours shift). `suppressClick` blocks the
   toggle after any gesture. A non-passive `touchmove` blocker prevents mobile Safari stealing the
-  gesture as a scroll. Do NOT re-add a `lostpointercapture` handler — it ends drags prematurely.
+  gesture as a scroll. Pointer moves only store the latest position; one `requestAnimationFrame`
+  paints the swipe/drag via `translate3d`, and direction/armed classes change only across their
+  thresholds. Do not put per-event DOM writes back in this hot path. Do NOT re-add a
+  `lostpointercapture` handler — it ends drags prematurely.
 - **Drop resolution:** `endDrag` hides the dragged row from hit-testing, `elementFromPoint`s the
   drop, finds `.card[data-group]` → `dropTask(id, group, beforeId)` re-homes the task's category
   and re-flows all `sort_index`. Same-card drops fall back to `commitReorder`.
