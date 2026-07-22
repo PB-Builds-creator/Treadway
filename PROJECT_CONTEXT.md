@@ -93,6 +93,10 @@ There are **two deliverables**:
 - **Completion motion is deliberately causal:** `mSetStatus` captures rows, renders the new
   state, starts FLIP, then lets the ring sweep follow 90ms later. Ring/streak/hydration previous
   values live in globals because their DOM nodes do not survive `render()`.
+- **Today is organized as a single daily ritual:** `.daystone` owns date/status/progress/streak/
+  water/rest hierarchy; `.pathsection` presents remaining tasks as one marked path; hydration is
+  a compact daily rhythm and the synced note is elevated into a real reflection ritual. This is
+  presentation only—task order, mutations, recurrence, streaks, and storage are unchanged.
 
 ## Rules (product)
 - New members ALWAYS start with a blank task list, then a spotlight product tour (`runTour`) that drives the real app. No

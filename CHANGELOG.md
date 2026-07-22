@@ -3,6 +3,13 @@
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
 ## 2026-07-22
+- **Today command-center redesign:** replaced the scattered header/summary/chips with one unified
+  "day stone" that clearly orders date + sync, progress, daily message, completion/streak/water
+  metrics, and rest/save controls. Remaining task groups now read as a continuous marked path;
+  hydration is a compact daily rhythm; partner status is a quiet signal; completed work is a
+  placed-stones ledger; the synced note is now a deliberate reflection ritual; and the tab bar is
+  a floating piece of persistent app chrome. Existing mutations, ordering, offline sync, gestures,
+  tour selectors, and reduced-motion guarantees are preserved.
 - **Flagship motion pass, phase 1:** added a sub-900ms, tap-to-skip cold launch ritual whose five
   weighted stones settle into a cairn while data loads behind it; when Today is ready in time,
   the stack travels into the progress ring as a shared element. The tutorial spotlight now

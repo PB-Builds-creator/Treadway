@@ -56,3 +56,8 @@ _Last updated: 2026-07-22. Brief rationale for choices that aren't obvious from 
 - **Navigation has restrained spatial logic.** Today → Week → History → Settings moves left;
   the reverse moves right, and the tab indicator travels from its remembered prior index. Task
   completion leads the row FLIP, then the ring follows, so the two effects read as cause/effect.
+
+- **Today reads top-down as context → state → action → reflection.** The previous independent
+  date, progress, streak, rest, and hydration widgets made the top feel scattered. They now share
+  one hierarchy inside a "day stone"; task groups form a continuous path beneath it, and the
+  existing synced note becomes the closing journal ritual. No behavioral or data-model changes.

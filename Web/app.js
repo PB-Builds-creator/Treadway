@@ -753,39 +753,47 @@ function animateHydration(){
 function todayView(){
   const t=todayStr(),{done,total,frac}=dayFraction(t),pct=Math.round(frac*100),streak=currentStreak();
   const rest=isRestDay(t);
-  const summary=total===0?"Nothing scheduled today.":done===total?"All done for today.":frac>=.75?`Almost there — ${total-done} to go.`:frac>=.4?`Good progress — ${total-done} remaining.`:`${total-done} to complete today.`;
+  const summary=total===0?"The day is open.":done===total?"The path is clear.":frac>=.75?"Close the loop.":frac>=.4?"The day is taking shape.":"Set the first stone.";
   const due=dueTasks(t);rowStagger=0;
   const doneItems=due.filter(x=>statusOf(t,x.id)==="done");
   const pending=due.filter(x=>statusOf(t,x.id)!=="done");
-  let groups="";
+  const water=hydOz(t),waterPct=Math.min(100,Math.round(water/state.goalOz*100));
+  const keys=due.filter(x=>x.keystone),allDone=due.length&&due.every(x=>statusOf(t,x.id)==="done");
+  const coreDone=keys.length&&!allDone&&keys.every(x=>statusOf(t,x.id)==="done");
+  let groups="",gi=0;
   for(const g of GROUPS){const items=pending.filter(x=>x.group===g.k).sort(bySort);if(!items.length)continue;
-    groups+=`<div class="grouphead">${g.t}<span class="n">${items.length}</span></div><div class="card" data-group="${g.k}">${items.map(rowHtml).join("")}</div>`;}
+    groups+=`<div class="pathgroup" style="--group-i:${gi++}"><div class="grouphead"><span class="pathnode"></span><span class="ghname">${g.t}</span><span class="n">${items.length} ${items.length===1?"marker":"markers"}</span></div><div class="card pathcard" data-group="${g.k}">${items.map(rowHtml).join("")}</div></div>`;}
   const hyTask=due.find(x=>x.hydration);
-  const completed=doneItems.length?`<div class="grouphead">Completed<span class="n">${doneItems.length}</span></div><div class="card">${doneItems.sort(bySort).map(rowHtml).join("")}</div>`:"";
+  const completed=doneItems.length?`<section class="completedblock"><div class="sectionhead compact"><div><span>Placed today</span><h3>${doneItems.length} ${doneItems.length===1?"stone":"stones"}</h3></div><span class="sectioncount">${done}/${total}</span></div><div class="card completedcard">${doneItems.sort(bySort).map(rowHtml).join("")}</div></section>`:"";
   const av=(state.name||"?").trim().charAt(0).toUpperCase();
-  return `<div class="topbar">
-    <div><div class="date">${prettyDate(t)}</div>
-      <div class="tzrow"><span class="dot"></span>Mountain Time · ${tzAbbr()} · <span id="syncdot" class="syncdot${syncOn?"":" off"}"></span>${syncOn?"Synced":"Offline"}</div></div>
-    <div style="display:flex;gap:8px;align-items:center">
+  return `<section class="daystone ${rest?"resting":""} ${allDone?"complete":""}">
+    <div class="daytop"><div class="daytitle"><span class="daylabel">Today</span><h1>${prettyDate(t)}</h1>
+      <div class="daystatus"><span id="syncdot" class="syncdot${syncOn?"":" off"}"></span>${syncOn?"Synced":"Offline"}<i></i>Mountain · ${tzAbbr()}</div></div>
+    <div class="dayactions">
       <button class="addbtn" data-act="add-task" aria-label="Add task">＋</button>
-      <button class="who" data-act="go-settings"><span class="av">${av}</span>${escapeHtml(state.name)}</button>
+      <button class="who" data-act="go-settings" aria-label="Open settings for ${escapeAttr(state.name)}"><span class="av">${av}</span></button>
+    </div></div>
+    <div class="daycore"><div class="ring" data-pct="${rest?0:pct}" data-rest="${rest?1:0}" style="--v:${rest?0:ringLast}"><div class="lbl"><b>${rest?'🌙':ringLast+'%'}</b><span>${rest?'rest':'placed'}</span></div></div>
+      <div class="daymessage"><span>${rest?"REST DAY":allDone?"DAY HELD":total===0?"OPEN DAY":"TODAY'S PATH"}</span><h2>${rest?"Rest without losing ground.":summary}</h2>
+        <p>${rest?"Your streak stays protected.":total?`${done} of ${total} markers placed.`:"Add one thing worth keeping."}</p></div></div>
+    <div class="daystats">
+      <div class="daystat ${justCompletedId?"changed":""}"><span>Progress</span><strong>${done}<small> / ${total}</small></strong></div>
+      <div class="daystat"><span>Streak</span><strong><b class="streaknum" data-streak="${streak}">${streak}</b><small> days</small></strong></div>
+      <div class="daystat"><span>Water</span><strong>${waterPct}<small>%</small></strong></div>
     </div>
-  </div>
-  <div class="summary"><div class="ring" data-pct="${rest?0:pct}" data-rest="${rest?1:0}" style="--v:${rest?0:ringLast}"><div class="lbl"><b>${rest?'🌙':ringLast+'%'}</b><span>${rest?'rest':'done'}</span></div></div>
-    <div class="sumtext"><h2>${rest?"Resting today.":summary}</h2>
-      <p>${rest?"Your streak is protected — no pressure.":`${done} completed · ${total-done} remaining`}</p>
-      <div class="chips" style="margin-top:9px">
-        ${streak>0?`<span class="streakchip">🔥 <b class="streaknum" data-streak="${streak}">${streak}</b>-day streak</span>`:""}
-        ${(()=>{const due=dueTasks(t),keys=due.filter(x=>x.keystone);const allDone=due.length&&due.every(x=>statusOf(t,x.id)==="done");return (keys.length&&!allDone&&keys.every(x=>statusOf(t,x.id)==="done"))?'<span class="streakchip">✓ Core done</span>':"";})()}
-        <button class="restbtn ${rest?'on':''}" data-act="restday">${rest?'🌙 Resting — tap to resume':'Rest day'}</button>
-        ${canSaveStreak()?`<button class="restbtn savebtn" data-act="savestreak">💾 Save streak</button>`:""}
-      </div></div></div>
+    <div class="daycontrols"><button class="restcontrol ${rest?'on':''}" data-act="restday"><span class="restmoon">${rest?'☀':'◐'}</span><span><b>${rest?'Resume today':'Rest day'}</b><small>${rest?'Return to the path':'Protect the streak'}</small></span></button>
+      ${coreDone?'<span class="corebadge"><i>✓</i> Core held</span>':""}
+      ${canSaveStreak()?`<button class="savecontrol" data-act="savestreak">Save streak</button>`:""}
+    </div>
+  </section>
   ${partnerCard()}
-  ${hyTask?`<div class="grouphead">Hydration</div>${hydCard()}`:""}
-  ${groups||(total===0?emptyToday():"")}
+  ${hyTask?`<section class="rhythmblock">${hydCard()}</section>`:""}
+  <section class="pathsection"><div class="sectionhead"><div><span>The path</span><h3>${pending.length?`${pending.length} ${pending.length===1?"marker remains":"markers remain"}`:"Nothing left unfinished"}</h3></div><span class="sectioncount">${pct}%</span></div>
+    ${groups||(total===0?emptyToday():'<div class="pathclear"><span>✓</span><div><b>The path is clear.</b><small>Everything asked of today is held.</small></div></div>')}
+  </section>
   ${completed}
   ${noteCard()}
-  <div style="height:8px"></div>`;
+  <div class="todayfoot">${ICON.cairn}<span>Little by little is how it holds.</span></div>`;
 }
 function emptyToday(){
   const starters=[["Drink water","drop",1],["Workout","dumbbell",0],["Read","book",0],["Sleep","moon",0],["Pray","hands",0]];
@@ -808,10 +816,10 @@ function rowHtml(t){const done=statusOf(todayStr(),t.id)==="done",ri=rowStagger+
     ${t.appUrl?`<button class="openapp" data-act="openapp" data-url="${escapeAttr(t.appUrl)}" aria-label="Open app">↗</button>`:""}
     ${t.pri&&!done?'<span class="pri">!</span>':""}<div class="rowsym">${symChar(t.sym)}</div></div></div>`;}
 function hydCard(){const o=hydOz(todayStr()),g=state.goalOz,pct=Math.min(100,Math.round(o/g*100));
-  return `<div class="hyd ${waterPulse?"pour":""}" data-pct="${pct}"><div class="top"><span>💧 ${o} / ${g} oz</span><span class="pct">${pct}%</span></div>
+  return `<div class="hyd ${waterPulse?"pour":""}" data-pct="${pct}"><div class="hydhead"><span class="hydicon">💧</span><div><span>Daily rhythm</span><b>Hydration</b></div><div class="hydtotal"><strong>${o}</strong><small> / ${g} oz</small></div></div>
     <div class="bar"><i></i><em></em></div>
-    <div class="adds">${[8,16,20,24].map(n=>`<button data-act="water" data-oz="${n}">+${n}</button>`).join("")}
-    <button class="more" data-act="water-custom">＋</button></div></div>`;}
+    <div class="hydfoot"><span>${pct>=100?"Goal held.":`${Math.max(0,g-o)} oz remain`}</span><div class="adds">${[8,16,20,24].map(n=>`<button data-act="water" data-oz="${n}">+${n}</button>`).join("")}
+    <button class="more" data-act="water-custom">＋</button></div></div></div>`;}
 
 /* ---------- Grace + couple helpers ---------- */
 function toggleRestDay(){
@@ -832,20 +840,19 @@ function partnerCard(){
   if(!ps||ps.total===0)line="No update yet today";
   else if(ps.all_done)line="Finished their day 🎉";
   else line=`${ps.done} of ${ps.total} done today`;
-  return `<div class="grouphead">Together</div>
-    <div class="partnercard"><span class="pav">${av}</span>
-      <div class="pmain"><b>${name}</b><span>${line}</span></div><span class="pheart">💞</span></div>`;
+  return `<div class="partnercard"><span class="pav">${av}</span>
+      <div class="pmain"><span>Together</span><b>${name}</b><small>${line}</small></div><span class="pheart">♥</span></div>`;
 }
 
 function noteCard(){
   const n=noteFor(todayStr());
-  return `<div class="grouphead">Note</div>
-    <div class="notecard tap" data-act="editnote">${n?escapeHtml(n):'<span class="ph">Add a reflection for today…</span>'}</div>`;
+  return `<section class="journalblock"><div class="sectionhead"><div><span>Daily reflection</span><h3>What held today together?</h3></div><span class="journalmark">✎</span></div>
+    <div class="notecard tap ${n?"written":""}" data-act="editnote"><span class="journalentry">${n?escapeHtml(n):'<span class="ph">Leave one honest line about the day.</span>'}</span><span class="journalcta">${n?"Edit reflection":"Write today’s line"} <i>›</i></span></div></section>`;
 }
 function editNoteSheet(){
   const t=todayStr(),cur=noteFor(t);
-  const s=openSheet(`<h3>${prettyDate(t)}</h3>
-    <div class="field"><label>Reflection / journal</label>
+  const s=openSheet(`<span class="sheeteyebrow">Daily reflection</span><h3>${prettyDate(t)}</h3>
+    <div class="field"><label>What held today together?</label>
       <textarea id="n-txt" rows="5">${escapeHtml(cur)}</textarea></div>
     <button class="btn" id="n-save">Save</button>`);
   s.bg.querySelector("#n-save").onclick=()=>{setNote(t,s.bg.querySelector("#n-txt").value.trim());s.close();};
