@@ -642,7 +642,7 @@ function runTour(){
   ov.innerHTML='<div class="tourbackdrop" id="tourbd"></div><div class="tourspot" id="tourspot"></div><div class="tourcap" id="tourcap"></div>';
   document.body.appendChild(ov);
   const spot=ov.querySelector("#tourspot"),cap=ov.querySelector("#tourcap"),bd=ov.querySelector("#tourbd");
-  let focused=null;spot.style.cssText="left:50%;top:50%;width:0;height:0";
+  let focused=null,spotRect=null,capTop=null;spot.style.cssText="left:50%;top:50%;width:0;height:0";
   function finish(){if(focused)focused.classList.remove("tourfocus");ov.remove();tab="today";render();}
   function show(){
     if(focused)focused.classList.remove("tourfocus");focused=null;
@@ -657,8 +657,12 @@ function runTour(){
     let r=null;
     if(el){r=el.getBoundingClientRect();const p=8;
       spot.style.opacity="1";bd.classList.remove("on");                    // crisp spotlight step
-      spot.style.left=(r.left-p)+"px";spot.style.top=(r.top-p)+"px";
-      spot.style.width=(r.width+p*2)+"px";spot.style.height=(r.height+p*2)+"px";
+      const next={left:r.left-p,top:r.top-p,width:r.width+p*2,height:r.height+p*2};
+      spot.style.left=next.left+"px";spot.style.top=next.top+"px";spot.style.width=next.width+"px";spot.style.height=next.height+"px";
+      if(spotRect&&!prefersReduce())spot.animate([
+        {transform:`translate(${spotRect.left-next.left}px,${spotRect.top-next.top}px) scale(${spotRect.width/next.width},${spotRect.height/next.height})`},
+        {transform:"none"}],{duration:400,easing:"cubic-bezier(.25,.8,.2,1)"});
+      spotRect=next;
       el.classList.add("tourfocus");focused=el;
     }else{spot.style.opacity="0";bd.classList.add("on");}                  // caption-only: blur the app behind
     const final=i===steps.length-1;
@@ -671,8 +675,9 @@ function runTour(){
     const capH=cap.offsetHeight,vh=window.innerHeight;let top;
     if(!el)top=Math.max(16,(vh-capH)/2);
     else{top=r.bottom+14;if(top+capH>vh-14)top=r.top-capH-14;if(top<14)top=14;}
-    cap.style.top=top+"px";
-    cap.className="tourcap pop"+(i===0?" welcome":"")+(final?" final":"");
+    const oldTop=capTop;capTop=top;cap.style.top=top+"px";
+    cap.className="tourcap"+(oldTop===null?" pop":"")+(i===0?" welcome":"")+(final?" final":"");
+    if(oldTop!==null&&!prefersReduce())cap.animate([{transform:`translateY(${oldTop-top}px)`,opacity:.72},{transform:"none",opacity:1}],{duration:320,easing:"cubic-bezier(.22,.7,.3,1)"});
     cap.querySelector("#tc-next").onclick=()=>{ if(i<steps.length-1){i++;show();} else finish(); };
     cap.querySelector("#tc-skip").onclick=finish;
     const bk=cap.querySelector("#tc-back");if(bk)bk.onclick=()=>{i--;show();};
@@ -1211,7 +1216,7 @@ function openSheet(html){
   grab.addEventListener("pointercancel",endDrag);
   /* A restrained top-edge pull gives scroll sheets native-feeling resistance. */
   let pullY=0,pulling=false;
-  sheet.addEventListener("touchstart",e=>{if(sheet.scrollTop<=0&&e.touches.length===1){pullY=e.touches[0].clientY;pulling=true;}},{passive:true});
+  sheet.addEventListener("touchstart",e=>{if(!prefersReduce()&&sheet.scrollTop<=0&&e.touches.length===1){pullY=e.touches[0].clientY;pulling=true;}},{passive:true});
   sheet.addEventListener("touchmove",e=>{if(!pulling||sheet.scrollTop>0)return;const dy=e.touches[0].clientY-pullY;if(dy<=0)return;
     if(e.cancelable)e.preventDefault();const y=Math.min(28,Math.pow(dy,.72));sheet.style.transition="none";sheet.style.transform=`translateY(${y}px)`;
     bg.style.opacity=String(Math.max(.88,1-y/240));},{passive:false});

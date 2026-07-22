@@ -15,6 +15,11 @@ _Concise milestone log, newest first. Keep to meaningful milestones._
   glint and add-water ripple. Lists enter in 30ms row staggers; tabs transition directionally
   with a traveling indicator; drag lift grows its shadow and haptics on drop; toasts rise from
   the bottom edge; empty states breathe; and sheet scroll tops gain resisted rubber-banding.
+  The direct-manipulation sheet path is also explicitly bypassed under reduced motion.
+  Browser QA at 375×812 verified the stagger delays, ring target/odometer, milestone class,
+  hydration transform/ripple, both tab directions, spotlight target pulse and transform-only
+  travel, 14 progress dots, final five-stone bookend, launch timeout, and tap-to-skip; no console
+  warnings/errors. True touch feel and 60fps remain real-iPhone checks.
 - **Project put under git** (local repo, no remote). Baseline `9f7f24b`, 92 files. `.gitignore`
   extended to exclude secrets (`*KEEP-SECRET*`, `.env*`, `*.pem`) on top of the existing build
   artifact rules; verified the VAPID/CRON secret file is untracked. Rollback path now exists for

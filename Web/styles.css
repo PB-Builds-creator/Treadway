@@ -327,8 +327,8 @@
 .tut-hint{font-size:13.5px;color:var(--faint);border-left:2px solid var(--accent);padding-left:12px;margin-top:2px}
 .tut-foot{display:flex;flex-direction:column;gap:10px}
 .tut-dots{display:flex;gap:7px;justify-content:center;margin-bottom:4px}
-.tut-dots i{width:7px;height:7px;border-radius:50%;background:var(--line);transition:.2s}
-.tut-dots i.on{background:var(--accent);width:20px;border-radius:4px}
+.tut-dots i{width:7px;height:7px;border-radius:50%;background:var(--line);transition:transform .2s ease,background .2s ease}
+.tut-dots i.on{background:var(--accent);transform:scaleX(2.8);border-radius:4px}
 .tut .btn{width:100%}
 .tut .swap{align-self:center}
 .addbtn{width:32px;height:32px;border-radius:50%;background:var(--surface);border:1px solid var(--line);
@@ -338,10 +338,10 @@
 /* ============ Spotlight product tour ============ */
 .tourwrap{position:fixed;inset:0;z-index:200;pointer-events:auto}
 .tourspot{position:fixed;border-radius:14px;border:2px solid #fff;pointer-events:none;opacity:0;
-  box-shadow:0 0 0 9999px rgba(6,8,6,.64);transition:left .4s cubic-bezier(.25,.8,.2,1),top .4s cubic-bezier(.25,.8,.2,1),width .4s cubic-bezier(.25,.8,.2,1),height .4s cubic-bezier(.25,.8,.2,1),opacity .2s ease}
+  box-shadow:0 0 0 9999px rgba(6,8,6,.64);transform-origin:top left;transition:opacity .2s ease}
 .tourcap{position:fixed;left:16px;right:16px;max-width:436px;margin:0 auto;background:var(--surface);
   border:1px solid var(--line);border-radius:16px;padding:15px 16px 12px;box-shadow:0 12px 44px rgba(0,0,0,.34);
-  pointer-events:auto;transition:top .3s ease}
+  pointer-events:auto}
 .tourcap .tc-num{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:700}
 .tourcap .tc-title{font-size:18px;font-weight:640;letter-spacing:-.01em;margin-top:5px}
 .tourcap .tc-body{font-size:14.5px;color:var(--muted);line-height:1.5;margin-top:4px}
@@ -392,7 +392,7 @@
 .row.tap{transition:background .16s ease}
 .row.tap:active{background:var(--surface-2)}
 .tab{transition:color .2s ease}
-.tab svg{transition:transform .24s cubic-bezier(.34,1.3,.5,1)}
+.tab svg{transition:transform .24s cubic-bezier(.2,.8,.25,1)}
 .tab.on svg{transform:scale(1.12) translateY(-1px)}
 .tab:active svg{transform:scale(.88)}
 .setrow .r{transition:transform .16s ease}
@@ -422,8 +422,8 @@
 /* ================= "To gold" micro-animations ================= */
 /* Task complete: check pops, mark draws in, a ring ripples out */
 .check{position:relative}
-.row.justdone .check{animation:checkpop .42s cubic-bezier(.2,1.35,.35,1)}
-@keyframes checkpop{0%{transform:scale(.55)}55%{transform:scale(1.2)}100%{transform:scale(1)}}
+.row.justdone .check{animation:checkpop .42s cubic-bezier(.18,.75,.2,1)}
+@keyframes checkpop{0%{transform:scale(.55)}78%{transform:scale(1.025)}100%{transform:scale(1)}}
 .row.justdone .check svg path{stroke-dasharray:26;animation:checkdraw .34s .05s both cubic-bezier(.6,0,.35,1)}
 @keyframes checkdraw{from{stroke-dashoffset:26}to{stroke-dashoffset:0}}
 .row.justdone .check::after{content:"";position:absolute;inset:-3px;border-radius:50%;border:2px solid var(--good);
@@ -437,7 +437,7 @@
 @keyframes rowin{from{opacity:0;transform:translateY(-9px) scale(.98)}to{opacity:1;transform:none}}
 
 /* Add-task ＋ button: spins as it presses */
-.addbtn{transition:transform .22s cubic-bezier(.3,1.5,.5,1),background .2s,border-color .2s}
+.addbtn{transition:transform .22s cubic-bezier(.2,.8,.25,1),background .2s,border-color .2s}
 .addbtn:active{transform:scale(.86) rotate(90deg)}
 @media(hover:hover){.addbtn:hover{border-color:var(--accent);color:var(--accent)}}
 
@@ -445,8 +445,8 @@
 .ring{transition:none}
 .ring.complete{animation:ringpulse .85s ease}
 .ring.milestone{animation:ringmark .58s ease}
-@keyframes ringmark{0%,100%{filter:none;transform:scale(1)}42%{filter:drop-shadow(0 0 7px var(--accent));transform:scale(1.025)}}
-@keyframes ringpulse{0%{filter:none;transform:scale(1)}28%{filter:drop-shadow(0 0 13px #b99654);transform:scale(1.045)}100%{filter:none;transform:scale(1)}}
+@keyframes ringmark{0%,100%{transform:scale(1)}42%{transform:scale(1.025)}}
+@keyframes ringpulse{0%,100%{transform:scale(1)}28%{transform:scale(1.045)}}
 .ring .lbl b{transition:color .3s ease}
 .streaknum{display:inline-grid;overflow:hidden;height:1.05em;min-width:1ch;vertical-align:-.13em;font-variant-numeric:tabular-nums}
 .streaknum i{grid-area:1/1;font-style:normal;line-height:1}
@@ -464,7 +464,7 @@
   100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.35);opacity:0}}
 
 /* Hydration add: buttons spring a touch harder */
-.adds button{transition:transform .13s cubic-bezier(.3,1.4,.5,1),background .18s}
+.adds button{transition:transform .13s cubic-bezier(.2,.8,.25,1),background .18s}
 .adds button:active{transform:scale(.9)}
 
 /* ============ Swipe actions + hold-to-drag reorder ============ */
@@ -474,7 +474,7 @@
 .rowwrap:last-child{border-radius:0 0 var(--radius) var(--radius)}
 .rowacts{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:0}
 .ract{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;color:#fff;
-  opacity:0;transform:scale(.6);transition:opacity .16s ease,transform .22s cubic-bezier(.3,1.4,.5,1)}
+  opacity:0;transform:scale(.6);transition:opacity .16s ease,transform .22s cubic-bezier(.2,.8,.25,1)}
 .ract svg{width:19px;height:19px}
 .ract.edit{background:#3b7dd8}
 .ract.del{background:#c9453c}
@@ -486,8 +486,10 @@
 .rowwrap .row.swiping{transition:background .16s ease}
 .rowwrap.dragging{overflow:visible;z-index:6;transition:none}
 .rowwrap.dragging .row{transform:scale(1.035);border-radius:13px;
-  box-shadow:0 16px 38px rgba(0,0,0,.32);animation:rowlift .2s cubic-bezier(.2,.75,.25,1);transition:box-shadow .18s ease}
-@keyframes rowlift{from{transform:scale(.995);box-shadow:0 2px 5px rgba(0,0,0,.08)}to{transform:scale(1.035);box-shadow:0 16px 38px rgba(0,0,0,.32)}}
+  animation:rowlift .2s cubic-bezier(.2,.75,.25,1)}
+.rowwrap.dragging .row::after{content:"";position:absolute;inset:0;border-radius:13px;box-shadow:0 16px 38px rgba(0,0,0,.32);pointer-events:none;z-index:-1;animation:shadowlift .2s cubic-bezier(.2,.75,.25,1)}
+@keyframes rowlift{from{transform:scale(.995)}to{transform:scale(1.035)}}
+@keyframes shadowlift{from{opacity:.15;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 .rowwrap.shiftable{transition:transform .22s cubic-bezier(.2,.85,.3,1)}
 .card{overflow:visible}
 .sheet-bg{animation:fadein .2s ease}
@@ -501,9 +503,9 @@ body.sheet-open .scroll{overflow:hidden}
 .grab{width:66px;height:28px;margin:0 auto 8px;display:grid;place-items:center;
   background:none;border-radius:0;cursor:grab;touch-action:none}
 .grab::before{content:"";display:block;width:38px;height:5px;border-radius:99px;background:var(--line);
-  transition:background .18s ease,width .18s ease}
+  transition:transform .18s ease}
 .grab:active{cursor:grabbing}
-.grab:active::before{background:var(--faint);width:46px}
+.grab:active::before{background:var(--faint);transform:scaleX(1.21)}
 
 /* ============ No text-selection / callout on interactive chrome ============ */
 #app{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
