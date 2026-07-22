@@ -1313,7 +1313,7 @@ function privacySheet(){
       <div><i>◆</i><span><b>Partner sharing stays narrow.</b><small>Name, daily counts, and a fixed Proud nudge only. Never tasks or journal text.</small></span></div>
       <div><i>◆</i><span><b>Honest limitation.</b><small>Your journal is access-controlled and sent over HTTPS, but it is not end-to-end encrypted.</small></span></div></div>
     <button class="btn ghost" id="dp-export">Download my data</button><button class="btn ghost" id="dp-password">Change password</button>
-    <button class="swap privacylink" id="dp-policy">Read the privacy overview</button>
+    <button class="swap privacylink" id="dp-policy">Read the privacy policy</button>
     <div class="dangerzone"><span>Danger zone</span><p>Deleting your account permanently removes its profile, tasks, history, hydration, and reflections.</p>
       <button class="btn danger" id="dp-delete">Delete account</button></div>`);
   s.bg.querySelector("#dp-export").onclick=exportData;

@@ -16,25 +16,19 @@ Everything below is verified with synthetic pointer events in a desktop browser 
 7. **Today daily-ritual shell + Cairn Close** — verify hero density, internal scrolling,
    floating-tab safe-area placement/auto-hide, one-shot seal motion, and Close-sheet feel in both
    Light and OLED on the iPhone 17.
-8. **Two-phone Proud nudge** — after the product SQL is active, confirm send-once behavior, quiet
-   hours, lock-screen copy, received state, and reciprocal unlink using both real accounts.
+8. **Two-phone Proud nudge** — the live server link/send-once/unlink rules passed with isolated
+   disposable accounts. When her phone is available, confirm quiet hours, lock-screen copy,
+   received state, and reciprocal unlink in both real PWAs.
 If a gesture fails, the likely culprit is touch-scroll stealing the gesture — see the
 non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action` on `.rowwrap`.
 
-## Blocked / waiting on the user
-- Run only `cairn-product-upgrade.sql`; `access-hub.sql` is retired. Then verify the
-  owner admin, a pending throwaway signup, mutual partner nudge, and reciprocal unlink.
-- Rotate the historically tracked VAPID key pair and `CRON_SECRET`: update the Edge secrets,
-  replace `VAPID_PUBLIC_KEY` in `Web/config.js` with the new public key and redeploy, then
-  reschedule the cron invocation with the new cron value entered only in Supabase SQL Editor.
-  Both phones must turn Reminders off/on afterward so their subscriptions use the new VAPID key.
-  Tracked files deliberately contain no private values.
-- Password recovery requires the Supabase Auth Site URL and redirect allowlist to include
-  `https://cairn.surge.sh`.
-- Before a public paid launch, replace the explicitly early-access privacy overview with a formal
-  policy containing the operator identity, public support contact, effective terms, and notice
-  process.
-- **Her phone unavailable** → real two-phone nudge, couple, and push behavior remains untested.
+## Blocked / waiting on a phone
+- **Paxton's phone:** after this deployment, open Cairn → Settings → Reminders, turn reminders
+  off, then back on and allow notifications. This replaces the old push subscription with one
+  signed by the rotated public VAPID key.
+- **Her phone, whenever available:** do the same reminders off/on cycle, then complete the
+  real two-phone Proud nudge/quiet-hours/lock-screen test above. This is device QA only; the live
+  reciprocal link, once-daily nudge, and unlink authorization already passed server-side.
 
 ## Next features (not yet built)
 1. Dropping into an **empty/absent category** isn't possible (groups only render when they have

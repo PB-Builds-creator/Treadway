@@ -67,10 +67,11 @@ _Last updated: 2026-07-22. Brief rationale for choices that aren't obvious from 
   cached view offline, while server RLS still rejects any no-longer-approved remote access.
   Migration reruns never promote pending users; only the known owner is force-restored as admin.
 
-- **Current privacy copy is explicitly early access.** It accurately names the main processors,
-  sharing boundary, local cache, non-E2E limitation, and account controls without pretending a
-  public commercial policy exists. Operator identity, support contact, formal terms, and notice
-  process are required before a public paid launch.
+- **The public privacy page is the formal launch policy.** It names Paxton Raithel as the Colorado
+  operator and `paxtonraithel@gmail.com` as the support/privacy contact, and covers scope, data
+  categories, purposes, narrow partner sharing, Supabase/Surge/push providers, retention,
+  security and non-E2E limits, user requests/appeals, children, processing locations, and a
+  material-change notice process. Do not regress it to vague “early access” copy before billing.
 
 - **Themes: accent syncs (identity), light/dark/oled is device-local (preference).** Accent
   lives in the profile; theme in localStorage.

@@ -3,21 +3,32 @@
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
 ## 2026-07-22
+- **Production activation, secret rotation, and public privacy policy:** applied
+  `cairn-product-upgrade.sql` to the live Supabase project; rotated the VAPID key pair and
+  CRON_SECRET together; updated all related Edge secrets; recreated the five-minute reminder
+  schedule without writing the real secret into tracked SQL; and confirmed the new-secret probe
+  succeeds. Auth signups, confirmation, Site URL, and redirect were verified. A live isolated
+  suite confirmed the real owner admin row, pending-user write denial, owner-policy approval,
+  reciprocal linking, narrow profile sharing, one-per-day Proud deduplication, two-sided unlink,
+  and complete test-account cleanup. The web app now carries the rotated public key, a bumped
+  shell cache, and a formal public privacy policy naming the operator/contact and defining data,
+  retention, rights, and material-change notice terms. Only per-phone reminder resubscription and
+  real two-device notification QA remain.
 - **Cairn Close, Weekly Trail, private Proud nudge, and account trust release:** Today now closes
   with a win, honest line, and tomorrow's first stone; yesterday's intention carries forward;
   Week tells a rolling seven-day story with memories and rhythm. Reciprocal partners can send one
   fixed, private Proud signal per Mountain-Time day without sharing tasks, progress details, or
   journal text. Account work adds fail-closed approval/RLS, narrow partner-profile access,
   password recovery/change, complete data export, password-verified deletion (including pending
-  users), and an accurate early-access privacy overview. Independent reviews found and fixed a
+  users), and an accurate privacy overview that was superseded by the formal launch policy.
+  Independent reviews found and fixed a
   first-save Close race, migration-time local-data loss, repeated seal motion, rerun auto-
   approval, relationship probing, broad profile/nudge access, relink overwrite, false delivery,
   and uncertain destructive-action wording. Legacy setup copies were retired and tracked
   credentials removed. Both Edge Functions were deployed and their unauthorized boundaries
   verified; the web release is live, four production asset hashes match local exactly, and live
-  375×812 sign-in/privacy checks have no browser errors or overflow. Product activation still
-  requires the one manual `cairn-product-upgrade.sql` migration plus VAPID/cron credential
-  rotation and reminder resubscription.
+  375×812 sign-in/privacy checks have no browser errors or overflow. The later production-
+  activation entry above completed the database and credential work.
 - **Swipe/drag performance pass:** pointer movement now records only the newest finger position
   and paints at most once per animation frame instead of writing transforms and action classes on
   every raw event. Row and reorder motion use compositor-friendly `translate3d`; swipe direction

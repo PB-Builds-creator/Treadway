@@ -3,7 +3,7 @@
 _Handoff doc. Read this + TODO.md + DECISIONS.md + CHANGELOG.md, then the code._
 _Last updated: 2026-07-22._
 
-## LATEST RELEASE — three web-first product lanes (deployed; SQL activation pending)
+## LATEST RELEASE — three web-first product lanes (activated in production)
 The user explicitly asked to build three sellability upgrades together while postponing all
 native/widget/HealthKit work until they buy the Apple Developer account. The clean checkpoint
 before this pass is `4d6d367` (`Smooth row gestures`); implementation checkpoints are `5923dbd`
@@ -19,7 +19,7 @@ Implemented and visually QA'd at 375×812 in Light/OLED:
   unlink, quiet-hour delivery, and server checks that reveal no tasks/progress/journal content.
 - Hardened approval/RLS, narrow partner-profile RPC, signup-name preservation, password recovery
   and change, full JSON export, password-reauthenticated account deletion (also available to
-  pending/denied users), public early-access privacy overview, and cache/outbox cleanup on every
+  pending/denied users), formal public privacy policy, and cache/outbox cleanup on every
   sign-out path.
 - Canonical product SQL in `cairn-product-upgrade.sql`; obsolete `access-hub.sql` and top-level
   reminder function are inert pointers. Tracked setup docs contain placeholders, not credentials.
@@ -29,12 +29,19 @@ sync before migration, repeated seal animation, legacy notes counted as closed, 
 probing, whole-profile partner reads, rerun auto-approval, relink overwrite, broad nudge grants,
 false delivery on reminder-log errors, pending-user deletion gap, and categorical network-failure
 claims. `send-reminders` and authenticated `delete-account` are deployed; unauthorized probes
-correctly return 403 and 401. The web release is live at `https://cairn.surge.sh`; app.js,
-styles.css, privacy.html, and sw.js production hashes exactly matched local, and live sign-in plus
-privacy passed at 375×812 with no browser logs or horizontal overflow. The user still needs to
-apply `cairn-product-upgrade.sql`, rotate the historically tracked VAPID key pair and CRON_SECRET,
-update/reschedule push delivery, confirm Auth redirects, and perform the real-account/real-iPhone
-checks listed in TODO.md.
+correctly return 403 and 401. On July 22, 2026, `cairn-product-upgrade.sql` was applied to the live
+project, the historically tracked VAPID pair and CRON_SECRET were rotated together, all four Edge
+secrets were updated, the five-minute cron job was recreated with the new secret, and a direct
+function probe returned `ok:true`. Supabase Auth was confirmed to allow signups, require email
+confirmation, and use `https://cairn.surge.sh` as both Site URL and redirect. A disposable-account
+live suite confirmed the real owner is an approved admin, pending users cannot write app data,
+owner-policy approval works, links are reciprocal, Proud nudges dedupe once daily, full partner
+profiles stay private, and unlink removes access from both sides; all test users/rows were then
+deleted. The activation web deploy published the rotated public key, formal privacy policy, and
+shell-cache bump; production copies of app.js, config.js, privacy.html, styles.css, and sw.js
+matched local byte-for-byte, and the live policy had the formal heading with no early-access
+language. The remaining operational step is iPhone reminder resubscription and later two-device
+push/feel QA listed in TODO.md.
 
 ## What this is
 A private daily-discipline / checklist app for Paxton (owner) + his girlfriend, on a
@@ -91,9 +98,10 @@ There are **two deliverables**:
 - **Version control:** local git repo (no remote). Baseline commit `9f7f24b`, 2026-07-22.
   Commit before risky edits; `git diff`/`git checkout -- <file>` is the rollback path for
   `Web/app.js`. Ignored: `.build/` (113M), `Cairn.xcodeproj/` (XcodeGen output), secrets, `.DS_Store`.
-- **SQL migrations** live in `Cairn/*.sql`; run by the user in the Supabase SQL Editor. The one
-  pending migration for this pass is `cairn-product-upgrade.sql`. `access-hub.sql` is retired and
-  must not be run.
+- **SQL migrations** live in `Cairn/*.sql`. `cairn-product-upgrade.sql` is already active in the
+  live project. `access-hub.sql` is retired and must not be run. `cron-schedule.sql` must retain
+  its literal `<CRON_SECRET>` placeholder in git; substitute the real value only in a temporary
+  copy or Supabase SQL Editor.
 
 ## Testing
 - `node --check Web/app.js` for syntax.
@@ -149,7 +157,8 @@ There are **two deliverables**:
 ## People / accounts
 - 2 accounts: owner (Paxton, email `paxtonraithel@gmail.com`) + girlfriend. Owner = admin.
 - PIN app-lock codes (per-device, localStorage, never shown): owner `0930`, gf `0307`.
-- Her phone is NOT available for a few days → couple-layer + her-device reminders untested.
+- Her phone is NOT available for a few days. The live couple/RLS/RPC layer passed with disposable
+  accounts, but her push subscription and the end-to-end two-phone notification remain untested.
 
 ## Conventions
 - Keep app.js dense but readable; match existing terse style. No new dependencies/build tools.

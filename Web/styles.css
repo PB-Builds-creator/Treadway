@@ -682,5 +682,6 @@ body.dragging-row{cursor:grabbing}
 
 .privacy-page{width:100%;padding:34px 22px calc(42px + env(safe-area-inset-bottom));overflow-y:auto}.privacy-back{display:inline-block;color:var(--accent);font-size:12px;font-weight:650;text-decoration:none;margin-bottom:34px}
 .privacy-page h1{margin:4px 0 8px;font-size:30px;line-height:1.08;letter-spacing:-.03em}.privacy-lead{margin:0 0 24px;color:var(--muted);font-family:ui-serif,"New York",Georgia,serif;font-size:17px;line-height:1.5}
-.privacy-page section{padding:16px 0;border-top:1px solid var(--line)}.privacy-page section h2{margin:0 0 6px;font-size:14px;font-weight:700}.privacy-page section p{margin:0;color:var(--muted);font-size:12.5px;line-height:1.6}
-.privacy-date{margin:18px 0 0;color:var(--faint);font-size:10px}
+.privacy-meta{display:flex;flex-direction:column;gap:2px;margin:0 0 24px;color:var(--muted);font-size:10.5px;line-height:1.45}.privacy-meta b{color:var(--ink);font-size:11px}
+.privacy-page section{padding:16px 0;border-top:1px solid var(--line)}.privacy-page section h2{margin:0 0 6px;font-size:14px;font-weight:700}.privacy-page section p{margin:0;color:var(--muted);font-size:12.5px;line-height:1.6}.privacy-page section p+p{margin-top:9px}
+.privacy-page ul{margin:7px 0 9px;padding-left:18px;color:var(--muted);font-size:12.5px;line-height:1.55}.privacy-page li+li{margin-top:6px}.privacy-page li b{color:var(--ink);font-weight:680}.privacy-page section a{color:var(--accent);text-underline-offset:2px}

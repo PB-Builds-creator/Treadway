@@ -2,7 +2,7 @@
    when online, with a cached fallback so the app still opens offline. Supabase
    API calls are never intercepted (they hit the network; offline writes are
    handled by the app's outbox). Bump CACHE to force a clean refresh. */
-const CACHE = "cairn-shell-v3";
+const CACHE = "cairn-shell-v4";
 const SHELL = ["./", "index.html", "privacy.html", "styles.css", "app.js", "config.js", "manifest.webmanifest", "icon-180.png"];
 
 self.addEventListener("install", (e) => {
