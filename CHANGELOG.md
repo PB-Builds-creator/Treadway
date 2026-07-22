@@ -3,6 +3,20 @@
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
 ## 2026-07-22
+- **Cairn Close, Weekly Trail, private Proud nudge, and account trust release:** Today now closes
+  with a win, honest line, and tomorrow's first stone; yesterday's intention carries forward;
+  Week tells a rolling seven-day story with memories and rhythm. Reciprocal partners can send one
+  fixed, private Proud signal per Mountain-Time day without sharing tasks, progress details, or
+  journal text. Account work adds fail-closed approval/RLS, narrow partner-profile access,
+  password recovery/change, complete data export, password-verified deletion (including pending
+  users), and an accurate early-access privacy overview. Independent reviews found and fixed a
+  first-save Close race, migration-time local-data loss, repeated seal motion, rerun auto-
+  approval, relationship probing, broad profile/nudge access, relink overwrite, false delivery,
+  and uncertain destructive-action wording. Legacy setup copies were retired and tracked
+  credentials removed. Both Edge Functions were deployed and their unauthorized boundaries
+  verified; the web release is live, four production asset hashes match local exactly, and live
+  375×812 sign-in/privacy checks have no browser errors or overflow. Product activation still
+  requires the one manual `cairn-product-upgrade.sql` migration and cron-secret rotation.
 - **Swipe/drag performance pass:** pointer movement now records only the newest finger position
   and paints at most once per animation frame instead of writing transforms and action classes on
   every raw event. Row and reorder motion use compositor-friendly `translate3d`; swipe direction
@@ -118,9 +132,9 @@ _Concise milestone log, newest first. Keep to meaningful milestones._
   a code"); a one-time "Add to Home Screen" (Safari) tip shows after setup for non-installed
   users. New flow in `showApp()`: PIN-if-set → first-run set/skip → home-screen tip → app.
   Background re-lock only applies if a code is set.
-- **Access hub / admin gate** (code live; user must run `access-hub.sql` + re-enable signups):
-  owner-only Members screen to approve/deny requests; new users land "pending"; owner + gf
-  auto-approved. RLS + `is_admin()` fn. Re-added "Request access" signup.
+- **Access hub / admin gate** (historical; superseded by `cairn-product-upgrade.sql`): owner-only
+  Members screen to approve/deny requests; new users land pending. The former `access-hub.sql` is
+  retired and must not be run because its old rerun behavior could promote pending applicants.
 - **Appearance & polish:** pure-black OLED theme (`data-theme="oled"`); Appearance picker
   (System/Light/Dark/OLED) persisted; auto-hiding bottom tab bar on scroll; accent palette
   expanded to 12 (added graphite/rose/ocean/olive/mauve/ember).

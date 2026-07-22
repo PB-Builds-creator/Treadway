@@ -3,11 +3,11 @@
 _Handoff doc. Read this + TODO.md + DECISIONS.md + CHANGELOG.md, then the code._
 _Last updated: 2026-07-22._
 
-## ACTIVE WORK — three web-first product lanes (final verification; not deployed yet)
+## LATEST RELEASE — three web-first product lanes (deployed; SQL activation pending)
 The user explicitly asked to build three sellability upgrades together while postponing all
 native/widget/HealthKit work until they buy the Apple Developer account. The clean checkpoint
 before this pass is `4d6d367` (`Smooth row gestures`); implementation checkpoints are `5923dbd`
-and `e92bdc9`. The working tree contains the final review fixes and handoff updates.
+and `e92bdc9`, with reviewed release code at `ff7736d`.
 
 Implemented and visually QA'd at 375×812 in Light/OLED:
 - Cairn Close with a win, honest line, tomorrow's first stone, yesterday carry-forward, legacy
@@ -24,12 +24,16 @@ Implemented and visually QA'd at 375×812 in Light/OLED:
 - Canonical product SQL in `cairn-product-upgrade.sql`; obsolete `access-hub.sql` and top-level
   reminder function are inert pointers. Tracked setup docs contain placeholders, not credentials.
 
-Independent reviews found and this tree fixes: the first-Close insert/update race, false Close
+Independent reviews found and the release fixes: the first-Close insert/update race, false Close
 sync before migration, repeated seal animation, legacy notes counted as closed, arbitrary couple
 probing, whole-profile partner reads, rerun auto-approval, relink overwrite, broad nudge grants,
 false delivery on reminder-log errors, pending-user deletion gap, and categorical network-failure
-claims. Still required: final syntax/diff/static checks, Edge Function deploys, web deploy, live
-hash/shell verification, final docs/commit, and one consolidated SQL/manual checklist.
+claims. `send-reminders` and authenticated `delete-account` are deployed; unauthorized probes
+correctly return 403 and 401. The web release is live at `https://cairn.surge.sh`; app.js,
+styles.css, privacy.html, and sw.js production hashes exactly matched local, and live sign-in plus
+privacy passed at 375×812 with no browser logs or horizontal overflow. The user still needs to
+apply `cairn-product-upgrade.sql`, rotate/reschedule the cron secret, confirm Auth redirects, and
+perform the real-account/real-iPhone checks listed in TODO.md.
 
 ## What this is
 A private daily-discipline / checklist app for Paxton (owner) + his girlfriend, on a
