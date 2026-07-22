@@ -3,6 +3,10 @@
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
 ## 2026-07-22
+- **Project put under git** (local repo, no remote). Baseline `9f7f24b`, 92 files. `.gitignore`
+  extended to exclude secrets (`*KEEP-SECRET*`, `.env*`, `*.pem`) on top of the existing build
+  artifact rules; verified the VAPID/CRON secret file is untracked. Rollback path now exists for
+  `Web/app.js`, which previously had none.
 - **Order is yours now (root cause of "drag doesn't stick"):** Today sorted rows by `byTime`,
   which re-sorted right after every reorder. Now sorts by `sort_index` (`bySort`) — time is
   purely a reminder and never affects position. Verified: a 6am task stays last if you put it last.

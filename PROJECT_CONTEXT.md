@@ -54,7 +54,10 @@ There are **two deliverables**:
 - **Web deploy:** `cd /Users/paxton/Cairn/Web && npx surge . cairn.surge.sh`
 - **Edge fn deploy:** `cd /Users/paxton/Cairn && supabase functions deploy send-reminders --project-ref bckcawaiyybrjsphiqdc --no-verify-jwt --use-api`
 - **Trigger reminder fn (test):** `curl -X POST https://bckcawaiyybrjsphiqdc.supabase.co/functions/v1/send-reminders -H "x-cron-secret: <CRON_SECRET>"` → `{"ok":true,...,"sent":N}`
-- **Secrets (NOT in Web/, never deploy):** `Cairn/vapid-private-KEEP-SECRET.txt` (VAPID public/private, CRON_SECRET).
+- **Secrets (NOT in Web/, never deploy):** `Cairn/vapid-private-KEEP-SECRET.txt` (VAPID public/private, CRON_SECRET). Gitignored via `*KEEP-SECRET*` — keep it that way.
+- **Version control:** local git repo (no remote). Baseline commit `9f7f24b`, 2026-07-22.
+  Commit before risky edits; `git diff`/`git checkout -- <file>` is the rollback path for
+  `Web/app.js`. Ignored: `.build/` (113M), `Cairn.xcodeproj/` (XcodeGen output), secrets, `.DS_Store`.
 - **SQL migrations** live in `Cairn/*.sql`; run by the user in the Supabase SQL Editor. All run
   EXCEPT `access-hub.sql` (see TODO — user must run it + re-enable signups).
 
