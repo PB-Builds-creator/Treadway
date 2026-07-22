@@ -3,6 +3,31 @@
 _Handoff doc. Read this + TODO.md + DECISIONS.md + CHANGELOG.md, then the code._
 _Last updated: 2026-07-22._
 
+## ACTIVE WORK — three web-first product lanes (not deployed yet)
+The user explicitly asked to build three sellability upgrades together while postponing all
+native/widget/HealthKit work until they buy the Apple Developer account. The clean checkpoint
+before this pass is `4d6d367` (`Smooth row gestures`). The working tree currently has an
+**uncommitted first slice in `Web/app.js`**; syntax and diff checks pass.
+
+Already changed in this in-progress slice:
+- Journal state now normalizes old cached string notes and new structured closes. `loadNotes`
+  requests optional `notes.close_data`, falls back to the old columns when the migration is not
+  present, and `setClose` keeps the legacy `text` write separate so reflections still sync.
+- Couple loading now probes today's sent/received `nudges` rows without making the existing
+  partner card depend on the not-yet-created table.
+- Auth now preserves signup names in Supabase user metadata, supports recovery-email password
+  reset, clears account-scoped cache/outbox on sign-out, and verifies access fail-closed except
+  for the specifically detected legacy state where the access table does not exist yet.
+- First run now shows a concise product promise before creating the required blank profile; the
+  spotlight tour is marked complete only when it is actually skipped/finished.
+
+Still required before this pass is complete: build the Cairn Close sheet/card, yesterday's
+carried intention, the Weekly Trail, nudge confirmation/UI/RPC call, mutual unlink, complete data
+export, Data & Privacy/account deletion/password UI, `privacy.html`, the idempotent product SQL
+migration, nudge processing in `send-reminders`, delete-account Edge Function, CSS, browser QA,
+handoff docs, commits, and deploys. Do not deploy the current partial working tree. Keep all SQL
+and user dashboard steps consolidated into the final handoff, as requested.
+
 ## What this is
 A private daily-discipline / checklist app for Paxton (owner) + his girlfriend, on a
 personal-use basis (now with an owner-gated hub so friends can request access).

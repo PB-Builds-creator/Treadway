@@ -2,6 +2,21 @@
 
 _Last updated: 2026-07-22. Brief rationale for choices that aren't obvious from the code._
 
+- **Current sellability work stays web-first.** The user explicitly deferred widgets, HealthKit,
+  and other native-only surfaces until they have the paid Apple Developer account. The active
+  pass therefore combines daily closing/weekly memory, private partner encouragement, and
+  trustworthy web account/data controls on the existing Supabase PWA.
+
+- **Structured closes extend notes instead of replacing them.** Existing `notes.text` remains the
+  compatible honest-line field; optional `notes.close_data` carries versioned win/tomorrow/
+  closed-at metadata. Old cached strings and pre-migration server rows must remain readable, and
+  yesterday's intention is presentation only—never an automatically created or reordered task.
+
+- **Partner encouragement is fixed, private, and server-authorized.** The intended nudge is one
+  reciprocal partner signal per Mountain-Time day with no arbitrary message, task, progress, or
+  journal payload. It must call a direct RPC rather than the offline outbox so an old message can
+  never surprise-send later. Unlinking must clear both sides atomically before this ships.
+
 - **Web app is the primary product, not native.** Native needs $99 Apple Developer for the
   features that matter (widgets, Health) and per-device install friction; the web PWA gives
   sync + logins + reminders + home-screen install for free. Native is a "later" path.

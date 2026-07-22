@@ -2,6 +2,16 @@
 
 _Last updated: 2026-07-22. Keep prioritized; delete done items (they go to CHANGELOG)._
 
+## 🚧 Active pass — do not deploy halfway
+- Build three web-first lanes together: **Cairn Close + Weekly Trail**, **private partner Proud
+  nudge**, and **commercial trust/account controls**. Native widgets and HealthKit are explicitly
+  postponed until an Apple Developer account exists.
+- Current uncommitted `Web/app.js` slice has migration-safe structured-close loading, nudge state
+  probing, safer access/sign-out/password recovery, and first-run promise. See the ACTIVE WORK
+  section at the top of `PROJECT_CONTEXT.md` for the exact remaining checklist.
+- Final delivery must put every SQL/Supabase/manual action in one checklist at the end; do not
+  interrupt the user with piecemeal database instructions.
+
 ## ⚠️ Needs confirmation on a REAL iPhone (dev env has no touch device)
 Everything below is verified with synthetic pointer events in a desktop browser only.
 1. **Hold-to-drag reorder** — press ~0.4s, row lifts, drag, release. Should stay put.

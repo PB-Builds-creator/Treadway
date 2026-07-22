@@ -24,7 +24,7 @@ let syncOn = navigator.onLine;
 let outbox = [];                  // queued writes when offline / on error
 let access = { status: "approved", isAdmin: false }; // membership gate
 let unlocked = false;             // PIN-lock state (per app session)
-let entry = "", setupFirst = null, hiddenAt = 0;
+let entry = "", setupFirst = null, hiddenAt = 0, passwordRecovery = false;
 const LOCK_GRACE = 60000;         // re-lock after 60s in the background
 
 /* ---------- Mountain-Time helpers (verified core) ---------- */
@@ -168,10 +168,12 @@ async function loadAll(){
   return {ok:true};
 }
 async function loadNotes(){
-  try{const since=addDays(todayStr(),-90);
-    const {data}=await SB.from("notes").select("day,text").eq("user_id",userId).gte("day",since);
-    state.notes={};for(const n of (data||[]))state.notes[n.day]=n.text;
-  }catch(e){state.notes=state.notes||{};}
+  const since=addDays(todayStr(),-90);
+  let r=await SB.from("notes").select("day,text,close_data").eq("user_id",userId).gte("day",since);
+  if(r.error&&/close_data/i.test((r.error.message||"")+" "+(r.error.details||"")))
+    r=await SB.from("notes").select("day,text").eq("user_id",userId).gte("day",since);
+  if(r.error)throw r.error;
+  state.notes={};for(const n of (r.data||[]))state.notes[n.day]={text:n.text||"",win:n.close_data?.win||"",tomorrow:n.close_data?.tomorrow||"",closedAt:n.close_data?.closedAt||""};
 }
 async function loadSummaryTime(){
   try{const {data}=await SB.from("reminder_settings").select("summary_time,quiet_start,quiet_end").eq("user_id",userId).maybeSingle();
@@ -197,26 +199,37 @@ function mSetValue(taskId,ymd,val){
   if(val>0)push(()=>SB.from("completions").upsert({user_id:userId,task_id:taskId,day:ymd,status:"done",updated_at:new Date().toISOString()},{onConflict:"user_id,task_id,day"}));
   else push(()=>SB.from("completions").delete().match({user_id:userId,task_id:taskId,day:ymd}));
 }
-function noteFor(ymd){return (state.notes&&state.notes[ymd])||"";}
-function setNote(ymd,text){
+function closeFor(ymd){const v=(state.notes&&state.notes[ymd])||{};
+  if(typeof v==="string")return{text:v,win:"",tomorrow:"",closedAt:""};
+  return{text:v.text||"",win:v.win||"",tomorrow:v.tomorrow||"",closedAt:v.closedAt||""};}
+function noteFor(ymd){return closeFor(ymd).text;}
+function setClose(ymd,c){
   if(!state.notes)state.notes={};
-  if(text)state.notes[ymd]=text;else delete state.notes[ymd];
-  render();
-  push(()=>SB.from("notes").upsert({user_id:userId,day:ymd,text:text||"",updated_at:new Date().toISOString()},{onConflict:"user_id,day"}));
+  const has=(c.text||c.win||c.tomorrow),closedAt=has?(c.closedAt||new Date().toISOString()):"";
+  state.notes[ymd]={text:c.text||"",win:c.win||"",tomorrow:c.tomorrow||"",closedAt};cacheSave();render();
+  const updated_at=new Date().toISOString(),close_data={v:1,win:c.win||"",tomorrow:c.tomorrow||"",closedAt};
+  push(()=>SB.from("notes").upsert({user_id:userId,day:ymd,text:c.text||"",updated_at},{onConflict:"user_id,day"}));
+  push(()=>SB.from("notes").update({close_data,updated_at}).match({user_id:userId,day:ymd}));
 }
+function setNote(ymd,text){const c=closeFor(ymd);setClose(ymd,{...c,text});}
 
 /* Partner (couple layer): who I'm linked to + their shared daily summary. */
 async function loadCouple(){
   try{
     const {data:link}=await SB.from("couple_links").select("partner_id").eq("user_id",userId).maybeSingle();
     state.partnerId=(link&&link.partner_id)||null;
+    state.nudgeSentToday=false;state.partnerNudge=null;
     if(state.partnerId){
-      const [{data:pp},{data:ps}]=await Promise.all([
+      const t=todayStr();
+      const [{data:pp},{data:ps},{data:sent},{data:received}]=await Promise.all([
         SB.from("profiles").select("name,accent").eq("user_id",state.partnerId).maybeSingle(),
-        SB.from("daily_status").select("done,total,all_done").eq("user_id",state.partnerId).eq("day",todayStr()).maybeSingle()
+        SB.from("daily_status").select("done,total,all_done").eq("user_id",state.partnerId).eq("day",t).maybeSingle(),
+        SB.from("nudges").select("id,status,created_at").eq("sender_id",userId).eq("recipient_id",state.partnerId).eq("day",t).maybeSingle(),
+        SB.from("nudges").select("id,status,created_at").eq("sender_id",state.partnerId).eq("recipient_id",userId).eq("day",t).maybeSingle()
       ]);
       state.partnerName=(pp&&pp.name)||"Your partner";
       state.partnerStatus=ps||null;
+      state.nudgeSentToday=!!sent;state.partnerNudge=received||null;
     }else{state.partnerName=null;state.partnerStatus=null;}
   }catch(e){/* couple layer is optional; never block core load */}
 }
@@ -365,7 +378,7 @@ function mSaveProfile(){cacheSave();render();
   push(()=>SB.from("profiles").upsert({user_id:userId,name:state.name,accent:state.accent,goal_oz:state.goalOz,rest_days:state.restDays||[],saved_days:state.savedDays||[],updated_at:new Date().toISOString()}));}
 
 async function onboard(preset){
-  state={name:preset.name,accent:preset.accent,goalOz:preset.goalOz,tasks:preset.tasks,completions:{},hydration:{}};
+  state={name:preset.name,accent:preset.accent,goalOz:preset.goalOz,tasks:preset.tasks,completions:{},hydration:{},notes:{},values:{},restDays:[],savedDays:[],summaryTime:"21:30",quietStart:"",quietEnd:""};
   cacheSave();tab="today";showApp();
   await push(()=>SB.from("profiles").upsert({user_id:userId,name:state.name,accent:state.accent,goal_oz:state.goalOz,updated_at:new Date().toISOString()}));
   if(state.tasks.length) await push(()=>SB.from("tasks").upsert(state.tasks.map((t,i)=>taskToRow(t,i))));
@@ -380,7 +393,10 @@ async function boot(){
   if(!session){renderAuth();return;}
   await enterApp();
 }
-SB.auth.onAuthStateChange((_e,s)=>{session=s;userId=s?.user?.id||null;});
+SB.auth.onAuthStateChange((e,s)=>{session=s;userId=s?.user?.id||null;
+  if(e==="PASSWORD_RECOVERY"&&s){passwordRecovery=true;setTimeout(renderPasswordRecovery,0);}
+  else if(e==="SIGNED_OUT"){state=null;unlocked=false;outbox=[];}
+});
 
 async function loadAccess(){
   try{
@@ -391,12 +407,18 @@ async function loadAccess(){
       await SB.from("access").insert({user_id:userId,email,status:"pending"});
       access={status:"pending",isAdmin:false};
     }else{access={status:data.status,isAdmin:!!data.is_admin};}
-  }catch(e){access={status:"approved",isAdmin:false};} // table absent => don't lock existing users out
+    if(access.status==="approved")try{localStorage.setItem("cairn_access_"+userId,"approved");}catch(_){}
+  }catch(e){const m=((e&&e.message)||"")+" "+((e&&e.details)||"");
+    const legacy=(e&&["42P01","PGRST205"].includes(e.code))&&/access/i.test(m);
+    let cached=false;try{cached=localStorage.getItem("cairn_access_"+userId)==="approved";}catch(_){}
+    if(legacy||cached){access={status:"approved",isAdmin:false};if(!legacy)setSync(false);}
+    else throw e;
+  }
   return access;
 }
 async function enterApp(){
   root.innerHTML='<div class="loading"><div class="spin"></div></div>';
-  await loadAccess();
+  try{await loadAccess();}catch(e){renderAccessError();return;}
   if(access.status!=="approved"){renderPending();return;}
   const cached=cacheLoad();
   try{
@@ -412,7 +434,7 @@ async function doAuth(email,password,name){
   const btn=document.getElementById("a-btn");const err=document.getElementById("a-err");
   err.textContent="";btn.disabled=true;btn.textContent=authMode==="signup"?"Creating…":"Signing in…";
   try{
-    const fn=authMode==="signup"?SB.auth.signUp({email,password}):SB.auth.signInWithPassword({email,password});
+    const fn=authMode==="signup"?SB.auth.signUp({email,password,options:{data:{name:name||""}}}):SB.auth.signInWithPassword({email,password});
     const {data,error}=await fn;
     if(error)throw error;
     if(!data.session){ // e.g. email confirmation still on
@@ -433,7 +455,8 @@ function friendlyAuthError(e){const m=(e&&e.message||"").toLowerCase();
   if(m.includes("email"))return "Please enter a valid email.";
   return e&&e.message?e.message:"Something went wrong. Try again.";}
 function labelFor(){return authMode==="signup"?"Request access":"Sign in";}
-async function signOut(){await SB.auth.signOut();state=null;userId=null;session=null;unlocked=false;entry="";setupFirst=null;renderAuth();}
+function clearDeviceData(id){if(!id)return;try{["cairn_cache_","cairn_lock_","cairn_lockskip_","cairn_hometip_","cairn_tour_","cairn_name_","cairn_access_"].forEach(k=>localStorage.removeItem(k+id));}catch(_){}}
+async function signOut(){const id=userId;outbox=[];clearDeviceData(id);await SB.auth.signOut();state=null;userId=null;session=null;unlocked=false;entry="";setupFirst=null;renderAuth();}
 
 /* =====================================================================
    RENDER
@@ -524,7 +547,7 @@ function showApp(){
     unlocked=true;                                      // skipped → open freely
   }
   render();
-  if(!tourSeen()){pendingTour=false;markTourSeen();setTimeout(runTour,300);} // once for anyone who hasn't seen it (tour includes the add-to-home-screen step)
+  if(!tourSeen()&&!pendingTour){pendingTour=true;setTimeout(runTour,300);} // once for anyone who hasn't seen it (tour includes the add-to-home-screen step)
 }
 function renderLockEnter(){
   setAccent();entry="";
@@ -587,13 +610,30 @@ function renderAuth(msg){
       <div class="err" id="a-err"></div>
       <button class="btn" id="a-btn" type="submit">${labelFor()}</button>
     </form>
+    ${authMode==="signin"?'<button class="swap" id="a-forgot">Forgot password?</button>':""}
     <button class="swap" id="a-swap">${authMode==="signup"?"Have an account? Sign in":"New here? Request access"}</button>
+    <a class="authprivacy" href="privacy.html">Privacy & data</a>
   </div></div>`;
   document.getElementById("a-form").onsubmit=(e)=>{e.preventDefault();
     const em=document.getElementById("a-email").value.trim();const pw=document.getElementById("a-pass").value;
     const nmEl=document.getElementById("a-name");const nm=nmEl?nmEl.value.trim():"";
     if(em&&pw)doAuth(em,pw,nm);};
   document.getElementById("a-swap").onclick=()=>{authMode=authMode==="signup"?"signin":"signup";renderAuth();};
+  const forgot=document.getElementById("a-forgot");if(forgot)forgot.onclick=async()=>{
+    const email=document.getElementById("a-email").value.trim(),err=document.getElementById("a-err");
+    if(!email){err.textContent="Enter your email first.";document.getElementById("a-email").focus();return;}
+    const {error}=await SB.auth.resetPasswordForEmail(email,{redirectTo:location.origin});
+    err.textContent=error?friendlyAuthError(error):"Password reset email sent.";
+  };
+}
+function renderPasswordRecovery(){if(!passwordRecovery)return;setAccent();
+  root.innerHTML=`<div class="screen"><div class="auth"><div class="glyph">${ICON.lock}</div><h1>Choose a new password</h1>
+    <p>Use at least 8 characters.</p><form id="pw-form"><input id="pw-new" type="password" autocomplete="new-password" minlength="8" placeholder="New password" required>
+    <input id="pw-again" type="password" autocomplete="new-password" minlength="8" placeholder="Repeat password" required><div class="err" id="pw-err"></div>
+    <button class="btn" type="submit">Update password</button></form></div></div>`;
+  document.getElementById("pw-form").onsubmit=async e=>{e.preventDefault();const a=document.getElementById("pw-new").value,b=document.getElementById("pw-again").value,er=document.getElementById("pw-err");
+    if(a!==b){er.textContent="Passwords don't match.";return;}const {error}=await SB.auth.updateUser({password:a});
+    if(error){er.textContent=friendlyAuthError(error);return;}passwordRecovery=false;await enterApp();};
 }
 function renderPending(){
   setAccent();const denied=access.status==="denied";
@@ -607,13 +647,25 @@ function renderPending(){
   const c=document.getElementById("pg-check");if(c)c.onclick=()=>enterApp();
   document.getElementById("pg-out").onclick=signOut;
 }
+function renderAccessError(){setAccent();root.innerHTML=`<div class="screen"><div class="auth"><div class="glyph">${ICON.lock}</div>
+  <h1>Couldn't verify access</h1><p>Cairn kept your private data closed because the account check didn't finish.</p>
+  <button class="btn" id="av-try">Try again</button><button class="swap" id="av-out">Sign out</button></div></div>`;
+  document.getElementById("av-try").onclick=enterApp;document.getElementById("av-out").onclick=signOut;}
 
 let pendingTour=false;
-function renderOnboard(){ // new user: blank page (named from signup), then the tour
-  pendingTour=true;
+function renderOnboard(){ // new user: a brief promise, then a blank page and the real tour
   const p=presetEmpty();
-  try{const nm=localStorage.getItem("cairn_name_"+userId);if(nm&&nm.trim())p.name=nm.trim();}catch(_){}
-  onboard(p);
+  const meta=session?.user?.user_metadata?.name;
+  try{const nm=localStorage.getItem("cairn_name_"+userId)||meta;if(nm&&nm.trim())p.name=nm.trim();}catch(_){if(meta&&meta.trim())p.name=meta.trim();}
+  setAccent();root.innerHTML=`<div class="screen"><div class="auth onboard"><div class="glyph">${ICON.cairn}</div>
+    <span class="onboardeyebrow">YOUR DAILY PATH</span><h1>Build a day worth remembering.</h1>
+    <p>Keep the commitments that matter. Close each day honestly. See the trail you leave behind.</p>
+    <div class="onboardpoints"><div><i>01</i><span><b>Place the stones</b><small>Track the work without the noise.</small></span></div>
+      <div><i>02</i><span><b>Close the day</b><small>One win. One honest line. One intention.</small></span></div>
+      <div><i>03</i><span><b>Read the trail</b><small>Watch consistency become a story.</small></span></div></div>
+    <button class="btn" id="ob-start">Enter Cairn</button><span class="onboardfine">Private by design. Your first page starts blank.</span>
+  </div></div>`;
+  document.getElementById("ob-start").onclick=()=>onboard(p);
 }
 function tourSeen(){try{return localStorage.getItem("cairn_tour_"+userId)==="1";}catch(e){return false;}}
 function markTourSeen(){try{localStorage.setItem("cairn_tour_"+userId,"1");}catch(e){}}
@@ -643,7 +695,7 @@ function runTour(){
   document.body.appendChild(ov);
   const spot=ov.querySelector("#tourspot"),cap=ov.querySelector("#tourcap"),bd=ov.querySelector("#tourbd");
   let focused=null,spotRect=null,capTop=null;spot.style.cssText="left:50%;top:50%;width:0;height:0";
-  function finish(){if(focused)focused.classList.remove("tourfocus");ov.remove();tab="today";render();}
+  function finish(){if(focused)focused.classList.remove("tourfocus");ov.remove();pendingTour=false;markTourSeen();tab="today";render();}
   function show(){
     if(focused)focused.classList.remove("tourfocus");focused=null;
     const st=steps[i];tab=st.tab;render();
