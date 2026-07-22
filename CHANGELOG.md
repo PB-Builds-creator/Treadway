@@ -13,6 +13,9 @@ _Concise milestone log, newest first. Keep to meaningful milestones._
   Browser review also exposed and fixed the app shell growing to document height: `#app` now
   constrains itself to the actual viewport so `.scroll` is the native-style scroller and the
   floating tab bar remains present at the bottom instead of appearing after all page content.
+  Verified at 375×812 in populated, 100%-complete, written-reflection, Light, OLED, and blank new-
+  member states; starter → first marker, reflection sheet, scroll containment, and tab hide/show
+  all worked with no browser warnings/errors. Real-device touch feel and 60fps remain unverified.
 - **Flagship motion pass, phase 1:** added a sub-900ms, tap-to-skip cold launch ritual whose five
   weighted stones settle into a cairn while data loads behind it; when Today is ready in time,
   the stack travels into the progress ring as a shared element. The tutorial spotlight now

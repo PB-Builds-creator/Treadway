@@ -11,6 +11,8 @@ Everything below is verified with synthetic pointer events in a desktop browser 
 5. **Sheet notch** drag-down-to-dismiss + no background scrolling behind sheets.
 6. **Flagship motion feel** — cold-launch skip/shared-ring handoff and moving tutorial spotlight
    need real iPhone timing/visual confirmation; browser QA cannot establish touch feel or 60fps.
+7. **Today daily-ritual shell** — verify hero density, internal scrolling, floating-tab safe-area
+   placement/auto-hide, and reflection-sheet feel in both Light and OLED on the iPhone 17.
 If a gesture fails, the likely culprit is touch-scroll stealing the gesture — see the
 non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action` on `.rowwrap`.
 
