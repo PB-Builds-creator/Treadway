@@ -27,8 +27,10 @@ non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action`
   off, then back on and allow notifications. This replaces the old push subscription with one
   signed by the rotated public VAPID key.
 - **Her phone, whenever available:** do the same reminders off/on cycle, then complete the
-  real two-phone Proud nudge/quiet-hours/lock-screen test above. This is device QA only; the live
-  reciprocal link, once-daily nudge, and unlink authorization already passed server-side.
+  in-app six-digit pairing flow and real two-phone Proud nudge/quiet-hours/lock-screen test above.
+  The owner is currently unlinked and her account ID is not documented, so do not guess among
+  approved members. The reciprocal link, once-daily nudge, and unlink authorization already
+  passed server-side with isolated disposable accounts.
 
 ## Next features (not yet built)
 1. Dropping into an **empty/absent category** isn't possible (groups only render when they have

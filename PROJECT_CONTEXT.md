@@ -41,7 +41,10 @@ deleted. The activation web deploy published the rotated public key, formal priv
 shell-cache bump; production copies of app.js, config.js, privacy.html, styles.css, and sw.js
 matched local byte-for-byte, and the live policy had the formal heading with no early-access
 language. The remaining operational step is iPhone reminder resubscription and later two-device
-push/feel QA listed in TODO.md.
+push/feel QA listed in TODO.md. A final read-only check found the real owner currently has no
+partner link. The girlfriend's account identifier is deliberately not documented, and there are
+multiple approved members, so no agent should guess; pair the two real PWAs with the six-digit
+code when her phone is available.
 
 ## What this is
 A private daily-discipline / checklist app for Paxton (owner) + his girlfriend, on a
@@ -159,6 +162,8 @@ There are **two deliverables**:
 - PIN app-lock codes (per-device, localStorage, never shown): owner `0930`, gf `0307`.
 - Her phone is NOT available for a few days. The live couple/RLS/RPC layer passed with disposable
   accounts, but her push subscription and the end-to-end two-phone notification remain untested.
+- The owner currently has no live `partner_id`. The girlfriend's auth ID/email is not documented;
+  do not infer it from the other approved members. Use the in-app pairing code on both real PWAs.
 
 ## Conventions
 - Keep app.js dense but readable; match existing terse style. No new dependencies/build tools.
