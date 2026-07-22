@@ -256,8 +256,31 @@ async function flushOutbox(){
 function setSync(on){syncOn=on;const el=document.getElementById("syncdot");if(el)el.className="syncdot"+(on?"":" off");}
 
 /* transient one-shot animation flags (consumed by the next render) */
-let justCompletedId=null, justAddedId=null, ringLast=0;
+let justCompletedId=null, justAddedId=null, ringLast=0, launchEl=null, launchTimer=0, launchStarted=0;
 function prefersReduce(){return !!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches);}
+function cairnHtml(cls=""){return `<div class="cairnstack ${cls}"><i></i><i></i><i></i><i></i><i></i></div>`;}
+function startLaunch(){
+  if(prefersReduce()||launchEl)return;
+  launchStarted=performance.now();
+  launchEl=document.createElement("div");launchEl.className="launch";
+  launchEl.innerHTML=`<div class="launchmark">${cairnHtml("launchcairn")}<span>Cairn</span></div>`;
+  document.body.appendChild(launchEl);
+  launchEl.addEventListener("pointerdown",()=>finishLaunch(true),{once:true});
+  launchTimer=setTimeout(()=>finishLaunch(false),680);
+}
+function finishLaunch(skip){
+  if(!launchEl)return;clearTimeout(launchTimer);
+  const ov=launchEl,stack=ov.querySelector(".cairnstack"),ring=root.querySelector(".ring");launchEl=null;
+  if(skip||prefersReduce()){ov.remove();return;}
+  if(ring&&stack){
+    const a=stack.getBoundingClientRect(),b=ring.getBoundingClientRect();
+    const dx=b.left+b.width/2-a.left-a.width/2,dy=b.top+b.height/2-a.top-a.height/2,sc=b.width/a.width;
+    stack.animate([{transform:"translate(0,0) scale(1)",opacity:1},{transform:`translate(${dx}px,${dy}px) scale(${sc})`,opacity:.12}],{duration:210,easing:"cubic-bezier(.3,0,.15,1)",fill:"forwards"});
+    ov.animate([{opacity:1},{opacity:0}],{duration:210,easing:"cubic-bezier(.4,0,.7,1)",fill:"forwards"});
+    setTimeout(()=>ov.remove(),220);
+  }else{ov.classList.add("leaving");setTimeout(()=>ov.remove(),180);}
+}
+function resolveLaunch(){if(launchEl&&root.querySelector(".ring")&&performance.now()-launchStarted<640)finishLaunch(false);}
 /* mutations: update local state instantly, cache, render, then push */
 /* FLIP: remember where every row is, then glide each from its old spot to its new one. */
 function captureRows(){
@@ -617,8 +640,10 @@ function runTour(){
   ov.innerHTML='<div class="tourbackdrop" id="tourbd"></div><div class="tourspot" id="tourspot"></div><div class="tourcap" id="tourcap"></div>';
   document.body.appendChild(ov);
   const spot=ov.querySelector("#tourspot"),cap=ov.querySelector("#tourcap"),bd=ov.querySelector("#tourbd");
-  function finish(){ov.remove();tab="today";render();}
+  let focused=null;spot.style.cssText="left:50%;top:50%;width:0;height:0";
+  function finish(){if(focused)focused.classList.remove("tourfocus");ov.remove();tab="today";render();}
   function show(){
+    if(focused)focused.classList.remove("tourfocus");focused=null;
     const st=steps[i];tab=st.tab;render();
     setTimeout(()=>{
       const el=st.sel?root.querySelector(st.sel):null;
@@ -629,12 +654,15 @@ function runTour(){
   function place(el,st){
     let r=null;
     if(el){r=el.getBoundingClientRect();const p=8;
-      spot.style.display="block";bd.style.display="none";                 // crisp spotlight step
+      spot.style.opacity="1";bd.classList.remove("on");                    // crisp spotlight step
       spot.style.left=(r.left-p)+"px";spot.style.top=(r.top-p)+"px";
       spot.style.width=(r.width+p*2)+"px";spot.style.height=(r.height+p*2)+"px";
-    }else{spot.style.display="none";bd.style.display="block";}            // caption-only: blur the app behind
-    cap.innerHTML=`<div class="tc-num">${i+1} / ${steps.length}</div>
+      el.classList.add("tourfocus");focused=el;
+    }else{spot.style.opacity="0";bd.classList.add("on");}                  // caption-only: blur the app behind
+    const final=i===steps.length-1;
+    cap.innerHTML=`${final?cairnHtml("tourcairn"):""}<div class="tc-num">${i+1} / ${steps.length}</div>
       <div class="tc-title">${st.t}</div><div class="tc-body">${st.b}</div>
+      <div class="tc-dots">${steps.map((_,k)=>`<i class="${k===i?"on":""}"></i>`).join("")}</div>
       <div class="tc-row"><button class="swap" id="tc-skip">Skip</button><div style="flex:1"></div>
         ${i>0?'<button class="tc-btn" id="tc-back">Back</button>':""}
         <button class="tc-btn primary" id="tc-next">${i===steps.length-1?"Done":"Next"}</button></div>`;
@@ -642,7 +670,7 @@ function runTour(){
     if(!el)top=Math.max(16,(vh-capH)/2);
     else{top=r.bottom+14;if(top+capH>vh-14)top=r.top-capH-14;if(top<14)top=14;}
     cap.style.top=top+"px";
-    cap.classList.remove("pop");void cap.offsetWidth;cap.classList.add("pop"); // re-trigger entrance
+    cap.className="tourcap pop"+(i===0?" welcome":"")+(final?" final":"");
     cap.querySelector("#tc-next").onclick=()=>{ if(i<steps.length-1){i++;show();} else finish(); };
     cap.querySelector("#tc-skip").onclick=finish;
     const bk=cap.querySelector("#tc-back");if(bk)bk.onclick=()=>{i--;show();};
@@ -664,6 +692,7 @@ function render(){
   if(tab==="today")animateRing();
   if(tab==="settings")updateReminderLabel();
   if(tab==="history"&&!state.totalsLoaded)loadTotals();
+  resolveLaunch();
 }
 /* Animate the completion ring fill + count the % up; celebrate at 100%. */
 function animateRing(){
@@ -1333,6 +1362,7 @@ window.addEventListener("offline",()=>setSync(false));
 
 /* ---------- go ---------- */
 (function applyStoredTheme(){try{const t=localStorage.getItem("cairn_theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}updateThemeMeta();})();
+startLaunch();
 if(!CFG.SUPABASE_URL||CFG.SUPABASE_URL.includes("PASTE")){
   root.innerHTML='<div class="auth"><h1>Setup needed</h1><p>Add your Supabase URL and key to config.js.</p></div>';
 }else{ boot(); }

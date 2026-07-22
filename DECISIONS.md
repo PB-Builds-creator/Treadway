@@ -45,3 +45,8 @@ _Last updated: 2026-07-22. Brief rationale for choices that aren't obvious from 
 
 - **Handoff files (this + PROJECT_CONTEXT/TODO/CHANGELOG) are maintained every significant
   change** because sessions have low context limits and may hand off at any time.
+
+- **Motion is transform/opacity-only and survives full DOM replacement in JS.** Launch and tour
+  overlays sit outside `#app`; anything that crosses `render()` keeps its state in globals. The
+  cold launch is skippable, runs only when the script boots, and self-dismisses below 900ms so it
+  never gates data loading or interaction. Reduced-motion bypasses JS motion entirely.

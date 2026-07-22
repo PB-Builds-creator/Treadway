@@ -86,6 +86,10 @@ There are **two deliverables**:
   drop, finds `.card[data-group]` → `dropTask(id, group, beforeId)` re-homes the task's category
   and re-flows all `sort_index`. Same-card drops fall back to `commitReorder`.
 - **FLIP** (`captureRows`/`playFlip`) animates rows gliding between positions on complete/drop.
+- **Motion state also lives outside rendered DOM:** the cold-launch overlay is appended to `body`
+  while auth/data load behind it, and is capped below 900ms; the tour overlay likewise survives
+  app re-renders so its spotlight can travel between targets. All JS motion exits through
+  `prefersReduce()` and CSS is covered by the existing reduced-motion rule.
 
 ## Rules (product)
 - New members ALWAYS start with a blank task list, then a spotlight product tour (`runTour`) that drives the real app. No

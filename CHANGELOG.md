@@ -3,6 +3,12 @@
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
 ## 2026-07-22
+- **Flagship motion pass, phase 1:** added a sub-900ms, tap-to-skip cold launch ritual whose five
+  weighted stones settle into a cairn while data loads behind it; when Today is ready in time,
+  the stack travels into the progress ring as a shared element. The tutorial spotlight now
+  travels/morphs between targets, gently pulses the highlighted control, carries progress dots,
+  staggers the welcome copy, and closes by completing the same cairn stack. All paths honor
+  reduced motion and keep animation state outside the render-replaced app DOM.
 - **Project put under git** (local repo, no remote). Baseline `9f7f24b`, 92 files. `.gitignore`
   extended to exclude secrets (`*KEEP-SECRET*`, `.env*`, `*.pem`) on top of the existing build
   artifact rules; verified the VAPID/CRON secret file is untracked. Rollback path now exists for

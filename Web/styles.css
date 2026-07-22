@@ -217,7 +217,25 @@
 .syncdot.off{background:var(--warn)}
 .spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-.loading{flex:1;display:flex;align-items:center;justify-content:center}
+  .loading{flex:1;display:flex;align-items:center;justify-content:center}
+
+/* ============ Cold launch ritual ============ */
+.launch{position:fixed;inset:0;z-index:500;background:var(--bg);display:grid;place-items:center;touch-action:none}
+.launch.leaving{animation:launchout .18s cubic-bezier(.4,0,.7,1) forwards}
+.launchmark{display:flex;flex-direction:column;align-items:center;gap:17px;color:var(--ink)}
+.launchmark>span{font-size:19px;font-weight:650;letter-spacing:.12em;opacity:0;animation:launchname .22s .43s ease forwards}
+.cairnstack{position:relative;width:72px;height:86px;flex:none}
+.cairnstack i{position:absolute;left:50%;bottom:0;height:13px;border-radius:52% 48% 44% 56% / 58% 60% 40% 42%;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 72%, var(--ink)),var(--accent));
+  box-shadow:inset 0 1px rgba(255,255,255,.2),0 5px 12px rgba(20,22,20,.16);transform:translate(-50%,-70px);opacity:0}
+.cairnstack i:nth-child(1){width:66px;height:16px;bottom:0;animation:stoneland .23s .02s cubic-bezier(.16,.72,.2,1) forwards}
+.cairnstack i:nth-child(2){width:55px;height:15px;bottom:13px;animation:stoneland .23s .1s cubic-bezier(.16,.72,.2,1) forwards}
+.cairnstack i:nth-child(3){width:43px;height:14px;bottom:26px;animation:stoneland .22s .18s cubic-bezier(.16,.72,.2,1) forwards}
+.cairnstack i:nth-child(4){width:32px;height:13px;bottom:38px;animation:stoneland .21s .26s cubic-bezier(.16,.72,.2,1) forwards}
+.cairnstack i:nth-child(5){width:21px;height:12px;bottom:49px;animation:stoneland .2s .34s cubic-bezier(.16,.72,.2,1) forwards}
+@keyframes stoneland{0%{transform:translate(-50%,-62px) scale(.96);opacity:0}78%{transform:translate(-50%,1px) scale(1.015);opacity:1}100%{transform:translate(-50%,0) scale(1);opacity:1}}
+@keyframes launchname{from{opacity:0;transform:translateY(5px)}to{opacity:.78;transform:none}}
+@keyframes launchout{to{opacity:0;transform:scale(.985)}}
 
 /* first-run routine picker */
 .picker{display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px;margin-top:8px}
@@ -310,14 +328,17 @@
 
 /* ============ Spotlight product tour ============ */
 .tourwrap{position:fixed;inset:0;z-index:200;pointer-events:auto}
-.tourspot{position:fixed;border-radius:14px;border:2px solid #fff;pointer-events:none;display:none;
-  box-shadow:0 0 0 9999px rgba(6,8,6,.64);transition:left .38s cubic-bezier(.4,0,.2,1),top .38s cubic-bezier(.4,0,.2,1),width .38s cubic-bezier(.4,0,.2,1),height .38s cubic-bezier(.4,0,.2,1)}
+.tourspot{position:fixed;border-radius:14px;border:2px solid #fff;pointer-events:none;opacity:0;
+  box-shadow:0 0 0 9999px rgba(6,8,6,.64);transition:left .4s cubic-bezier(.25,.8,.2,1),top .4s cubic-bezier(.25,.8,.2,1),width .4s cubic-bezier(.25,.8,.2,1),height .4s cubic-bezier(.25,.8,.2,1),opacity .2s ease}
 .tourcap{position:fixed;left:16px;right:16px;max-width:436px;margin:0 auto;background:var(--surface);
   border:1px solid var(--line);border-radius:16px;padding:15px 16px 12px;box-shadow:0 12px 44px rgba(0,0,0,.34);
   pointer-events:auto;transition:top .3s ease}
 .tourcap .tc-num{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:700}
 .tourcap .tc-title{font-size:18px;font-weight:640;letter-spacing:-.01em;margin-top:5px}
 .tourcap .tc-body{font-size:14.5px;color:var(--muted);line-height:1.5;margin-top:4px}
+.tc-dots{display:flex;gap:4px;margin-top:11px;align-items:center}
+.tc-dots i{width:4px;height:4px;border-radius:50%;background:var(--line);transition:transform .2s ease,background .2s ease,opacity .2s ease}
+.tc-dots i.on{background:var(--accent);transform:scale(1.7)}
 .tourcap .tc-row{display:flex;align-items:center;gap:8px;margin-top:14px}
 .tc-btn{padding:8px 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);
   font-size:14px;font-weight:600;color:var(--ink)}
@@ -369,9 +390,17 @@
 }
 
 /* tour: blurred backdrop behind caption-only steps + caption entrance */
-.tourbackdrop{position:fixed;inset:0;background:rgba(6,8,6,.5);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);display:none}
+.tourbackdrop{position:fixed;inset:0;background:rgba(6,8,6,.5);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);opacity:0;pointer-events:none;transition:opacity .24s ease}
+.tourbackdrop.on{opacity:1}
 .tourcap.pop{animation:tcpop .32s cubic-bezier(.22,.61,.36,1)}
 @keyframes tcpop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.tourfocus{position:relative;z-index:201;animation:tourpulse 1.8s .42s ease-in-out infinite}
+@keyframes tourpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.018)}}
+.tourcap.welcome .tc-title,.tourcap.welcome .tc-body,.tourcap.welcome .tc-dots,.tourcap.welcome .tc-row{opacity:0;animation:tourline .3s cubic-bezier(.22,.7,.3,1) forwards}
+.tourcap.welcome .tc-title{animation-delay:.06s}.tourcap.welcome .tc-body{animation-delay:.13s}.tourcap.welcome .tc-dots{animation-delay:.2s}.tourcap.welcome .tc-row{animation-delay:.27s}
+@keyframes tourline{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.tourcairn{width:48px;height:58px;margin:0 auto 2px;transform:scale(.72)}
+.tourcairn i{animation-name:stoneland!important}
 .tc-btn{transition:transform .12s ease, background .18s, filter .18s}
 .tc-btn:active{transform:scale(.95)}
 

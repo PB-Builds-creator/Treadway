@@ -9,6 +9,8 @@ Everything below is verified with synthetic pointer events in a desktop browser 
 3. **Swipe** right = blue pencil (edit), left = red trash (delete + undo toast).
 4. **Undo toast** on delete ("Deleted — Undo") — never visually confirmed at all.
 5. **Sheet notch** drag-down-to-dismiss + no background scrolling behind sheets.
+6. **Flagship motion feel** — cold-launch skip/shared-ring handoff and moving tutorial spotlight
+   need real iPhone timing/visual confirmation; browser QA cannot establish touch feel or 60fps.
 If a gesture fails, the likely culprit is touch-scroll stealing the gesture — see the
 non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action` on `.rowwrap`.
 
