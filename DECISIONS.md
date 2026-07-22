@@ -17,6 +17,12 @@ _Last updated: 2026-07-22. Brief rationale for choices that aren't obvious from 
   journal payload. It must call a direct RPC rather than the offline outbox so an old message can
   never surprise-send later. Unlinking must clear both sides atomically before this ships.
 
+- **Commercial trust means accurate boundaries before billing.** This pass does not invent a
+  paid plan without a provider, price, or legal setup. It instead hardens approval in Postgres,
+  makes access verification fail closed (with a legacy-table-missing compatibility exception),
+  clears identity-bound cache/outbox on sign-out, completes data export, states that reflections
+  are not E2E encrypted, and adds password recovery/change plus authenticated account deletion.
+
 - **Web app is the primary product, not native.** Native needs $99 Apple Developer for the
   features that matter (widgets, Health) and per-device install friction; the web PWA gives
   sync + logins + reminders + home-screen install for free. Native is a "later" path.

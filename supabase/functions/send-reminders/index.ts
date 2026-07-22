@@ -55,6 +55,41 @@ Deno.serve(async (req) => {
 
   const sb = createClient(SUPABASE_URL, SERVICE_KEY);
   const { ymd, minutes, weekday } = denver(new Date());
+  const stale = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  await sb.from("nudges").update({ status: "canceled" }).eq("status", "pending").lt("created_at", stale);
+  const { data: pendingNudges } = await sb.from("nudges").select("id,sender_id,recipient_id,day,created_at").eq("status", "pending").gte("created_at", stale).limit(100);
+  let nudgeSent = 0;
+
+  for (const n of pendingNudges ?? []) {
+    const { data: links } = await sb.from("couple_links").select("user_id,partner_id").in("user_id", [n.sender_id, n.recipient_id]);
+    const mutual = (links ?? []).some((x) => x.user_id === n.sender_id && x.partner_id === n.recipient_id)
+      && (links ?? []).some((x) => x.user_id === n.recipient_id && x.partner_id === n.sender_id);
+    if (!mutual) { await sb.from("nudges").update({ status: "canceled" }).eq("id", n.id); continue; }
+
+    const { data: pref } = await sb.from("reminder_settings").select("enabled,quiet_start,quiet_end").eq("user_id", n.recipient_id).maybeSingle();
+    if (!pref?.enabled || inQuiet(minutes, pref.quiet_start, pref.quiet_end)) continue;
+    const { data: subs } = await sb.from("push_subscriptions").select("endpoint,p256dh,auth").eq("user_id", n.recipient_id);
+    if (!subs?.length) continue;
+    const { data: sender } = await sb.from("profiles").select("name").eq("user_id", n.sender_id).maybeSingle();
+    const kind = `nudge:${n.id}`;
+    const { error: logErr } = await sb.from("reminder_log").insert({ user_id: n.recipient_id, kind, day: n.day });
+    if (logErr) { await sb.from("nudges").update({ status: "sent", delivered_at: new Date().toISOString() }).eq("id", n.id); continue; }
+
+    let delivered = 0;
+    for (const sub of subs) {
+      try {
+        await webpush.sendNotification(
+          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+          JSON.stringify({ title: sender?.name || "Your partner", body: "Proud of you. ♥", tag: `partner-${n.id}` }),
+        );
+        delivered++; nudgeSent++;
+      } catch (err: any) {
+        if (err?.statusCode === 404 || err?.statusCode === 410) await sb.from("push_subscriptions").delete().eq("endpoint", sub.endpoint);
+      }
+    }
+    if (delivered) await sb.from("nudges").update({ status: "sent", delivered_at: new Date().toISOString() }).eq("id", n.id);
+    else await sb.from("reminder_log").delete().match({ user_id: n.recipient_id, kind, day: n.day });
+  }
 
   const { data: settings } = await sb.from("reminder_settings").select("user_id,enabled,summary_time,quiet_start,quiet_end").eq("enabled", true);
   let sent = 0;
@@ -109,5 +144,5 @@ Deno.serve(async (req) => {
     }
   }
 
-  return new Response(JSON.stringify({ ok: true, ymd, minutes, sent }), { headers: { "Content-Type": "application/json" } });
+  return new Response(JSON.stringify({ ok: true, ymd, minutes, sent, nudgeSent }), { headers: { "Content-Type": "application/json" } });
 });

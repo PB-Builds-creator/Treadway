@@ -56,7 +56,7 @@ select cron.schedule(
     url := 'https://bckcawaiyybrjsphiqdc.supabase.co/functions/v1/send-reminders',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'x-cron-secret', 'a83391ff4fce91e1526a26f6adfa8d1acc21d1c2941f7836'
+      'x-cron-secret', '<CRON_SECRET>'
     )
   );
   $$

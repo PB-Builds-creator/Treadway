@@ -3,7 +3,7 @@
    API calls are never intercepted (they hit the network; offline writes are
    handled by the app's outbox). Bump CACHE to force a clean refresh. */
 const CACHE = "cairn-shell-v3";
-const SHELL = ["./", "index.html", "styles.css", "app.js", "config.js", "manifest.webmanifest", "icon-180.png"];
+const SHELL = ["./", "index.html", "privacy.html", "styles.css", "app.js", "config.js", "manifest.webmanifest", "icon-180.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

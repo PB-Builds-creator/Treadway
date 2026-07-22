@@ -21,12 +21,18 @@ Already changed in this in-progress slice:
 - First run now shows a concise product promise before creating the required blank profile; the
   spotlight tour is marked complete only when it is actually skipped/finished.
 
-Still required before this pass is complete: build the Cairn Close sheet/card, yesterday's
-carried intention, the Weekly Trail, nudge confirmation/UI/RPC call, mutual unlink, complete data
-export, Data & Privacy/account deletion/password UI, `privacy.html`, the idempotent product SQL
-migration, nudge processing in `send-reminders`, delete-account Edge Function, CSS, browser QA,
-handoff docs, commits, and deploys. Do not deploy the current partial working tree. Keep all SQL
-and user dashboard steps consolidated into the final handoff, as requested.
+The second, still-uncommitted slice now builds the remaining product surfaces: Cairn Close,
+yesterday's carried intention, rolling Weekly Trail, fixed once-daily Proud nudge confirmation,
+direct nudge/unlink RPC calls, full JSON data download, Data & Privacy/password/delete-account UI,
+public `privacy.html`, all related CSS, `cairn-product-upgrade.sql`, nudge delivery in
+`send-reminders`, and the authenticated `delete-account` Edge Function. Two setup SQL files also
+had a committed cron secret replaced with `<CRON_SECRET>`; the live secret must be rotated.
+
+Still required before this pass is complete: build a representative local QA fixture, visually
+test Today/Close/Week/Trail/Settings/privacy/auth/onboarding in Light + OLED at 375×812, test old
+string notes and the missing-`close_data` fallback, audit all server code/SQL, fix findings,
+complete handoff docs/commits, deploy both Edge Functions and the web app, then give the user one
+consolidated SQL/manual checklist. Do not deploy the current unverified working tree.
 
 ## What this is
 A private daily-discipline / checklist app for Paxton (owner) + his girlfriend, on a

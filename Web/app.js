@@ -841,11 +841,12 @@ function todayView(){
   </section>
   ${partnerCard()}
   ${hyTask?`<section class="rhythmblock">${hydCard()}</section>`:""}
+  ${carriedStone()}
   <section class="pathsection"><div class="sectionhead"><div><span>The path</span><h3>${total===0?"Start with one marker":pending.length?`${pending.length} ${pending.length===1?"marker remains":"markers remain"}`:"Nothing left unfinished"}</h3></div><span class="sectioncount">${total?pct+"%":"Open"}</span></div>
     ${groups||(total===0?emptyToday():'<div class="pathclear"><span>✓</span><div><b>Every stone is placed.</b><small>Nothing asked of today was left behind.</small></div></div>')}
   </section>
   ${completed}
-  ${noteCard()}
+  ${closeCard()}
   <div class="todayfoot">${ICON.cairn}<span>Little by little is how it holds.</span></div>`;
 }
 function emptyToday(){
@@ -890,25 +891,36 @@ function partnerCard(){
   const ps=state.partnerStatus,name=escapeHtml(state.partnerName||"Your partner");
   const av=(state.partnerName||"?").trim().charAt(0).toUpperCase();
   let line;
-  if(!ps||ps.total===0)line="No update yet today";
+  if(state.partnerNudge)line=`${name} is proud of you.`;
+  else if(!ps||ps.total===0)line="No update yet today";
   else if(ps.all_done)line="Finished their day 🎉";
   else line=`${ps.done} of ${ps.total} done today`;
   return `<div class="partnercard"><span class="pav">${av}</span>
-      <div class="pmain"><span>Together</span><b>${name}</b><small>${line}</small></div><span class="pheart">♥</span></div>`;
+      <div class="pmain"><span>Together</span><b>${name}</b><small>${line}</small></div>
+      <button class="pheart ${state.nudgeSentToday?"sent":""}" data-act="nudge" aria-label="${state.nudgeSentToday?"Proud nudge shared today":"Send a proud nudge"}">${state.nudgeSentToday?"✓":"♥"}</button></div>`;
 }
 
-function noteCard(){
-  const n=noteFor(todayStr());
-  return `<section class="journalblock"><div class="sectionhead"><div><span>Daily reflection</span><h3>What held today together?</h3></div><span class="journalmark">✎</span></div>
-    <div class="notecard tap ${n?"written":""}" data-act="editnote"><span class="journalentry">${n?escapeHtml(n):'<span class="ph">Leave one honest line about the day.</span>'}</span><span class="journalcta">${n?"Edit reflection":"Write today’s line"} <i>›</i></span></div></section>`;
+function carriedStone(){const c=closeFor(addDays(todayStr(),-1));if(!c.tomorrow)return "";
+  return `<section class="carryblock"><span class="carrymark">◆</span><div><span>Carried from last night</span><b>${escapeHtml(c.tomorrow)}</b></div></section>`;}
+function closeCard(){
+  const t=todayStr(),c=closeFor(t),closed=!!c.closedAt,ready=daySuccess(t)||nowMinutes()>=hmToMin(state.summaryTime||"21:30");
+  const body=closed?`<div class="closewords">${c.win?`<span><small>WIN</small>${escapeHtml(c.win)}</span>`:""}${c.text?`<span><small>HONEST LINE</small>${escapeHtml(c.text)}</span>`:""}</div>`:
+    `<p>One win. One honest line. Tomorrow’s first stone.</p>`;
+  return `<section class="closeblock ${closed?"closed":""} ${ready?"ready":""}"><div class="sectionhead"><div><span>Cairn Close</span><h3>${closed?"The day is sealed.":"Close the loop."}</h3></div><span class="closemark">${closed?"◆":"✦"}</span></div>
+    <button class="closecard" data-act="close-day"><div class="closehead"><span>${closed?"CLOSED "+isoTime(c.closedAt):ready?"READY WHEN YOU ARE":"20 SECONDS"}</span><b>${closed?"Keep what mattered.":"Leave the day lighter."}</b></div>${body}
+      <div class="closefoot"><span>${c.tomorrow?`Tomorrow · ${escapeHtml(c.tomorrow)}`:closed?"No intention set for tomorrow.":"Nothing here is shared with your partner."}</span><i>${closed?"Reopen":"Begin"} ›</i></div></button></section>`;
 }
-function editNoteSheet(){
-  const t=todayStr(),cur=noteFor(t);
-  const s=openSheet(`<span class="sheeteyebrow">Daily reflection</span><h3>${prettyDate(t)}</h3>
-    <div class="field"><label>What held today together?</label>
-      <textarea id="n-txt" rows="5">${escapeHtml(cur)}</textarea></div>
-    <button class="btn" id="n-save">Save</button>`);
-  s.bg.querySelector("#n-save").onclick=()=>{setNote(t,s.bg.querySelector("#n-txt").value.trim());s.close();};
+function editCloseSheet(){
+  const t=todayStr(),c=closeFor(t);
+  const s=openSheet(`<span class="sheeteyebrow">Cairn Close</span><h3>${prettyDate(t)}</h3>
+    <p class="closeprompt">Keep only what deserves to come with you.</p>
+    <div class="field"><label>One win worth keeping</label><input id="c-win" value="${escapeAttr(c.win)}" placeholder="What moved forward?"></div>
+    <div class="field"><label>One honest line</label><textarea id="c-text" rows="4" placeholder="What held today together?">${escapeHtml(c.text)}</textarea></div>
+    <div class="field"><label>Tomorrow’s first stone</label><input id="c-next" value="${escapeAttr(c.tomorrow)}" placeholder="The first thing that matters"></div>
+    <button class="btn" id="c-save">${c.closedAt?"Seal the day again":"Close the day"}</button>
+    ${c.closedAt?'<button class="swap closeclear" id="c-clear">Clear this close</button>':""}`);
+  s.bg.querySelector("#c-save").onclick=()=>{setClose(t,{win:s.bg.querySelector("#c-win").value.trim(),text:s.bg.querySelector("#c-text").value.trim(),tomorrow:s.bg.querySelector("#c-next").value.trim()});s.close();};
+  const clear=s.bg.querySelector("#c-clear");if(clear)clear.onclick=()=>{if(confirm("Clear today's close?")){setClose(t,{win:"",text:"",tomorrow:"",closedAt:""});s.close();}};
 }
 
 /* ---------- Week ---------- */
@@ -921,7 +933,7 @@ function weekView(){const t=todayStr(),dow=weekdayOf(t),start=addDays(t,-dow);le
       <div class="b2"><i style="width:${future?0:pct}%"></i></div>${hy>0?`<div style="font-size:11px;color:var(--faint);margin-top:4px">💧 ${hy} oz (${hyPct}%)</div>`:""}</div>
       <div class="wpct">${future?"":pct+"%"}</div></div>`;}
   return `<div class="h2">This Week</div><div class="tzrow pad" style="margin:-2px 0 10px">${prettyMonthRange(start)} · tap a day to fix a missed check</div>
-    <div class="card" style="margin:0 16px;padding:2px 0">${rows}</div>`;}
+    <div class="card" style="margin:0 16px;padding:2px 0">${rows}</div>${weeklyTrail()}`;}
 /* Backfill: edit a past day's completions (for days you forgot to check off). */
 function dayBackfillSheet(ymd){
   const due=dueTasks(ymd);
@@ -950,7 +962,6 @@ function historyView(){const t=todayStr();let cells="",schedTot=0,doneTot=0;
     <div class="statwrap"><div class="stat"><b class="tnum">${currentStreak()}</b><span>Current streak</span></div>
       <div class="stat"><b class="tnum">${longestStreak()}</b><span>Longest</span></div>
       <div class="stat"><b class="tnum">${rate}%</b><span>30-day rate</span></div></div>
-    ${weeklyReview()}
     <div class="grouphead">Last 30 days</div><div class="grid30">${cells}</div>
     <div class="grouphead">Per-task streaks</div><div class="card" style="margin:0 16px;padding:2px 0">${taskRows||'<div class="empty">No tasks yet.</div>'}</div>
     ${(()=>{const measured=state.tasks.filter(x=>x.measureUnit&&!x.archived);if(!measured.length)return "";
@@ -965,35 +976,48 @@ function historyView(){const t=todayStr();let cells="",schedTot=0,doneTot=0;
       <div class="stat"><b class="tnum">${state.totals.oz.toLocaleString()}</b><span>oz of water</span></div></div>`:""}
     <div style="height:8px"></div>`;}
 
-/* A gentle Sunday-style summary of the last 7 days + one focus. */
-function weeklyReview(){
-  const t=todayStr();let sched=0,done=0;const per={};
-  for(let i=0;i<7;i++){const ymd=addDays(t,-i);if(isProtected(ymd))continue;
-    for(const tk of dueTasks(ymd)){sched++;const ok=statusOf(ymd,tk.id)==="done";if(ok)done++;
+/* The rolling seven-day story: work, recovery, reflections, and the next foothold. */
+function weeklyTrail(){
+  const t=todayStr(),days=[];let sched=0,done=0,closed=0,held=0,water=0;const per={},quotes=[];
+  for(let i=6;i>=0;i--){const ymd=addDays(t,-i),f=dayFraction(ymd),protectedDay=isProtected(ymd),c=closeFor(ymd);
+    if(!protectedDay){sched+=f.total;done+=f.done;for(const tk of dueTasks(ymd)){const ok=statusOf(ymd,tk.id)==="done";
       (per[tk.id]=per[tk.id]||{title:tk.title,d:0,n:0}).n++;if(ok)per[tk.id].d++;}}
-  if(sched===0)return "";
-  const pct=Math.round(done/sched*100),arr=Object.values(per).filter(x=>x.n>=2);
-  const worst=arr.slice().sort((a,b)=>(a.d/a.n)-(b.d/b.n))[0];
-  const best=arr.slice().sort((a,b)=>(b.d/b.n)-(a.d/a.n))[0];
-  const focus=(worst&&worst.d/worst.n<1)?`Focus: <b>${escapeHtml(worst.title)}</b> — ${worst.d}/${worst.n} this week.`:`Strong week — keep the momentum.`;
-  return `<div class="grouphead">This week</div>
-    <div class="reviewcard">
-      <div class="rtop"><b class="tnum">${pct}%</b><span>of scheduled tasks done, last 7 days</span></div>
-      ${best&&best.d===best.n&&best.n>=3?`<div class="rline">✅ Perfect on <b>${escapeHtml(best.title)}</b></div>`:""}
-      <div class="rline">🎯 ${focus}</div>
-    </div>`;
+    if(protectedDay||daySuccess(ymd))held++;if(c.closedAt||c.text||c.win||c.tomorrow)closed++;
+    if(state.goalOz>0&&hydOz(ymd)>=state.goalOz)water++;
+    if(c.win)quotes.push({day:WD_SHORT[weekdayOf(ymd)],kind:"Win",text:c.win});else if(c.text)quotes.push({day:WD_SHORT[weekdayOf(ymd)],kind:"Line",text:c.text});
+    const cls=protectedDay?"rest":f.total&&f.done===f.total?"held":f.done?"partial":"open";
+    days.push(`<div class="trailday ${cls}" title="${escapeAttr(prettyDate(ymd))}: ${f.done}/${f.total}"><i></i><span>${WD_SHORT[weekdayOf(ymd)][0]}</span></div>`);
+  }
+  const pct=sched?Math.round(done/sched*100):0,arr=Object.values(per).filter(x=>x.n>=2);
+  const best=arr.slice().sort((a,b)=>(b.d/b.n)-(a.d/a.n))[0],focus=arr.slice().sort((a,b)=>(a.d/a.n)-(b.d/b.n))[0];
+  const next=closeFor(t).tomorrow,range=`${addDays(t,-6).slice(5).replace("-","/")} – ${t.slice(5).replace("-","/")}`;
+  return `<section class="trailsection"><div class="sectionhead"><div><span>Weekly Trail</span><h3>What the last seven days became.</h3></div><span class="sectioncount">${range}</span></div>
+    <div class="trailcard"><div class="trailtop"><div><strong class="tnum">${done}</strong><span>of ${sched} stones placed</span></div><b class="tnum">${pct}%</b></div>
+      <div class="trailrail">${days.join("")}</div>
+      <div class="trailstats"><span><b>${held}</b> days held</span><span><b>${closed}</b> days closed</span><span><b>${water}</b> water goals</span></div>
+      <div class="trailread"><p>${best&&best.d?`Your strongest rhythm was <b>${escapeHtml(best.title)}</b> at ${best.d}/${best.n}.`:"The trail is still waiting for its first clear rhythm."}</p>
+        <p>${focus&&focus.d/focus.n<1?`Next foothold: <b>${escapeHtml(focus.title)}</b>.`:"Keep the shape of this week."}</p></div>
+      ${quotes.length?`<div class="trailmemories"><span>What stayed with you</span>${quotes.slice(-3).map(q=>`<blockquote><small>${q.day} · ${q.kind}</small>${escapeHtml(q.text)}</blockquote>`).join("")}</div>`:""}
+      ${next?`<div class="trailnext"><span>Tomorrow’s first stone</span><b>${escapeHtml(next)}</b></div>`:""}
+    </div></section>`;
 }
-/* Full JSON backup — pulls all history from the server so you own your data. */
+async function exportNotes(){let r=await SB.from("notes").select("day,text,close_data").order("day");
+  if(r.error&&/close_data/i.test((r.error.message||"")+" "+(r.error.details||"")))r=await SB.from("notes").select("day,text").order("day");
+  if(r.error)throw r.error;return r.data||[];}
+/* Complete JSON download — journal, measured values, settings, and core history. */
 async function exportData(){
   try{
-    const [c,h]=await Promise.all([
+    const [c,h,n,v,rs]=await Promise.all([
       SB.from("completions").select("task_id,day,status"),
-      SB.from("hydration").select("day,oz")
+      SB.from("hydration").select("day,oz"),exportNotes(),
+      SB.from("task_values").select("task_id,day,value"),
+      SB.from("reminder_settings").select("enabled,summary_time,quiet_start,quiet_end").maybeSingle()
     ]);
-    const payload={app:"Cairn",version:1,exportedAt:new Date().toISOString(),timeZone:TZ,
-      profile:{name:state.name,accent:state.accent,goalOz:state.goalOz},
+    for(const r of [c,h,v,rs])if(r.error)throw r.error;
+    const payload={app:"Cairn",version:2,exportedAt:new Date().toISOString(),timeZone:TZ,
+      account:{email:session?.user?.email||""},profile:{name:state.name,accent:state.accent,goalOz:state.goalOz},
       tasks:state.tasks,restDays:state.restDays||[],savedDays:state.savedDays||[],
-      completions:c.data||[],hydration:h.data||[]};
+      completions:c.data||[],hydration:h.data||[],notes:n,taskValues:v.data||[],reminderSettings:rs.data||null};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");a.href=url;a.download=`cairn-backup-${todayStr()}.json`;
@@ -1016,13 +1040,13 @@ function settingsView(){
     <div class="setrow" data-act="summarytime"><span>Nightly summary time</span><span class="r">${fmt12(state.summaryTime||"21:30")} ›</span></div>
     <div class="setrow" data-act="quiethours"><span>Quiet hours</span><span class="r">${state.quietStart&&state.quietEnd?fmt12(state.quietStart)+"–"+fmt12(state.quietEnd):"Off"} ›</span></div>
     <div class="setrow" data-act="partner"><span>Partner</span><span class="r">${state.partnerId?escapeHtml(state.partnerName||"Linked")+" 💞":"Not linked"} ›</span></div>
+    <div class="setrow" data-act="privacy"><span>Data & privacy</span><span class="r">Account ›</span></div>
     ${access.isAdmin?`<div class="setrow" data-act="members"><span>Members <span style="color:var(--accent);font-size:12px">· admin</span></span><span class="r">Manage ›</span></div>`:""}
     <div style="height:22px"></div>
     <button class="btn ghost" data-act="add-task">＋ Add a task</button>
     <div style="height:10px"></div>
-    <button class="btn ghost" data-act="export" style="margin-bottom:10px">Export my data (JSON backup)</button>
     <button class="btn danger" data-act="signout">Sign out</button>
-    <p class="note"><span class="syncdot${syncOn?"":" off"}"></span>${syncOn?"Synced to your account — changes appear on all your signed-in devices.":"Offline — changes are saved on this device and will sync when you're back online."} Signed in as ${escapeHtml(session?.user?.email||"")}.</p>
+    <p class="note"><span class="syncdot${syncOn?"":" off"}"></span>${syncOn?"Synced to your account — changes appear on all your signed-in devices.":"Offline — this device has your latest local view. Reopen while online to confirm pending changes synced."} Signed in as ${escapeHtml(session?.user?.email||"")}.</p>
   </div>`;}
 
 function tabbar(){const T=[["today","Today"],["week","Week"],["history","History"],["settings","Settings"]];
@@ -1218,8 +1242,11 @@ function handle(act,el,e){
   else if(act==="theme")themeSheet();
   else if(act==="changecode"){setupFirst=null;entry="";renderLockSetup(false);}
   else if(act==="export")exportData();
+  else if(act==="privacy")privacySheet();
+  else if(act==="password")changePasswordSheet();
+  else if(act==="delete-account")deleteAccountSheet();
   else if(act==="tutorial")runTour();
-  else if(act==="editnote")editNoteSheet();
+  else if(act==="editnote"||act==="close-day")editCloseSheet();
   else if(act==="summarytime"){const v=prompt("Nightly summary time (24-hour, e.g. 21:30):",state.summaryTime||"21:30");
     if(v&&/^\d{1,2}:\d{2}$/.test(v.trim())){state.summaryTime=v.trim();render();
       push(()=>SB.from("reminder_settings").upsert({user_id:userId,summary_time:v.trim(),updated_at:new Date().toISOString()},{onConflict:"user_id"}));}}
@@ -1236,6 +1263,7 @@ function handle(act,el,e){
   else if(act==="reminders"){(async()=>{ if(await remindersOn())disableReminders(); else enableReminders(); })();}
   else if(act==="restday")toggleRestDay();
   else if(act==="partner")partnerSheet();
+  else if(act==="nudge")nudgeSheet();
   else if(act==="members")membersSheet();
   else if(act==="signout"){if(confirm("Sign out of Cairn on this device?"))signOut();}
 }
@@ -1260,6 +1288,38 @@ function themeSheet(){
   const opts=[["system","System"],["light","Light"],["dark","Dark"],["oled","Pure Black · OLED"]];
   const s=openSheet(`<h3>Appearance</h3><div class="picker">${opts.map(([v,l])=>`<button data-th="${v}" class="${cur===v?"on":""}">${l}</button>`).join("")}</div>`);
   s.bg.querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>{setTheme(b.dataset.th);s.close();render();});
+}
+function privacySheet(){
+  const s=openSheet(`<span class="sheeteyebrow">Account</span><h3>Data & privacy</h3>
+    <div class="trustlist"><div><i>◆</i><span><b>Your account is the boundary.</b><small>Supabase row-level rules keep each member's records separate.</small></span></div>
+      <div><i>◆</i><span><b>No ads. No analytics.</b><small>Cairn has no ad network or behavioral tracking SDK.</small></span></div>
+      <div><i>◆</i><span><b>Partner sharing stays narrow.</b><small>Name, daily counts, and a fixed Proud nudge only. Never tasks or journal text.</small></span></div>
+      <div><i>◆</i><span><b>Honest limitation.</b><small>Your journal is access-controlled and sent over HTTPS, but it is not end-to-end encrypted.</small></span></div></div>
+    <button class="btn ghost" id="dp-export">Download my data</button><button class="btn ghost" id="dp-password">Change password</button>
+    <button class="swap privacylink" id="dp-policy">Read the full privacy notice</button>
+    <div class="dangerzone"><span>Danger zone</span><p>Deleting your account permanently removes its profile, tasks, history, hydration, and reflections.</p>
+      <button class="btn danger" id="dp-delete">Delete account</button></div>`);
+  s.bg.querySelector("#dp-export").onclick=exportData;
+  s.bg.querySelector("#dp-password").onclick=()=>{s.close();changePasswordSheet();};
+  s.bg.querySelector("#dp-policy").onclick=()=>window.open("privacy.html","_blank");
+  s.bg.querySelector("#dp-delete").onclick=()=>{s.close();deleteAccountSheet();};
+}
+function changePasswordSheet(){const s=openSheet(`<span class="sheeteyebrow">Security</span><h3>Change password</h3>
+  <div class="field"><label>New password</label><input id="pw-one" type="password" minlength="8" autocomplete="new-password"></div>
+  <div class="field"><label>Repeat password</label><input id="pw-two" type="password" minlength="8" autocomplete="new-password"></div>
+  <div class="err" id="pw-sheet-err"></div><button class="btn" id="pw-sheet-save">Update password</button>`);
+  s.bg.querySelector("#pw-sheet-save").onclick=async()=>{const a=s.bg.querySelector("#pw-one").value,b=s.bg.querySelector("#pw-two").value,er=s.bg.querySelector("#pw-sheet-err");
+    if(a.length<8){er.textContent="Use at least 8 characters.";return;}if(a!==b){er.textContent="Passwords don't match.";return;}
+    const {error}=await SB.auth.updateUser({password:a});if(error){er.textContent=friendlyAuthError(error);return;}s.close();showToast("Password updated");};
+}
+function deleteAccountSheet(){const s=openSheet(`<span class="sheeteyebrow">Permanent</span><h3>Delete your account</h3>
+  <p class="closeprompt">This cannot be undone. Your synced Cairn data and this device's private cache will be removed.</p>
+  <div class="field"><label>Type DELETE to confirm</label><input id="da-confirm" autocomplete="off" placeholder="DELETE"></div>
+  <div class="err" id="da-err"></div><button class="btn danger" id="da-go">Delete everything</button>`);
+  const btn=s.bg.querySelector("#da-go");btn.onclick=async()=>{const er=s.bg.querySelector("#da-err");if(s.bg.querySelector("#da-confirm").value!=="DELETE"){er.textContent="Type DELETE exactly.";return;}
+    btn.disabled=true;btn.textContent="Deleting…";const id=userId;const {error}=await SB.functions.invoke("delete-account",{body:{confirm:"DELETE"}});
+    if(error){er.textContent="Couldn't delete the account. Nothing was removed.";btn.disabled=false;btn.textContent="Delete everything";return;}
+    outbox=[];clearDeviceData(id);try{await SB.auth.signOut({scope:"local"});}catch(_){}state=null;session=null;userId=null;unlocked=false;s.close();renderAuth("Your Cairn account and data were deleted.");};
 }
 
 /* ---------- Sheets ---------- */
@@ -1304,6 +1364,18 @@ function openSheet(html){
 function accentSheet(){const s=openSheet(`<h3>Accent color</h3><div class="chips">${Object.entries(ACCENTS).map(([k,v])=>
   `<button class="chip ${state.accent===k?"on":""}" data-a="${k}" style="border-color:${v}"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${v};vertical-align:-1px;margin-right:6px"></span>${k}</button>`).join("")}</div>`);
   s.bg.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{state.accent=b.dataset.a;s.close();mSaveProfile();});}
+function nudgeSheet(){if(!state.partnerId)return;
+  const name=escapeHtml(state.partnerName||"Your partner"),sent=state.nudgeSentToday;
+  const s=openSheet(`<span class="sheeteyebrow">Together</span><h3>${sent?"Shared today":"Send a quiet signal"}</h3>
+    <div class="nudgepreview"><span>♥</span><div><small>TO ${name.toUpperCase()}</small><b>Proud of you.</b></div></div>
+    <p class="closeprompt">A single private nudge. It shares no tasks, progress details, or journal text. One per day.</p>
+    <div class="err" id="ng-err"></div><button class="btn" id="ng-send" ${sent?"disabled":""}>${sent?"Already shared":"Send Proud of you"}</button>`);
+  const btn=s.bg.querySelector("#ng-send");if(sent)return;
+  btn.onclick=async()=>{const er=s.bg.querySelector("#ng-err");if(!navigator.onLine){er.textContent="Reconnect before sending — nudges never queue for later.";return;}
+    btn.disabled=true;btn.textContent="Sending…";const {data,error}=await SB.rpc("send_partner_nudge");
+    if(error||!data||!data.ok){er.textContent=(data&&data.error)||"Couldn't send the nudge. Nothing was queued.";btn.disabled=false;btn.textContent="Send Proud of you";return;}
+    state.nudgeSentToday=true;cacheSave();s.close();render();showToast(data.already_sent?"Already shared today":"Proud of you shared");};
+}
 function partnerSheet(){
   if(state.partnerId){
     const s=openSheet(`<h3>Partner</h3>
@@ -1311,7 +1383,7 @@ function partnerSheet(){
         <div class="pmain"><b>${escapeHtml(state.partnerName||'Your partner')}</b><span>Linked 💞</span></div></div>
       <p class="note">You each see the other's daily progress on the Today screen — counts only, never each other's tasks.</p>
       <button class="btn danger" id="p-unlink" style="margin-top:12px">Unlink</button>`);
-    s.bg.querySelector("#p-unlink").onclick=()=>{if(confirm("Unlink from your partner?")){unlinkPartner();s.close();}};
+    s.bg.querySelector("#p-unlink").onclick=async()=>{if(confirm("Unlink from your partner? This removes shared access for both of you.")){const ok=await unlinkPartner();if(ok)s.close();}};
     return;
   }
   const s=openSheet(`<h3>Link with your partner</h3>
@@ -1359,10 +1431,10 @@ function membersSheet(){
   }
   reload();
 }
-function unlinkPartner(){
-  state.partnerId=null;state.partnerName=null;state.partnerStatus=null;
-  push(()=>SB.from("couple_links").upsert({user_id:userId,partner_id:null,code:null,code_expires:null,updated_at:new Date().toISOString()},{onConflict:"user_id"}));
-  render();
+async function unlinkPartner(){
+  if(!navigator.onLine){alert("Reconnect before unlinking so access is removed for both people at once.");return false;}
+  const {data,error}=await SB.rpc("unlink_partner");if(error||!data||!data.ok){alert("Couldn't unlink. Nothing changed.");return false;}
+  state.partnerId=null;state.partnerName=null;state.partnerStatus=null;state.partnerNudge=null;state.nudgeSentToday=false;cacheSave();render();return true;
 }
 function manageSheet(){
   const s=openSheet(`<h3>Manage tasks</h3><div id="mg-list"></div>
@@ -1450,6 +1522,7 @@ function ruleLabel(t){const r=t.rule||{type:"daily"};if(r.type==="daily")return 
 
 /* ---------- utils ---------- */
 function fmt12(hm){if(!hm)return"";let[h,m]=hm.split(":").map(Number);const ap=h<12?"AM":"PM";h=h%12||12;return `${h}:${String(m).padStart(2,"0")} ${ap}`;}
+function isoTime(iso){if(!iso)return"";const p=denverParts(new Date(iso));return fmt12(`${p.hour}:${p.minute}`);}
 function hmToMin(t){if(!t)return null;const[h,m]=t.split(":").map(Number);return h*60+m;}
 function nowMinutes(){const p=denverParts();return (p.hour==="24"?0:+p.hour)*60 + +p.minute;}
 function escapeHtml(s){return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
