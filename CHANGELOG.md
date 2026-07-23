@@ -3,6 +3,16 @@
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
 ## 2026-07-23
+- **Crash safety / global error capture (sellability roadmap #5).** Added `window.error` +
+  `unhandledrejection` handlers → `logError()`: captures to a bounded localStorage ring buffer
+  (`cairn_errlog`, last 25, survives reload), best-effort inserts to a remote `error_log` table if
+  present, and warns the user once (debounced 10s) with a "Reload" toast so a half-painted screen
+  is never a silent mystery. The handler is fully wrapped so it can never throw or loop; the remote
+  insert is fire-and-forget and silently ignored until the table exists — so the whole thing works
+  with NO setup. Optional `error-log.sql` (new) creates the table with insert-own / admin-read RLS
+  for a queryable server-side history. `sw.js` → v10. Verified live: both error kinds captured and
+  classified, buffer caps at 25, toast fires once, signed-out skips remote, null-safe, zero console
+  noise, no loop.
 - **Mark cleanup + brand-moment follow-ups (post-rename).** `ICON.treadway` was still the OLD
   stacked geometry — the rename changed only the object key, so the lock-code screen, Today
   footer, auth, onboarding, and install demo all still showed the cairn. Made `ICON.treadway` a

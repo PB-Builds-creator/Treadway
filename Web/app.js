@@ -1646,6 +1646,23 @@ document.addEventListener("visibilitychange",()=>{
 window.addEventListener("online",()=>{setSync(true);flushOutbox();silentRefresh();});
 window.addEventListener("offline",()=>setSync(false));
 
+/* ---------- crash safety: a silent JS error must never be invisible ---------- */
+/* Captures to a bounded localStorage buffer (survives reload), best-effort to a remote table if
+   error-log.sql has been run (ignored otherwise), and warns the user once so a half-painted screen
+   is never a mystery. Everything here is wrapped so the handler can never throw and loop. */
+let errShownAt=0;
+function logError(kind,message,source){
+  try{
+    const rec={t:new Date().toISOString(),kind,message:String(message==null?"":message).slice(0,500),source:String(source||"").slice(0,300),tab,uid:userId||null};
+    try{const buf=JSON.parse(localStorage.getItem("cairn_errlog")||"[]");buf.push(rec);while(buf.length>25)buf.shift();localStorage.setItem("cairn_errlog",JSON.stringify(buf));}catch(_){}
+    try{if(userId&&typeof SB!=="undefined")SB.from("error_log").insert({user_id:userId,kind,message:rec.message,source:rec.source,tab,ua:(navigator.userAgent||"").slice(0,200)}).then(()=>{},()=>{});}catch(_){}
+    const now=Date.now();
+    if(now-errShownAt>10000){errShownAt=now;try{showToast("Something glitched. Your saved data is safe — reload if the screen looks off.","Reload",()=>location.reload());}catch(_){}}
+  }catch(_){}
+}
+window.addEventListener("error",e=>{logError("error",(e&&e.message)||"script error",(e&&e.filename)?e.filename+":"+(e.lineno||0):"");});
+window.addEventListener("unhandledrejection",e=>{const r=e&&e.reason;logError("promise",(r&&(r.message||r))||"unhandled rejection","");});
+
 /* ---------- go ---------- */
 (function applyStoredTheme(){try{const t=localStorage.getItem("cairn_theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}updateThemeMeta();})();
 startLaunch();

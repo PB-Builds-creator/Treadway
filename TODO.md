@@ -53,6 +53,41 @@ non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action`
 1. Dropping into an **empty/absent category** isn't possible (groups only render when they have
    tasks). Workaround: change group in Edit. Could render placeholder drop zones during a drag.
 
+## Sellability roadmap (if this ever becomes a paid product)
+Staged by what blocks charging money. Ordered; do top-down. "DONE" items shipped this session.
+**Tier 0 — hard blockers on charging anyone**
+1. ~~Name collided with Salesforce (Trailhead)~~ — DONE: renamed **Treadway**. Still NOT legal
+   clearance; get a professional trademark search before public paid launch (Treadway is a surname).
+2. **Commercial domain.** `cairn.surge.sh` is a free subdomain and can't be a paid product's home.
+   Needs a purchased domain + a planned origin migration (Supabase Auth redirect, PWA reinstall,
+   push-subscription migration all move together). Do it at the same time as any future re-brand.
+3. **Self-serve signup.** Today every signup needs owner approval (a guest list, not a business).
+   Selling needs sign-up → pay → use without a human in the loop. Approval hub becomes anti-abuse.
+4. **Billing.** No Stripe/checkout/plan/trial anywhere. Needs a payment integration + plan gating.
+**Tier 1 — breaks quietly once strangers use it**
+5. ~~No error tracking~~ — DONE: global handler + local buffer + optional `error-log.sql`.
+6. **Backups.** Free Supabase has no point-in-time recovery + pauses after inactivity (verify
+   current terms). Paid tier or a scheduled `pg_dump`. Needs owner action (credentials/billing).
+7. **Email deliverability.** Supabase built-in SMTP is rate-limited and not for production; resets/
+   confirmations will silently drop past a few/hour. Needs Resend/Postmark on the real domain
+   (SPF/DKIM). Owner action.
+8. **Terms of Service.** Privacy policy exists; no ToS (liability, refunds, subscription terms).
+   Can be drafted in-repo (matches privacy.html), owner gets it reviewed before charging.
+9. **Analytics.** None. Privacy-respecting (Plausible/Umami) fits the brand; needs an account.
+**Tier 2 — hobby vs product**
+10. **Accessibility.** ~13 aria-*, but zero `role=` and zero `alt=`. Clearest "built by pros"
+    signal and low-risk pure-code work — good next autonomous item.
+11. **Landing page.** `index.html` IS the app; a stranger hits a login form with no explanation.
+12. **Automated tests.** All QA is manual. A small headless suite over streak/date/cheat-day logic
+    would catch the most expensive class of regression.
+13. **`app.js` is one ~1650-line / 130KB file.** No-build-step was right for personal scale; it's
+    the ceiling on safe change velocity. Don't split yet, but know it's the limit.
+**Tier 3 — strategic**
+14. **$99 Apple Developer** buys distribution + payment rails + the two things habit apps get paid
+    for (widgets, HealthKit) that a PWA can't do. Deferred "a few months".
+15. **Positioning** is the real asset: the ritual framing (day stone, Close, Weekly Trail) + the
+    couple/accountability layer. Won't win on task-checking; build any pitch around those.
+
 ## Known caveats
 - Access checks fail closed on unknown server errors. A cached previously-approved user can still
   open their cached offline view, while server RLS remains authoritative for all remote data.
