@@ -59,6 +59,10 @@ non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action`
 - **Trailhead is a user-directed working/private brand, not a cleared public trademark.**
   Salesforce actively uses Trailhead/Trailhead GO. Do not charge the general public under this
   name until professional clearance is obtained or the product is renamed.
+- `trailhead.surge.sh` is occupied by an unrelated site and is not this app. The correct live link
+  remains `https://cairn.surge.sh`. Do not change origins casually: a future branded address needs
+  a verified available hostname plus Supabase Auth redirect, PWA reinstall, and push-subscription
+  migration work.
 
 ## Testing gotcha (cost ~30 min once — don't repeat it)
 The in-app browser pane can collapse to a **0×0 viewport**, which makes every

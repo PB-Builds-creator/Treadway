@@ -13,6 +13,8 @@ _Last updated: 2026-07-22. Brief rationale for choices that aren't obvious from 
   device keys, repo paths, and SQL names remain unchanged. Renaming those internals would create
   migration risk without improving the visible brand. Existing installed PWA names/icons require
   deleting and re-adding the Home Screen shortcut; there is no SQL or account-data migration.
+  The obvious `trailhead.surge.sh` hostname is already owned by an unrelated site titled
+  `trailhead.app`, so it is explicitly prohibited as a deploy target or user-facing link.
 
 - **One identity geometry, restrained motion.** The installed icon, inline app mark, launch,
   Today lockup, auth, and tutorial all use the same four-stone/rising-route shape. Startup settles

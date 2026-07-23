@@ -22,6 +22,10 @@ The origin intentionally remains `https://cairn.surge.sh` so existing Supabase a
 sessions, and web-push origin assumptions do not migrate. Compatibility identifiers also remain:
 `window.CAIRN_CONFIG`, `cairn_*` localStorage keys, SQL filenames, and the repository directory.
 They are implementation details, not visible product copy. There is no SQL for this rebrand.
+`https://trailhead.surge.sh` is already occupied by an unrelated site (its public document title
+is `trailhead.app`); it is not owned by this project and must never be used in setup instructions
+or as a deployment target. Until a deliberate origin migration is completed, every shared link
+must use `https://cairn.surge.sh` even though the installed product name is Trailhead.
 Existing iPhone Home Screen labels/icons are not remotely renamed; users must open the refreshed
 site, delete the old Home Screen icon, and add it again as Trailhead. Account data remains in
 Supabase and is not deleted by removing the shortcut.
@@ -154,6 +158,9 @@ There are **two deliverables**:
 
 ## Deploy / ops (all runnable headlessly from this Mac — logins cached)
 - **Web deploy:** `cd /Users/paxton/Cairn/Web && npx surge . cairn.surge.sh`
+- **Never deploy to `trailhead.surge.sh`:** it belongs to an unrelated existing site. A future
+  branded URL must be a different verified-available Surge subdomain or a purchased custom domain,
+  followed by a planned Supabase Auth/PWA/push origin migration.
 - **Edge fn deploy:** `cd /Users/paxton/Cairn && supabase functions deploy send-reminders --project-ref bckcawaiyybrjsphiqdc --no-verify-jwt --use-api`
 - **Trigger reminder fn (test):** `curl -X POST https://bckcawaiyybrjsphiqdc.supabase.co/functions/v1/send-reminders -H "x-cron-secret: <CRON_SECRET>"` → `{"ok":true,...,"sent":N}`
 - **Secrets (NOT in Web/, never deploy):** `Cairn/vapid-private-KEEP-SECRET.txt` (VAPID public/private, CRON_SECRET). Gitignored via `*KEEP-SECRET*` — keep it that way.
