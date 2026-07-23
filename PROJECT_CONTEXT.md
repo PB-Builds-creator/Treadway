@@ -255,11 +255,16 @@ There are **two deliverables**:
   drop, finds `.card[data-group]` → `dropTask(id, group, beforeId)` re-homes the task's category
   and re-flows all `sort_index`. Same-card drops fall back to `commitReorder`.
 - **FLIP** (`captureRows`/`playFlip`) animates rows gliding between positions on complete/drop.
-- **Motion state also lives outside rendered DOM:** the cold-launch overlay is appended to `body`
-  while auth/data load behind it, and is capped below 900ms. Its four-stone Treadway mark presses
-  the stones into the ground nearest-first and draws the worn way once; when Today is ready
-  quickly it hands off (shared-element) to `.homebrandmark` rather than the progress ring — the
-  launch and home marks are the same landscape geometry, so the morph is clean. The tour overlay
+- **Motion state also lives outside rendered DOM:** the cold-launch overlay is **pre-rendered in
+  `index.html`** (`#launch`) so the FIRST paint is the branded stepping-stones animation — the
+  plain `.loading` spinner no longer shows on open. `startLaunch()` ADOPTS the pre-rendered element
+  (does not create it); a per-frame poll dismisses it once a real screen
+  (`.screen/.auth/.lock/.onboard`) exists AND a min time (~960ms, so the mark fully lays in) has
+  passed, capped at 2.6s, with `launchDone` guarding double-dismiss. Its four-stone Treadway mark
+  presses the stones in nearest-first and draws the worn way once; landing on Today hands off
+  (shared-element morph) to `.homebrandmark`, any other screen fades. A no-flash theme `<script>`
+  in `<head>` sets `data-theme` before first paint. Haptics: `haptic(kind)` helper wired through
+  `bindApp` for tabs/buttons (Android only — iOS Safari ignores the Vibration API). The tour overlay
   likewise survives
   app re-renders so its spotlight can travel between targets. Empty accounts use a tour-only
   gesture showcase rather than fake app data. All JS motion exits through `prefersReduce()` and

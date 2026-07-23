@@ -17,11 +17,15 @@ Everything below is verified with synthetic pointer events in a desktop browser 
 4. **Undo toast** on delete ("Deleted — Undo") — visually confirmed in mobile browser QA and
    restored the exact row; still confirm real touch timing.
 5. **Sheet notch** drag-down-to-dismiss + no background scrolling behind sheets.
-6. **Flagship motion + professional tutorial feel** — cold-launch skip/shared-logo handoff,
-   traveling spotlight, blur/exposure transitions, blank-account gesture showcase, caption safe
-   areas, and Back/Continue/Skip need real iPhone timing/visual confirmation. Automatic first-run
-   launch and Settings replay passed browser QA, but a desktop browser cannot establish 60fps or
-   exact safe-area feel on the phone.
+6. **Flagship motion + professional tutorial feel** — the launch animation is now the branded
+   FIRST paint (pre-rendered in index.html, no spinner); confirm on the phone that there's no
+   spinner flash, the mark lays in, and it hands off/fades cleanly. Also: richer page-transition
+   slide+scale, active-tab pop, cold-launch skip/shared-logo handoff, traveling spotlight,
+   blur/exposure transitions, blank-account gesture showcase, caption safe areas, Back/Continue/
+   Skip. Browser QA passed, but a desktop browser cannot establish 60fps or exact safe-area feel.
+   **Haptics are wired app-wide but iOS Safari ignores the Vibration API — they will NOT fire on
+   the iPhone.** They work on Android; true iPhone haptics require the native app. Don't "fix" the
+   haptics thinking they're broken — the web platform simply doesn't expose them on iOS.
 7. **Today daily-ritual shell + Trailhead Close** — verify hero density, internal scrolling,
    floating-tab safe-area placement/auto-hide, one-shot seal motion, and Close-sheet feel in both
    Light and OLED on the iPhone 17.

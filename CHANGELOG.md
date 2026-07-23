@@ -3,6 +3,20 @@
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
 ## 2026-07-23
+- **Flagship motion pass.** (1) **Launch = branded first paint:** the stepping-stones animation is
+  now pre-rendered in `index.html` (with a no-flash theme script in `<head>`), so the very first
+  frame is the mark laying itself in — the plain `.loading` spinner no longer shows on open
+  (`.loading`/`.spin` CSS kept; still used behind the overlay during data load). `startLaunch`
+  adopts the pre-rendered `#launch` and dismisses via a per-frame poll (min ~960ms so the mark
+  fully lays in, cap 2.6s, tap-to-skip) that fires for ANY first screen — shared-element morph into
+  the Today header when landing there, else a clean fade. Elevated visuals: radial glow, group
+  rise, weightier nearest-first stone timing, drop shadow, longer way-draw. (2) **Page
+  transitions:** richer directional slide + subtle scale + refined curve (.44s); active-tab icon
+  springs (`tabpop`) on tab change only. (3) **Haptics:** central `haptic()` helper wired through
+  every tab (tap) + button (light) in `bindApp`, plus semantic patterns (completion=success, drag
+  pick/drop, cheat-day reward); replaces the old scattered `navigator.vibrate` calls. **iOS Safari
+  ignores the Vibration API — Android-only; real iPhone haptics need the native app.** `sw.js` → v12.
+  Ring odometer/milestones/celebrate were already present and untouched.
 - **Crash safety / global error capture (sellability roadmap #5).** Added `window.error` +
   `unhandledrejection` handlers → `logError()`: captures to a bounded localStorage ring buffer
   (`cairn_errlog`, last 25, survives reload), best-effort inserts to a remote `error_log` table if
