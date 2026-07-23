@@ -1,15 +1,31 @@
-# Trailhead (formerly Cairn) — Project Context
+# Treadway (formerly Trailhead, formerly Cairn) — Project Context
 
 _Handoff doc. Read this + TODO.md + DECISIONS.md + CHANGELOG.md, then the code._
-_Last updated: 2026-07-22._
+_Last updated: 2026-07-23._
 
-**Current handoff checkpoint:** the earned meal-plan Cheat Day release described below is the
-current web product and reminder behavior. It builds on the deployed Trailhead identity release.
-No SQL or manual Supabase Editor step is required for Cheat Days; only the real-phone actions and
-feel tests in TODO.md remain. Treat the latest-release section as current truth and the later
-`PRIOR RELEASE` sections as historical implementation context.
+**Current handoff checkpoint:** the product is now named **Treadway** (renamed from Trailhead,
+which collided with Salesforce). The rename + mark redesign is the newest release; the earned
+meal-plan Cheat Day and identity work below it are intact and current in behavior. No SQL or
+manual Supabase step is pending. Treat the LATEST RELEASE sections as current truth and
+`PRIOR RELEASE` sections as historical implementation context. The product name is a user-directed
+working brand only — NOT a cleared trademark (see DECISIONS + TODO).
 
-## LATEST RELEASE — earned meal-plan Cheat Days
+## LATEST RELEASE — Treadway rename + stepping-stone mark
+Renamed Trailhead → **Treadway** across all user-visible copy and assets. The identity's metaphor
+changed with the name: the mark is now **four flat stones stepping into the distance along a
+rising path** (a treadway = a trail's walking surface) instead of a vertical cairn stack. `icon.svg`
+and the in-app `treadwayMarkHtml()` share one geometry; `icon-180/192/512.png` were regenerated
+from it (qlmanage→sips). The in-app SVG is landscape (viewBox `-2 41 81 68`) and draws the worn
+`.trailblaze` way FIRST so the stones sit on top of it. Every mark-sizing rule (auth/lock/launch/
+tour hero/home header/install demo) and the launch stagger keyframe (`treadstonein`, a
+press-into-ground) were retuned from portrait to landscape. `sw.js` shell → v8. All internal
+identifiers (`cairn_*` localStorage, `window.CAIRN_CONFIG`, SQL filenames, the `cairn.surge.sh`
+origin) are deliberately unchanged — brand is copy/assets only. Deployed and verified: 12 changed
+assets matched local byte-for-byte, live title/manifest/icon read Treadway, and the new landscape
+mark was visually confirmed at 375×812 in OLED. The `send-reminders` edge fn source now titles
+pushes "Treadway"; redeploy it to update the live notification title (see Deploy/ops).
+
+## PRIOR RELEASE — earned meal-plan Cheat Days
 Any task can now opt into **Meal-plan Cheat Day reward** under Edit task → More options. The user
 chooses a whole-number discipline interval from a minimum of 7 scheduled days with no artificial
 maximum. The editor explains that ordinary `done` completions must be consecutive on days when
@@ -239,9 +255,11 @@ There are **two deliverables**:
   and re-flows all `sort_index`. Same-card drops fall back to `commitReorder`.
 - **FLIP** (`captureRows`/`playFlip`) animates rows gliding between positions on complete/drop.
 - **Motion state also lives outside rendered DOM:** the cold-launch overlay is appended to `body`
-  while auth/data load behind it, and is capped below 900ms. Its four-stone Trailhead mark draws
-  the route once and, when Today is ready quickly, hands off to `.homebrandmark` rather than the
-  progress ring. The tour overlay likewise survives
+  while auth/data load behind it, and is capped below 900ms. Its four-stone Treadway mark presses
+  the stones into the ground nearest-first and draws the worn way once; when Today is ready
+  quickly it hands off (shared-element) to `.homebrandmark` rather than the progress ring — the
+  launch and home marks are the same landscape geometry, so the morph is clean. The tour overlay
+  likewise survives
   app re-renders so its spotlight can travel between targets. Empty accounts use a tour-only
   gesture showcase rather than fake app data. All JS motion exits through `prefersReduce()` and
   CSS is covered by the existing reduced-motion rule.

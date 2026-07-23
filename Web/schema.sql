@@ -1,4 +1,4 @@
--- Trailhead — Supabase schema + row-level security (legacy filename retained).
+-- Treadway — Supabase schema + row-level security (legacy filename retained).
 -- Paste this whole file into the Supabase SQL Editor (New query → Run).
 -- It creates the four tables and locks every row to its owner: each signed-in
 -- person can only ever read or write their OWN data. Safe to re-run.

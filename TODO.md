@@ -1,12 +1,12 @@
-# Trailhead (formerly Cairn) — TODO
+# Treadway (formerly Trailhead, formerly Cairn) — TODO
 
-_Last updated: 2026-07-22. Keep prioritized; delete done items (they go to CHANGELOG)._
+_Last updated: 2026-07-23. Keep prioritized; delete done items (they go to CHANGELOG)._
 
-**Current release state:** the earned meal-plan Cheat Day web UI and reminder handling are the
-current release; they require no SQL. Trailhead identity assets remain live at the original
-`cairn.surge.sh` origin. The list below is intentionally limited to real-device confirmation,
-per-phone reinstall/resubscription, one unavailable-phone partner test, and one optional future
-gesture enhancement.
+**Current release state:** the product is renamed **Treadway** with a redesigned stepping-stone
+mark (live, no SQL). The earned meal-plan Cheat Day UI and reminder handling remain current.
+Treadway assets are live at the original `cairn.surge.sh` origin (origin deliberately unchanged).
+The list below is real-device confirmation, per-phone reinstall/resubscription, one
+unavailable-phone partner test, one optional gesture enhancement, plus the sellability roadmap.
 
 ## ⚠️ Needs confirmation on a REAL iPhone (dev env has no touch device)
 Everything below is verified with synthetic pointer events in a desktop browser only.
@@ -61,13 +61,19 @@ non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action`
 - App-URL scheme presets (mfp://, youversion://, instagram://) are best guesses.
 - Web push needs the PWA added to the Home Screen on iOS.
 - Reorder pushes an upsert for every active task (fine at personal scale).
-- **Trailhead is a user-directed working/private brand, not a cleared public trademark.**
-  Salesforce actively uses Trailhead/Trailhead GO. Do not charge the general public under this
-  name until professional clearance is obtained or the product is renamed.
-- `trailhead.surge.sh` is occupied by an unrelated site and is not this app. The correct live link
-  remains `https://cairn.surge.sh`. Do not change origins casually: a future branded address needs
-  a verified available hostname plus Supabase Auth redirect, PWA reinstall, and push-subscription
-  migration work.
+- **Treadway is a user-directed working/private brand, not a cleared public trademark.** It was
+  renamed from Trailhead (which collided with Salesforce). Web search found no software/app
+  "Treadway", but that is NOT legal clearance and "Treadway" is also a surname — obtain a
+  professional trademark search before charging the general public.
+- **The live origin is still `https://cairn.surge.sh`** even though the product is named Treadway.
+  The origin is deliberately unchanged (Supabase auth redirects + push subscriptions are bound to
+  it). Every shared link must use `cairn.surge.sh`. A future branded address needs a verified-
+  available hostname plus Supabase Auth redirect, PWA reinstall, and push-subscription migration —
+  do not change origins casually. Note `trailhead.surge.sh` is occupied by an unrelated site; a
+  `treadway.surge.sh` was NOT checked or claimed.
+- **Live reminder push title updates only after redeploying `send-reminders`.** The source now
+  says "Treadway"; until redeployed, lock-screen reminders still read "Trailhead". (Deploy cmd in
+  PROJECT_CONTEXT → Deploy/ops.)
 
 ## Testing gotcha (cost ~30 min once — don't repeat it)
 The in-app browser pane can collapse to a **0×0 viewport**, which makes every

@@ -1,6 +1,26 @@
-# Trailhead (formerly Cairn) — Changelog
+# Treadway (formerly Trailhead, formerly Cairn) — Changelog
 
 _Concise milestone log, newest first. Keep to meaningful milestones._
+
+## 2026-07-23
+- **Renamed Trailhead → Treadway and redesigned the mark.** Trailhead collided with Salesforce's
+  active Trailhead/Trailhead GO brand; "Treadway" (the worn walking surface of a trail — the
+  ground underfoot) was researched against software/app conflicts and came back clean, unlike
+  Waystone / Whetstone / Cobble / Daystone / Esker, which were all taken. The identity changed
+  metaphor with the name: the logo went from a **vertical cairn stack** to **four flat stepping
+  stones rising along a path** with a worn way showing through the gaps. Redrew `icon.svg`,
+  regenerated `icon-180/192/512.png` (qlmanage → sips; larger bytes, no PNG optimizer available
+  but SW-cached so fetched once), and replaced the in-app `treadwayMarkHtml` (portrait 96×112 →
+  landscape viewBox `-2 41 81 68`, way drawn first so it sits behind the stones). Retuned every
+  place the mark is sized (auth, lock, launch, tour hero, home header, install demo) from portrait
+  to landscape, and the launch stagger keyframe from a drop-in to a press-into-ground
+  (`treadstonein`). All 88 "Trailhead" strings across app.js/index/sw/manifest/config/setup/
+  privacy/styles + the reminder edge fn are now "Treadway"; deliberate internal identifiers
+  (`cairn_*` keys, `window.CAIRN_CONFIG`, the `cairn.surge.sh` origin) intentionally unchanged.
+  `sw.js` shell → v8. Deployed; all 12 changed assets matched local byte-for-byte; live PWA title/
+  manifest/icon read Treadway. New landscape mark visually verified at 375×812 in OLED. Naming is
+  still a user-directed working brand, NOT a cleared trademark — "Treadway" is also a surname, so
+  professional clearance is still required before charging the public.
 
 ## 2026-07-22
 - **Earned meal-plan Cheat Days:** any task can now enable a professional Cheat Day reward and

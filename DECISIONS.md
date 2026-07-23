@@ -1,6 +1,26 @@
-# Trailhead (formerly Cairn) — Key Decisions
+# Treadway (formerly Trailhead, formerly Cairn) — Key Decisions
 
-_Last updated: 2026-07-22. Brief rationale for choices that aren't obvious from the code._
+_Last updated: 2026-07-23. Brief rationale for choices that aren't obvious from the code._
+
+- **Renamed Trailhead → Treadway (2026-07-23), user-directed.** Trailhead collides head-on with
+  Salesforce's active Trailhead/Trailhead GO brand — a launch-blocking conflict flagged in the
+  prior handoff. The owner asked for a never-used stone/trail name; web research (not legal
+  clearance) rejected Waystone, Whetstone, Cobble, Daystone, and Esker (all had software/app
+  users) and found **Treadway** clean in the software space. A treadway is the worn walking
+  surface of a trail — the ground you actually cover — which fits a daily-discipline app better
+  than a trail's *entrance* (Trailhead) did. **Still not a cleared trademark:** "Treadway" is also
+  a surname, so a professional search is required before charging the public. See [[naming-and-domain-are-launch-blockers]].
+- **The mark's geometry follows the name's meaning.** Trailhead was a vertical **cairn stack**;
+  Treadway is **four flat stones stepping into the distance along a rising path**, way drawn
+  behind the stones so it shows through the gaps. When the metaphor changes, the logo changes —
+  a text-only swap would have left a stacked-stones mark contradicting the new name. The in-app
+  SVG shares its path geometry with the app icon (one source of truth for the identity), so the
+  icon and mark always match; only fills differ (icon = gray stone gradients, in-app = accent mix).
+- **Internal identifiers stay `cairn_*` across both renames.** localStorage keys, `CAIRN_CONFIG`,
+  SQL filenames, the repo directory, and the `cairn.surge.sh` origin are deliberately NOT renamed:
+  changing storage keys would silently sign everyone out and orphan their per-device lock/tour/
+  theme flags, and changing the origin would break Supabase auth redirects and push subscriptions.
+  Brand lives in copy and assets; identity lives in stable keys. See [[cairn-surge-origin-is-load-bearing]].
 
 - **Cheat Days are an earned task state, not a separate calendar or database feature.** Any task
   may opt in through `rule.cheat`, with a hard minimum of 7 disciplined scheduled completions and
