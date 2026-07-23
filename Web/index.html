@@ -17,11 +17,27 @@
   <meta name="apple-mobile-web-app-title" content="Treadway">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-180.png">
+  <script>/* no-flash theme: apply the saved theme before first paint */try{var t=localStorage.getItem("cairn_theme");if(t)document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
   <link rel="stylesheet" href="styles.css">
   <title>Treadway</title>
 </head>
 <body>
-  <div id="app"><div id="root"><div class="loading"><div class="spin"></div></div></div></div>
+  <div id="app">
+    <div id="root"></div>
+    <!-- Branded launch is pre-rendered so the very first paint is the mark laying itself in — no spinner, no flash. app.js adopts and dismisses it. -->
+    <div class="launch" id="launch">
+      <div class="launchmark">
+        <svg class="trailmark launchtrail" viewBox="-2 41 81 68" aria-hidden="true">
+          <path class="trailblaze" d="M22 100C30 94 34 87 41 80 48 72 62 57 71 47"/>
+          <path class="stone s1" d="M2 99c0-4 7-7 16-7 10-1 22 1 26 4 3 2 1 5-5 6-9 2-24 2-32 0-4-1-6-2-5-3Z"/>
+          <path class="stone s2" d="M26 80c0-3 5-5 11-6 8 0 16 1 18 3 2 1 1 4-4 5-7 1-17 1-22 0-3-1-4-1-3-2Z"/>
+          <path class="stone s3" d="M46 63c0-2 4-3 8-4 5 0 11 1 12 2 1 1 1 3-3 3-5 1-12 1-15 0-2-1-2-1-2-1Z"/>
+          <path class="stone s4" d="M63 48c0-1 2-2 5-3 4 0 8 1 8 2 1 1 0 2-2 2-3 1-8 1-10 0-1 0-1 0-1-1Z"/>
+        </svg>
+        <div class="launchword"><strong>Treadway</strong><span>Your daily path</span></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Supabase client (loaded from CDN; this is a normal hosted site, not a sandboxed artifact) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

@@ -132,7 +132,9 @@
     background:color-mix(in srgb,var(--surface) 86%, transparent);backdrop-filter:blur(18px);
     border-top:1px solid var(--line);padding:7px 8px calc(7px + env(safe-area-inset-bottom))}
   .tabs::before{content:"";position:absolute;left:8px;top:5px;width:calc((100% - 16px)/4);height:44px;border-radius:13px;background:var(--accent-soft);transform:translateX(var(--tab-x));opacity:.72}
-  .tabs.moving::before{animation:tabslide .34s cubic-bezier(.22,.75,.25,1)}
+  .tabs.moving::before{animation:tabslide .38s cubic-bezier(.34,.8,.3,1)}
+  .tabs.moving .tab.on svg{animation:tabpop .44s cubic-bezier(.2,.8,.25,1)}
+  @keyframes tabpop{0%{transform:scale(.82)}52%{transform:scale(1.17)}100%{transform:scale(1)}}
   @keyframes tabslide{from{transform:translateX(var(--tab-from-x))}to{transform:translateX(var(--tab-x))}}
   .tab{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;color:var(--faint);font-size:10.5px;font-weight:600}
   .tab svg{width:22px;height:22px}
@@ -247,23 +249,27 @@
 .trailmark .s4{fill:color-mix(in srgb,var(--accent) 78%,var(--surface))}
 .trailmark .trailblaze{fill:none;stroke:color-mix(in srgb,var(--surface) 88%,#eadbbf);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
 .trailmark-icon{width:100%;height:100%}
-.launch{position:fixed;inset:0;z-index:500;background:var(--bg);display:grid;place-items:center;touch-action:none}
-.launch.leaving{animation:launchout .18s cubic-bezier(.4,0,.7,1) forwards}
-.launchmark{display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--ink)}
-.launchtrail{width:112px;height:94px}
-.launchtrail .stone{transform-box:fill-box;transform-origin:center;opacity:0;animation:treadstonein .28s cubic-bezier(.16,.72,.2,1) forwards}
-.launchtrail .s1{animation-delay:.02s}.launchtrail .s2{animation-delay:.09s}.launchtrail .s3{animation-delay:.16s}.launchtrail .s4{animation-delay:.23s}
-.launchtrail .trailblaze{stroke-dasharray:80;stroke-dashoffset:80;animation:traildraw .28s .31s cubic-bezier(.5,0,.2,1) forwards}
-.launchword{display:flex;flex-direction:column;align-items:center;gap:4px}
-.launchword strong{font-size:22px;font-weight:700;letter-spacing:.075em;opacity:0;animation:launchname .22s .41s ease forwards}
-.launchword span{color:var(--faint);font-size:8px;font-weight:760;letter-spacing:.22em;text-transform:uppercase;opacity:0;animation:launchname .2s .47s ease forwards}
-.launch.reduced .stone,.launch.reduced .launchword strong,.launch.reduced .launchword span{opacity:1;transform:none}
-.launch.reduced .trailblaze{stroke-dashoffset:0}
+.launch{position:fixed;inset:0;z-index:500;background:var(--bg);display:grid;place-items:center;touch-action:none;overflow:hidden}
+.launch::before{content:"";position:absolute;width:min(78vw,360px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 22%,transparent),transparent 66%);opacity:0;animation:launchglow 1.25s .04s cubic-bezier(.2,.7,.2,1) both}
+.launch.leaving{animation:launchout .26s cubic-bezier(.4,0,.7,1) forwards}
+.launchmark{position:relative;display:flex;flex-direction:column;align-items:center;gap:15px;color:var(--ink);animation:launchrise .72s cubic-bezier(.2,.75,.25,1) both}
+.launchtrail{width:120px;height:101px;filter:drop-shadow(0 8px 16px rgba(0,0,0,.16))}
+.launchtrail .stone{transform-box:fill-box;transform-origin:center;opacity:0;animation:treadstonein .44s cubic-bezier(.18,.72,.16,1) both}
+.launchtrail .s1{animation-delay:.06s}.launchtrail .s2{animation-delay:.17s}.launchtrail .s3{animation-delay:.28s}.launchtrail .s4{animation-delay:.39s}
+.launchtrail .trailblaze{stroke-dasharray:80;stroke-dashoffset:80;animation:traildraw .52s .48s cubic-bezier(.5,0,.2,1) forwards}
+.launchword{display:flex;flex-direction:column;align-items:center;gap:5px}
+.launchword strong{font-size:23px;font-weight:720;letter-spacing:.06em;opacity:0;animation:launchname .36s .64s cubic-bezier(.2,.8,.25,1) both}
+.launchword span{color:var(--faint);font-size:8px;font-weight:780;letter-spacing:.28em;text-transform:uppercase;opacity:0;animation:launchname .32s .74s ease both}
+.launch.reduced::before,.launch.reduced .launchmark{animation:none}
+.launch.reduced .stone,.launch.reduced .launchword strong,.launch.reduced .launchword span{opacity:1;transform:none;animation:none}
+.launch.reduced .trailblaze{stroke-dashoffset:0;animation:none}
 /* Stones press into the ground nearest-first, so the way is laid ahead of you. */
-@keyframes treadstonein{0%{transform:translateY(-7px) scaleX(.9) scaleY(1.08);opacity:0}72%{transform:translateY(.5px) scaleX(1.035) scaleY(.95);opacity:1}100%{transform:none;opacity:1}}
+@keyframes launchglow{0%{opacity:0;transform:scale(.82)}60%{opacity:1}100%{opacity:.9;transform:none}}
+@keyframes launchrise{0%{opacity:0;transform:translateY(10px) scale(.984)}55%{opacity:1}100%{opacity:1;transform:none}}
+@keyframes treadstonein{0%{transform:translateY(-8px) scaleX(.88) scaleY(1.1);opacity:0}70%{transform:translateY(.6px) scaleX(1.04) scaleY(.95);opacity:1}100%{transform:none;opacity:1}}
 @keyframes traildraw{to{stroke-dashoffset:0}}
-@keyframes launchname{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
-@keyframes launchout{to{opacity:0;transform:scale(.985)}}
+@keyframes launchname{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes launchout{to{opacity:0;transform:scale(.99)}}
 
 /* first-run routine picker */
 .picker{display:flex;flex-direction:column;gap:10px;width:100%;max-width:340px;margin-top:8px}
@@ -405,12 +411,12 @@ body.tour-open{overflow:hidden}body.tour-open .scroll{overflow:hidden!important}
 .starter{font-weight:600}
 
 /* ================= Motion & polish ================= */
-@keyframes pgin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-@keyframes pginleft{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
-@keyframes pginright{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:none}}
-.scroll.enter{animation:pgin .3s cubic-bezier(.22,.61,.36,1)}
+@keyframes pgin{from{opacity:0;transform:translateY(13px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes pginleft{0%{opacity:0;transform:translateX(30px) scale(.988)}60%{opacity:1}to{opacity:1;transform:none}}
+@keyframes pginright{0%{opacity:0;transform:translateX(-30px) scale(.988)}60%{opacity:1}to{opacity:1;transform:none}}
+.scroll.enter{animation:pgin .44s cubic-bezier(.16,.72,.24,1)}
 .scroll.enter.dir-left{animation-name:pginleft}.scroll.enter.dir-right{animation-name:pginright}
-.scroll.enter .rowwrap{animation:rowstagger .32s calc(var(--row-i)*30ms) both cubic-bezier(.22,.7,.3,1)}
+.scroll.enter .rowwrap{animation:rowstagger .4s calc(.04s + var(--row-i)*34ms) both cubic-bezier(.2,.72,.28,1)}
 @keyframes rowstagger{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 
 .btn{transition:transform .13s ease, background .2s ease, filter .2s ease}

@@ -302,34 +302,45 @@ function setSync(on){syncOn=on;const el=document.getElementById("syncdot");if(el
 
 /* transient one-shot animation flags (consumed by the next render) */
 let justCompletedId=null, justAddedId=null, justClosedDay=null, ringLast=0, ringWait=0, streakLast=null, waterLast=null, waterPulse=false, rowStagger=0;
-let launchEl=null, launchTimer=0, launchStarted=0;
+let launchEl=null, launchTimer=0, launchDone=false;
 function prefersReduce(){return !!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches);}
+/* Haptics: a light tactile confirm on interactions. Works on Android; iOS Safari ignores the
+   Vibration API entirely (true iPhone haptics need the native app), so this degrades silently. */
+const HAPTIC={tap:7,light:4,pick:15,drop:[7,22,7],success:[11,42,16],reward:[12,45,12]};
+function haptic(kind){try{if(navigator.vibrate)navigator.vibrate(HAPTIC[kind]||7);}catch(_){}}
 /* Four flat stones you tread across, with the worn way showing between them.
    The way is drawn first so it sits behind the stones and reads through the gaps. */
 function treadwayMarkHtml(cls=""){return `<svg class="trailmark ${cls}" viewBox="-2 41 81 68" aria-hidden="true"><path class="trailblaze" d="M22 100C30 94 34 87 41 80 48 72 62 57 71 47"/><path class="stone s1" d="M2 99c0-4 7-7 16-7 10-1 22 1 26 4 3 2 1 5-5 6-9 2-24 2-32 0-4-1-6-2-5-3Z"/><path class="stone s2" d="M26 80c0-3 5-5 11-6 8 0 16 1 18 3 2 1 1 4-4 5-7 1-17 1-22 0-3-1-4-1-3-2Z"/><path class="stone s3" d="M46 63c0-2 4-3 8-4 5 0 11 1 12 2 1 1 1 3-3 3-5 1-12 1-15 0-2-1-2-1-2-1Z"/><path class="stone s4" d="M63 48c0-1 2-2 5-3 4 0 8 1 8 2 1 1 0 2-2 2-3 1-8 1-10 0-1 0-1 0-1-1Z"/></svg>`;}
+/* The launch overlay is pre-rendered in index.html (instant branded first paint). We adopt it,
+   let the mark finish laying in (MIN), then hand off to the first real screen — a shared-element
+   morph into the Today header when we land there, otherwise a clean fade. Capped so it never traps. */
 function startLaunch(){
-  if(launchEl)return;
-  launchStarted=performance.now();
-  launchEl=document.createElement("div");launchEl.className="launch"+(prefersReduce()?" reduced":"");
-  launchEl.innerHTML=`<div class="launchmark">${treadwayMarkHtml("launchtrail")}<div class="launchword"><strong>Treadway</strong><span>Your daily path</span></div></div>`;
-  document.body.appendChild(launchEl);
+  launchEl=document.getElementById("launch");
+  if(!launchEl){launchDone=true;return;}
+  if(prefersReduce())launchEl.classList.add("reduced");
   launchEl.addEventListener("pointerdown",()=>finishLaunch(true),{once:true});
-  launchTimer=setTimeout(()=>finishLaunch(prefersReduce()),prefersReduce()?420:680);
+  const MIN=prefersReduce()?260:960, CAP=2600;
+  (function poll(){
+    if(launchDone)return;
+    const el=performance.now();
+    if((el>=MIN&&root.querySelector(".screen,.auth,.lock,.onboard"))||el>=CAP){finishLaunch(prefersReduce());return;}
+    requestAnimationFrame(poll);
+  })();
 }
 function finishLaunch(skip){
-  if(!launchEl)return;clearTimeout(launchTimer);
+  if(launchDone||!launchEl)return;launchDone=true;clearTimeout(launchTimer);
   const ov=launchEl,mark=ov.querySelector(".trailmark"),target=root.querySelector(".homebrandmark");launchEl=null;
-  if(skip||prefersReduce()){ov.remove();return;}
+  if(skip||prefersReduce()){ov.classList.add("leaving");setTimeout(()=>ov.remove(),200);return;}
   if(target&&mark){
     const a=mark.getBoundingClientRect(),b=target.getBoundingClientRect();
     const dx=b.left+b.width/2-a.left-a.width/2,dy=b.top+b.height/2-a.top-a.height/2,sc=b.width/a.width;
     target.style.opacity="0";
-    mark.animate([{transform:"translate(0,0) scale(1)",opacity:1},{transform:`translate(${dx}px,${dy}px) scale(${sc})`,opacity:.35}],{duration:210,easing:"cubic-bezier(.3,0,.15,1)",fill:"forwards"});
-    ov.animate([{backgroundColor:"var(--bg)"},{backgroundColor:"transparent"}],{duration:210,easing:"cubic-bezier(.4,0,.7,1)",fill:"forwards"});
-    setTimeout(()=>{ov.remove();target.style.opacity="";target.animate([{opacity:.2,transform:"scale(.94)"},{opacity:1,transform:"none"}],{duration:240,easing:"cubic-bezier(.2,.8,.25,1)"});},215);
-  }else{ov.classList.add("leaving");setTimeout(()=>ov.remove(),180);}
+    ov.querySelector(".launchword").animate([{opacity:1},{opacity:0,transform:"translateY(6px)"}],{duration:200,easing:"ease",fill:"forwards"});
+    mark.animate([{transform:"translate(0,0) scale(1)"},{transform:`translate(${dx}px,${dy}px) scale(${sc})`}],{duration:440,easing:"cubic-bezier(.62,.02,.16,1)",fill:"forwards"});
+    ov.animate([{opacity:1},{opacity:0}],{duration:440,delay:60,easing:"cubic-bezier(.5,0,.75,1)",fill:"forwards"});
+    setTimeout(()=>{ov.remove();target.style.opacity="";target.animate([{opacity:.25,transform:"scale(.9)"},{opacity:1,transform:"none"}],{duration:300,easing:"cubic-bezier(.2,.8,.25,1)"});},420);
+  }else{ov.classList.add("leaving");setTimeout(()=>ov.remove(),260);}
 }
-function resolveLaunch(){if(launchEl&&root.querySelector(".homebrandmark")&&performance.now()-launchStarted<640)finishLaunch(false);}
 /* mutations: update local state instantly, cache, render, then push */
 /* FLIP: remember where every row is, then glide each from its old spot to its new one. */
 function captureRows(){
@@ -818,7 +829,6 @@ function render(){
   if(tab==="today"){animateRing();animateStreak();animateHydration();}
   if(tab==="settings")updateReminderLabel();
   if(tab==="history"&&!state.totalsLoaded)loadTotals();
-  resolveLaunch();
 }
 /* Animate the completion ring fill + count the % up; celebrate at 100%. */
 function animateRing(){
@@ -835,7 +845,7 @@ function animateRing(){
   function step(now){const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3),v=from+(target-from)*e;
     ring.style.setProperty("--v",v);if(lbl)lbl.textContent=Math.round(v)+"%";
     if(p<1)requestAnimationFrame(step);
-    else if(mark){ring.classList.add(mark===100?"complete":"milestone");celebrateBurst(mark);if(mark===100&&navigator.vibrate)navigator.vibrate([12,40,12]);}}
+    else if(mark){ring.classList.add(mark===100?"complete":"milestone");celebrateBurst(mark);if(mark===100)haptic("success");}}
   requestAnimationFrame(step);}
   if(delay)setTimeout(run,delay);else run();
 }
@@ -1138,8 +1148,8 @@ function tabbar(){const T=[["today","Today"],["week","Week"],["history","History
    EVENTS
 ===================================================================== */
 function bindApp(){
-  root.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;render();});
-  root.querySelectorAll("[data-act]").forEach(el=>el.onclick=(e)=>handle(el.dataset.act,el,e));
+  root.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{if(b.dataset.tab!==tab)haptic("tap");tab=b.dataset.tab;render();});
+  root.querySelectorAll("[data-act]").forEach(el=>el.onclick=(e)=>{const a=el.dataset.act;if(a!=="toggle"&&a!=="cheatday")haptic("light");handle(a,el,e);});
   bindRowGestures();
   // Auto-hide the bottom tab bar: slide it away when scrolling down, reveal on scroll up.
   const sc=root.querySelector(".scroll");
@@ -1195,7 +1205,7 @@ function bindRowGestures(){
       mode="drag";suppressClick=true;
       try{const sel=window.getSelection&&window.getSelection();if(sel&&sel.removeAllRanges)sel.removeAllRanges();}catch(_){}
       document.body.classList.add("dragging-row");
-      if(navigator.vibrate)navigator.vibrate(14);
+      haptic("pick");
       try{if(pid!==null)wrap.setPointerCapture(pid);}catch(_){}
       const card=wrap.parentElement,items=[...card.querySelectorAll(".rowwrap")];
       ctx={items,idx:items.indexOf(wrap),h:wrap.getBoundingClientRect().height,target:items.indexOf(wrap)};
@@ -1230,7 +1240,7 @@ function bindRowGestures(){
       setTimeout(()=>suppressClick=false,300);
       if(g)dropTask(wrap.dataset.rid,g,beforeId);
       else if(idx!==target)commitReorder(items.map(it=>it.dataset.rid),idx,target);
-      if((g||idx!==target)&&navigator.vibrate)navigator.vibrate(8);
+      if(g||idx!==target)haptic("drop");
     }
     wrap.addEventListener("pointerdown",e=>{
       if(e.button&&e.button!==0)return;
@@ -1310,7 +1320,7 @@ function handle(act,el,e){
   if(act==="editday"){dayBackfillSheet(el.dataset.ymd);return;}
   if(act==="measure"){const tk=state.tasks.find(x=>x.id===el.dataset.id);const cur=valueFor(el.dataset.id,todayStr());
     const v=prompt(`How many ${tk?tk.measureUnit:""}?`,cur||"");if(v!==null&&v!=="")mSetValue(el.dataset.id,todayStr(),parseFloat(v));return;}
-  if(act==="toggle"){const id=el.dataset.id,t=todayStr();mSetStatus(id,t,isSatisfiedStatus(statusOf(t,id))?null:"done");if(navigator.vibrate)navigator.vibrate(8);}
+  if(act==="toggle"){const id=el.dataset.id,t=todayStr();const completing=!isSatisfiedStatus(statusOf(t,id));mSetStatus(id,t,completing?"done":null);haptic(completing?"success":"light");}
   else if(act==="cheatday")toggleCheatDay(el.dataset.id);
   else if(act==="water")mAddWater(+el.dataset.oz);
   else if(act==="water-custom"){const n=parseFloat(prompt("Add how many ounces?"));if(n>0)mAddWater(n);}
@@ -1354,7 +1364,7 @@ function toggleCheatDay(id){const task=state.tasks.find(t=>t.id===id),cfg=cheatC
   const st=statusOf(ymd,id);if(st==="cheat"){mSetStatus(id,ymd,null);showToast("Cheat Day ended — reward restored");return;}
   if(st==="done"){alert("Uncheck today's meal-plan task first if you want to use the earned Cheat Day today.");return;}
   const held=cheatDisciplineBefore(task,ymd);if(held<cfg.days){alert(`${cfg.days-held} more disciplined scheduled ${cfg.days-held===1?"day":"days"} before this Cheat Day is earned.`);return;}
-  mSetStatus(id,ymd,"cheat");showToast("Cheat Day activated — enjoy the reward you earned");if(navigator.vibrate)navigator.vibrate([12,45,12]);}
+  mSetStatus(id,ymd,"cheat");showToast("Cheat Day activated — enjoy the reward you earned");haptic("reward");}
 function setTheme(val){ // 'system' | 'light' | 'dark' | 'oled'
   const root=document.documentElement;
   if(val==="system"){root.removeAttribute("data-theme");try{localStorage.removeItem("cairn_theme");}catch(e){}}
