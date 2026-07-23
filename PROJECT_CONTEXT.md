@@ -14,7 +14,8 @@ working brand only — NOT a cleared trademark (see DECISIONS + TODO).
 Renamed Trailhead → **Treadway** across all user-visible copy and assets. The identity's metaphor
 changed with the name: the mark is now **four flat stones stepping into the distance along a
 rising path** (a treadway = a trail's walking surface) instead of a vertical cairn stack. `icon.svg`
-and the in-app `treadwayMarkHtml()` share one geometry; `icon-180/192/512.png` were regenerated
+and the in-app `treadwayMarkHtml()` share one geometry (`ICON.treadway` is a getter delegating
+to it, so lock/footer/auth/onboard/install-demo can never drift from the mark again); `icon-180/192/512.png` were regenerated
 from it (qlmanage→sips). The in-app SVG is landscape (viewBox `-2 41 81 68`) and draws the worn
 `.trailblaze` way FIRST so the stones sit on top of it. Every mark-sizing rule (auth/lock/launch/
 tour hero/home header/install demo) and the launch stagger keyframe (`treadstonein`, a

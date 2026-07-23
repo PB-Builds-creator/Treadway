@@ -3,6 +3,18 @@
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
 ## 2026-07-23
+- **Mark cleanup + brand-moment follow-ups (post-rename).** `ICON.treadway` was still the OLD
+  stacked geometry — the rename changed only the object key, so the lock-code screen, Today
+  footer, auth, onboarding, and install demo all still showed the cairn. Made `ICON.treadway` a
+  getter that returns `treadwayMarkHtml()`, so there is now ONE mark definition and it cannot drift
+  again; retuned `.todayfoot` sizing to landscape. The Today top-left mark now **replays its
+  entrance every time you arrive on Today** (app entry or tab switch), keyed off `lastRenderedTab`,
+  but stays still on in-place re-renders (checking a task) — dropped the `brandHasEntered` global.
+  Added a **one-time, per-device dismissible rebrand notice** on Today (`cairn_iconv2_<userId>`,
+  `rebrandNoteHtml`/`dismissRebrand`) telling users to remove + re-add the Home Screen icon. The
+  sign-in/unlock/onboarding mark now lays itself in (`.brandglyph` entrance). All under the
+  existing reduced-motion guard. `sw.js` → v9. Verified live at 375×812: lock/top/footer marks all
+  new; replay fires on entry + tab-return, not on re-render; notice shows once and dismiss persists.
 - **Renamed Trailhead → Treadway and redesigned the mark.** Trailhead collided with Salesforce's
   active Trailhead/Trailhead GO brand; "Treadway" (the worn walking surface of a trail — the
   ground underfoot) was researched against software/app conflicts and came back clean, unlike
