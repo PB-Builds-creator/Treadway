@@ -14,7 +14,9 @@ _Concise milestone log, newest first. Keep to meaningful milestones._
   375×812; the temporary QA file was removed. No SQL is required. Existing users must delete and
   re-add the Home Screen icon to receive the Trailhead name/art. Because Salesforce actively uses
   Trailhead/Trailhead GO, this user-directed working/private brand remains blocked from a paid
-  public launch pending professional clearance or another rename.
+  public launch pending professional clearance or another rename. The web release and reminder
+  function are live; eight production assets matched local byte-for-byte, and the live phone-size
+  sign-in view reports Trailhead across document/PWA/UI metadata with no warnings or overflow.
 - **Professional current-UI tutorial overhaul:** rebuilt `runTour()` around the unified day
   stone, real Add control, direct task gestures, rest, Cairn Close, Weekly Trail, History,
   task management, reminders/quiet hours, the narrow partner boundary, appearance, and data

@@ -22,7 +22,12 @@ Supabase and is not deleted by removing the shortcut.
 
 Light and OLED Today, sign-in, the welcome tutorial cover, launch-to-header handoff, 375×812
 horizontal containment, and browser logs passed local QA. `sw.js` shell v6 forces current assets.
-The temporary signed-in fixture was deleted after QA.
+The temporary signed-in fixture was deleted after QA. The release is live at
+`https://cairn.surge.sh`; index, app, styles, service worker, manifest, 512 icon, privacy, and
+setup files matched local byte-for-byte after deployment. The live 375×812 sign-in screen reports
+Trailhead in the document, Apple PWA title, and UI with no browser warnings or horizontal
+overflow. The `send-reminders` Edge Function was also redeployed so timed task pushes use the
+Trailhead title.
 
 **Commercial naming boundary:** Salesforce actively uses Trailhead/Trailhead GO. The user
 explicitly chose Trailhead after being warned of that conflict, so it is implemented as the
