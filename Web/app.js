@@ -686,69 +686,95 @@ function renderOnboard(){ // new user: a brief promise, then a blank page and th
 function tourSeen(){try{return localStorage.getItem("cairn_tour_"+userId)==="1";}catch(e){return false;}}
 function markTourSeen(){try{localStorage.setItem("cairn_tour_"+userId,"1");}catch(e){}}
 
-/* Spotlight product tour: drives the real app (switches tabs, scrolls) and dims
-   everything except the element it's teaching, with a caption. Minimalist copy. */
+function tourDemoHtml(kind){
+  if(kind==="gesture")return `<div class="td-eyebrow"><span>THE PATH</span><b>DIRECT CONTROL</b></div>
+    <div class="td-gesture"><div class="td-actions"><span>${ICON.pencil}</span><span>${ICON.trash}</span></div>
+      <div class="td-task"><i>${ICON.check}</i><div><b>Morning walk</b><small>8:00 AM · daily</small></div><em>🏃</em></div></div>
+    <div class="td-legend"><span>Swipe right · edit</span><span>Hold · move</span><span>Delete · left</span></div>`;
+  if(kind==="install")return `<div class="td-install"><div class="td-appicon">${ICON.cairn}</div><div><span>ADD TO HOME SCREEN</span><b>Cairn, without the browser chrome.</b><small>Safari Share <i>↑</i> → Add to Home Screen</small></div></div>`;
+  return "";
+}
+
+/* Professional guided tour: drives the real app, keeps each live target crisp,
+   and uses a non-persistent showcase when a blank account has no task row yet. */
 function runTour(){
+  if(document.querySelector(".tourwrap")||!state)return;
+  pendingTour=true;
   const steps=[
-    {tab:"today",   sel:null,                       t:"Cairn",              b:"Today, and nothing else. Here's the whole thing — thirty seconds."},
-    {tab:"today",   sel:".ring",                    t:"Your day at a glance", b:"Completion, streak, and water — up top."},
-    {tab:"today",   sel:".addbtn",                  t:"Add anything",        b:"Tap ＋ to add a task. Habit, chore, prayer, training."},
-    {tab:"today",   sel:".rowwrap",                 t:"Swipe a task",        b:"Swipe right to edit it. Swipe left to delete — you get an undo."},
-    {tab:"today",   sel:".rowwrap",                 t:"Hold to rearrange",   b:"Press and hold a task, then drag it anywhere in the list. It stays where you put it."},
-    {tab:"today",   sel:'[data-act="restday"]',     t:"Rest is built in",    b:"Three rest days a week. Guilt-free — your streak holds."},
-    {tab:"week",    sel:'.tab[data-tab="week"]',    t:"Your week",           b:"Every day's progress. Tap a past day to fix a missed check."},
-    {tab:"history", sel:'.tab[data-tab="history"]', t:"Streaks & trends",    b:"Miss a day and it resets — unless you save it, once a month."},
-    {tab:"settings",sel:'[data-act="manage"]',      t:"Manage tasks",        b:"Add, edit, reorder, archive, or remove — anytime."},
-    {tab:"settings",sel:'[data-act="reminders"]',   t:"Reminders",           b:"Nudges at your task times, and a nightly summary."},
-    {tab:"settings",sel:'[data-act="accent"]',      t:"Accent color",        b:"Twelve calm colors — make it yours."},
-    {tab:"settings",sel:'[data-act="theme"]',       t:"Background & theme",  b:"Light, dark, or pure black for OLED."},
-    {tab:"today",   sel:null,                       t:"Start with one",      b:"Add a single task. Little by little is how it holds."}
+    {tab:"today",k:"WELCOME",hero:true,t:"Welcome to Cairn",b:"Your day, your reflection, and the trail they become — one quiet system, in under a minute."},
+    {tab:"today",k:"TODAY",sel:".daystone",pad:7,t:"One clear daily command center",b:"Progress, streak, hydration, sync, recovery, and the next marker now live together at the top."},
+    {tab:"today",k:"BUILD",sel:".addbtn",pad:10,t:"Place the first stone",b:"Tap ＋ to add a habit, responsibility, prayer, workout, or measured goal. Your page starts blank on purpose."},
+    {tab:"today",k:"DIRECT CONTROL",sel:".rowwrap",fallback:"gesture",t:"Your order stays yours",b:"Tap to complete. Swipe right to edit, left to delete with Undo, or hold and drag to rearrange."},
+    {tab:"today",k:"RECOVERY",sel:'[data-act="restday"]',pad:8,t:"Rest without losing ground",b:"Use up to three rest days each week. Cairn protects the streak without pretending recovery is failure."},
+    {tab:"today",k:"CAIRN CLOSE",sel:".closecard",pad:7,t:"End the day on purpose",b:"Keep one win, one honest line, and tomorrow’s first stone. Your journal text is never shared with a partner."},
+    {tab:"week",k:"WEEKLY TRAIL",sel:".trailrail",pad:10,t:"Read the trail you are leaving",b:"The Week view holds daily progress and a rolling seven-day story: rhythm, recovery, closes, water, and the next foothold."},
+    {tab:"history",k:"HISTORY",sel:".statwrap",pad:7,t:"Watch consistency compound",b:"See current and longest streaks, your 30-day rate, per-task streaks, and measured trends."},
+    {tab:"settings",k:"CONTROL",sel:'[data-act="manage"]',pad:6,t:"Shape the system around real life",b:"Manage tasks whenever life changes — add, edit, reorder, archive, duplicate, or remove without losing your history."},
+    {tab:"settings",k:"REMINDERS",sel:'[data-act="reminders"]',pad:6,t:"Useful nudges, on your terms",b:"Enable task-time reminders, choose a nightly summary, and protect quiet hours. On iPhone, Cairn works best from the Home Screen."},
+    {tab:"settings",k:"TOGETHER",sel:'[data-act="partner"]',pad:6,t:"Encouragement without surveillance",b:"Link one person to share only a name, daily counts, and one Proud nudge. Never tasks, hydration, measurements, or journal text."},
+    {tab:"settings",k:"MAKE IT YOURS",sel:'[data-act="accent"]',pad:6,t:"A Cairn that feels like yours",b:"Choose a calm accent, then set Appearance to Light, Dark, System, or Pure Black for OLED."},
+    {tab:"settings",k:"YOUR DATA",sel:'[data-act="privacy"]',pad:6,t:"Your account is the boundary",b:"Export your data, change your password, read the privacy policy, unlink a partner, or permanently delete your account."},
+    {tab:"today",k:"BEGIN",hero:true,final:true,t:"Start with one",b:"Add one thing worth keeping. Close the day honestly. Little by little is how it holds."}
   ];
-  if(!isStandalone()) steps.splice(steps.length-1,0,{tab:"today",sel:null,t:"Add to Home Screen",b:"In Safari: Share → Add to Home Screen. It opens full-screen and lets reminders reach you."});
+  if(!isStandalone())steps.splice(steps.length-1,0,{tab:"today",k:"IPHONE",demo:"install",t:"Give Cairn a place on your Home Screen",b:"Open Cairn from its icon for a full-screen app experience and reliable reminder permission."});
   let i=0;
-  const ov=document.createElement("div");ov.className="tourwrap";
-  ov.innerHTML='<div class="tourbackdrop" id="tourbd"></div><div class="tourspot" id="tourspot"></div><div class="tourcap" id="tourcap"></div>';
-  document.body.appendChild(ov);
-  const spot=ov.querySelector("#tourspot"),cap=ov.querySelector("#tourcap"),bd=ov.querySelector("#tourbd");
-  let focused=null,spotRect=null,capTop=null;spot.style.cssText="left:50%;top:50%;width:0;height:0";
-  function finish(){if(focused)focused.classList.remove("tourfocus");ov.remove();pendingTour=false;markTourSeen();tab="today";render();}
+  const ov=document.createElement("div");ov.className="tourwrap";ov.setAttribute("role","dialog");ov.setAttribute("aria-modal","true");ov.setAttribute("aria-label","Cairn guided tour");
+  ov.innerHTML='<div class="tourbackdrop" id="tourbd"></div><div class="tourspot" id="tourspot"></div><div class="tourpreview" id="tourpreview"></div><div class="tourcap" id="tourcap" aria-live="polite" tabindex="-1"></div>';
+  document.body.appendChild(ov);document.body.classList.add("tour-open");
+  const spot=ov.querySelector("#tourspot"),cap=ov.querySelector("#tourcap"),bd=ov.querySelector("#tourbd"),preview=ov.querySelector("#tourpreview");
+  let focused=null,spotRect=null,capTop=null,closed=false;spot.style.cssText="left:50%;top:50%;width:0;height:0";
+  function finish(){if(closed)return;closed=true;if(focused)focused.classList.remove("tourfocus");document.removeEventListener("keydown",keys);document.body.classList.remove("tour-open");ov.remove();pendingTour=false;markTourSeen();tab="today";render();}
+  function keys(e){
+    if(e.key==="Escape")finish();
+    else if(e.key==="ArrowRight"){if(i<steps.length-1){i++;show();}else finish();}
+    else if(e.key==="ArrowLeft"&&i>0){i--;show();}
+    else if(e.key==="Tab"){const bs=[...cap.querySelectorAll("button")];if(!bs.length)return;const n=bs.indexOf(document.activeElement),to=e.shiftKey?(n<=0?bs.length-1:n-1):(n<0||n===bs.length-1?0:n+1);e.preventDefault();bs[to].focus();}
+  }
+  document.addEventListener("keydown",keys);
   function show(){
     if(focused)focused.classList.remove("tourfocus");focused=null;
     const st=steps[i];tab=st.tab;render();
     setTimeout(()=>{
       const el=st.sel?root.querySelector(st.sel):null;
-      if(el)el.scrollIntoView({block:"center"});
-      setTimeout(()=>place(el,st),el?90:0);
-    },30);
+      if(el)el.scrollIntoView({block:"center",inline:"nearest"});
+      setTimeout(()=>place(st.sel?root.querySelector(st.sel):el,st),el?110:20);
+    },35);
   }
   function place(el,st){
-    let r=null;
-    if(el){r=el.getBoundingClientRect();const p=8;
-      spot.style.opacity="1";bd.classList.remove("on");                    // crisp spotlight step
-      const next={left:r.left-p,top:r.top-p,width:r.width+p*2,height:r.height+p*2};
+    if(closed)return;
+    let r=null;const demoKind=st.demo||(!el&&st.fallback)||"";
+    preview.className="tourpreview"+(demoKind?" on "+demoKind:"");preview.innerHTML=demoKind?tourDemoHtml(demoKind):"";
+    ov.classList.toggle("showcase",!el);bd.classList.toggle("on",!el);
+    if(el){
+      r=el.getBoundingClientRect();const p=st.pad??8,vw=window.innerWidth,vh=window.innerHeight;
+      const left=Math.max(8,r.left-p),top=Math.max(8,r.top-p),right=Math.min(vw-8,r.right+p),bottom=Math.min(vh-8,r.bottom+p);
+      const next={left,top,width:Math.max(1,right-left),height:Math.max(1,bottom-top)};
+      spot.style.opacity="1";spot.style.borderRadius=st.radius||getComputedStyle(el).borderRadius||"16px";
       spot.style.left=next.left+"px";spot.style.top=next.top+"px";spot.style.width=next.width+"px";spot.style.height=next.height+"px";
       if(spotRect&&!prefersReduce())spot.animate([
         {transform:`translate(${spotRect.left-next.left}px,${spotRect.top-next.top}px) scale(${spotRect.width/next.width},${spotRect.height/next.height})`},
-        {transform:"none"}],{duration:400,easing:"cubic-bezier(.25,.8,.2,1)"});
-      spotRect=next;
-      el.classList.add("tourfocus");focused=el;
-    }else{spot.style.opacity="0";bd.classList.add("on");}                  // caption-only: blur the app behind
-    const final=i===steps.length-1;
-    cap.innerHTML=`${final?cairnHtml("tourcairn"):""}<div class="tc-num">${i+1} / ${steps.length}</div>
+        {transform:"none"}],{duration:430,easing:"cubic-bezier(.2,.8,.2,1)"});
+      spotRect=next;el.classList.add("tourfocus");focused=el;
+    }else spot.style.opacity="0";
+    const final=!!st.final,hero=!!st.hero;
+    cap.innerHTML=`${hero?cairnHtml("tourcairn"):""}<div class="tc-head"><span class="tc-kicker"><i>◆</i>${st.k}</span><span class="tc-num">${i+1} / ${steps.length}</span></div>
       <div class="tc-title">${st.t}</div><div class="tc-body">${st.b}</div>
-      <div class="tc-dots">${steps.map((_,k)=>`<i class="${k===i?"on":""}"></i>`).join("")}</div>
-      <div class="tc-row"><button class="swap" id="tc-skip">Skip</button><div style="flex:1"></div>
+      <div class="tc-dots" aria-hidden="true">${steps.map((_,k)=>`<i class="${k===i?"on":k<i?"past":""}"></i>`).join("")}</div>
+      <div class="tc-row"><button class="swap" id="tc-skip">Skip tour</button><span class="tc-spacer"></span>
         ${i>0?'<button class="tc-btn" id="tc-back">Back</button>':""}
-        <button class="tc-btn primary" id="tc-next">${i===steps.length-1?"Done":"Next"}</button></div>`;
-    const capH=cap.offsetHeight,vh=window.innerHeight;let top;
-    if(!el)top=Math.max(16,(vh-capH)/2);
-    else{top=r.bottom+14;if(top+capH>vh-14)top=r.top-capH-14;if(top<14)top=14;}
+        <button class="tc-btn primary" id="tc-next">${final?"Begin":"Continue"}</button></div>`;
+    const vh=window.innerHeight;cap.className="tourcap"+(hero?" hero":"")+(i===0?" welcome":"")+(final?" final":"");
+    cap.style.top="0px";const capH=cap.offsetHeight;let top;
+    if(!el)top=demoKind?Math.max(14,vh-capH-18):Math.max(16,(vh-capH)/2);
+    else{const below=vh-r.bottom-16,above=r.top-16;top=below>=capH?r.bottom+12:above>=capH?r.top-capH-12:Math.max(14,vh-capH-14);}
     const oldTop=capTop;capTop=top;cap.style.top=top+"px";
-    cap.className="tourcap"+(oldTop===null?" pop":"")+(i===0?" welcome":"")+(final?" final":"");
-    if(oldTop!==null&&!prefersReduce())cap.animate([{transform:`translateY(${oldTop-top}px)`,opacity:.72},{transform:"none",opacity:1}],{duration:320,easing:"cubic-bezier(.22,.7,.3,1)"});
-    cap.querySelector("#tc-next").onclick=()=>{ if(i<steps.length-1){i++;show();} else finish(); };
+    if(demoKind){const ph=preview.offsetHeight;preview.style.top=Math.max(18,(top-ph)/2)+"px";}else preview.style.top="";
+    if(oldTop===null&&!prefersReduce())cap.animate([{opacity:0,transform:"translateY(12px) scale(.985)"},{opacity:1,transform:"none"}],{duration:360,easing:"cubic-bezier(.2,.75,.25,1)"});
+    else if(oldTop!==null&&!prefersReduce())cap.animate([{transform:`translateY(${oldTop-top}px)`,opacity:.68},{transform:"none",opacity:1}],{duration:330,easing:"cubic-bezier(.22,.7,.3,1)"});
+    cap.querySelector("#tc-next").onclick=()=>{if(i<steps.length-1){i++;show();}else finish();};
     cap.querySelector("#tc-skip").onclick=finish;
     const bk=cap.querySelector("#tc-back");if(bk)bk.onclick=()=>{i--;show();};
+    try{cap.focus({preventScroll:true});}catch(_){cap.focus();}
   }
   show();
 }

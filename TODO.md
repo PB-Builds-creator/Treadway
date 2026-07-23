@@ -11,8 +11,11 @@ Everything below is verified with synthetic pointer events in a desktop browser 
 4. **Undo toast** on delete ("Deleted — Undo") — visually confirmed in mobile browser QA and
    restored the exact row; still confirm real touch timing.
 5. **Sheet notch** drag-down-to-dismiss + no background scrolling behind sheets.
-6. **Flagship motion feel** — cold-launch skip/shared-ring handoff and moving tutorial spotlight
-   need real iPhone timing/visual confirmation; browser QA cannot establish touch feel or 60fps.
+6. **Flagship motion + professional tutorial feel** — cold-launch skip/shared-ring handoff,
+   traveling spotlight, blur/exposure transitions, blank-account gesture showcase, caption safe
+   areas, and Back/Continue/Skip need real iPhone timing/visual confirmation. Automatic first-run
+   launch and Settings replay passed browser QA, but a desktop browser cannot establish 60fps or
+   exact safe-area feel on the phone.
 7. **Today daily-ritual shell + Cairn Close** — verify hero density, internal scrolling,
    floating-tab safe-area placement/auto-hide, one-shot seal motion, and Close-sheet feel in both
    Light and OLED on the iPhone 17.

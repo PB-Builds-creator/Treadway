@@ -86,6 +86,13 @@ _Last updated: 2026-07-22. Brief rationale for choices that aren't obvious from 
   Spotlight geometry is assigned once per step, then travels through a FLIP-style transform;
   the drag shadow is a static shadow layer whose transform/opacity sells the rise.
 
+- **The tutorial teaches the real UI without seeding tutorial data.** Current elements are
+  spotlighted after `render()` switches tabs and scrolls them into view. If a blank new account
+  has no task row, an overlay-only animated gesture card demonstrates tap/swipe/hold; it never
+  enters `state`, localStorage, the outbox, or Supabase. Target steps use a crisp cutout while
+  caption/showcase steps deliberately use stronger blur and lower exposure. This preserves the
+  user's blank-page promise and keeps Settings replay identical to first-run onboarding.
+
 - **Direct-manipulation gestures paint once per display frame.** Pointer events can arrive faster
   than the screen refreshes, so swipe and drag handlers only retain the newest coordinates and a
   single `requestAnimationFrame` performs compositor-friendly transforms. Gesture-only

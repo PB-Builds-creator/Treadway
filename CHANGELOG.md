@@ -3,6 +3,19 @@
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
 ## 2026-07-22
+- **Professional current-UI tutorial overhaul:** rebuilt `runTour()` around the unified day
+  stone, real Add control, direct task gestures, rest, Cairn Close, Weekly Trail, History,
+  task management, reminders/quiet hours, the narrow partner boundary, appearance, and data
+  controls. The original traveling spotlight, Back/Skip flow, Home Screen guidance, and cairn
+  bookends remain, but now use polished material captions, animated progress stones, clamped
+  phone-safe placement, crisp target exposure, and deeper blur for showcase moments. Blank new
+  accounts receive a non-persistent animated gesture card instead of losing the swipe/hold lesson
+  or being seeded with fake data. First-run launch, every blank-account step/finale, populated
+  real-row targeting, and Settings → See the tutorial again all passed local browser QA. Keyboard
+  arrows/Escape, keyboard focus trapping, background-scroll locking, reduced motion,
+  accessibility dialog semantics, and shell cache v5 complete the production pass; real-iPhone
+  pacing remains the final feel check. The release is live; production app.js, styles.css, and
+  sw.js matched local byte-for-byte, and the temporary QA fixture is absent from production.
 - **Production activation, secret rotation, and public privacy policy:** applied
   `cairn-product-upgrade.sql` to the live Supabase project; rotated the VAPID key pair and
   CRON_SECRET together; updated all related Edge secrets; recreated the five-minute reminder

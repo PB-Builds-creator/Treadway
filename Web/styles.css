@@ -336,22 +336,39 @@
 .addbtn:active{transform:scale(.92)}
 
 /* ============ Spotlight product tour ============ */
-.tourwrap{position:fixed;inset:0;z-index:200;pointer-events:auto}
-.tourspot{position:fixed;border-radius:14px;border:2px solid #fff;pointer-events:none;opacity:0;
-  box-shadow:0 0 0 9999px rgba(6,8,6,.64);transform-origin:top left;transition:opacity .2s ease}
-.tourcap{position:fixed;left:16px;right:16px;max-width:436px;margin:0 auto;background:var(--surface);
-  border:1px solid var(--line);border-radius:16px;padding:15px 16px 12px;box-shadow:0 12px 44px rgba(0,0,0,.34);
-  pointer-events:auto}
-.tourcap .tc-num{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);font-weight:700}
-.tourcap .tc-title{font-size:18px;font-weight:640;letter-spacing:-.01em;margin-top:5px}
-.tourcap .tc-body{font-size:14.5px;color:var(--muted);line-height:1.5;margin-top:4px}
-.tc-dots{display:flex;gap:4px;margin-top:11px;align-items:center}
-.tc-dots i{width:4px;height:4px;border-radius:50%;background:var(--line);transition:transform .2s ease,background .2s ease,opacity .2s ease}
-.tc-dots i.on{background:var(--accent);transform:scale(1.7)}
-.tourcap .tc-row{display:flex;align-items:center;gap:8px;margin-top:14px}
-.tc-btn{padding:8px 16px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);
-  font-size:14px;font-weight:600;color:var(--ink)}
+.tourwrap{position:fixed;inset:0;z-index:200;pointer-events:auto;touch-action:pan-y;overscroll-behavior:none;isolation:isolate}
+body.tour-open{overflow:hidden}body.tour-open .scroll{overflow:hidden!important}
+.tourbackdrop{position:fixed;inset:0;z-index:0;background:rgba(5,7,5,.58);backdrop-filter:blur(14px) saturate(.78) brightness(.68);-webkit-backdrop-filter:blur(14px) saturate(.78) brightness(.68);opacity:0;pointer-events:none;transition:opacity .28s ease}
+.tourbackdrop.on{opacity:1}
+.tourspot{position:fixed;z-index:1;border-radius:16px;border:1.5px solid rgba(255,255,255,.92);pointer-events:none;opacity:0;background:transparent;
+  box-shadow:0 0 0 9999px rgba(5,7,5,.68),0 0 0 4px color-mix(in srgb,var(--accent) 32%,transparent),0 16px 54px rgba(0,0,0,.3);transform-origin:top left;transition:opacity .2s ease,border-radius .26s ease}
+.tourspot::after{content:"";position:absolute;inset:-6px;border:1px solid color-mix(in srgb,var(--accent) 66%,transparent);border-radius:inherit;opacity:.5;animation:tourhalo 2.1s ease-in-out infinite}
+@keyframes tourhalo{0%,100%{transform:scale(.995);opacity:.35}50%{transform:scale(1.012);opacity:.75}}
+.tourcap{position:fixed;z-index:3;left:12px;right:12px;width:auto;max-width:432px;max-height:calc(100dvh - 24px);margin:0 auto;padding:16px 17px 14px;overflow-y:auto;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;touch-action:pan-y;
+  background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(24px) saturate(1.08);-webkit-backdrop-filter:blur(24px) saturate(1.08);
+  border:1px solid color-mix(in srgb,var(--line) 72%,rgba(255,255,255,.28));border-radius:22px;box-shadow:0 22px 80px rgba(0,0,0,.38),0 2px 8px rgba(0,0,0,.14);pointer-events:auto}
+.tourcap:focus{outline:none}
+.tc-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.tc-kicker{display:flex;align-items:center;gap:7px;color:var(--accent);font-size:9px;font-weight:780;letter-spacing:.15em;text-transform:uppercase}.tc-kicker i{font-size:6px;font-style:normal}
+.tourcap .tc-num{color:var(--faint);font-size:9.5px;font-weight:720;letter-spacing:.1em;text-transform:uppercase;font-variant-numeric:tabular-nums}
+.tourcap .tc-title{margin-top:7px;font-size:20px;font-weight:680;letter-spacing:-.025em;line-height:1.12;text-wrap:balance}
+.tourcap .tc-body{margin-top:6px;color:var(--muted);font-size:13.5px;line-height:1.48;text-wrap:pretty}
+.tc-dots{display:flex;align-items:center;gap:4px;margin-top:13px}
+.tc-dots i{width:5px;height:4px;border-radius:99px;background:var(--line);opacity:.72;transition:width .22s ease,background .2s ease,opacity .2s ease}
+.tc-dots i.past{background:color-mix(in srgb,var(--accent) 40%,var(--line));opacity:.9}.tc-dots i.on{width:16px;background:var(--accent);opacity:1}
+.tourcap .tc-row{display:flex;align-items:center;gap:8px;margin-top:14px}.tc-spacer{flex:1}.tourcap .swap{padding:8px 2px;color:var(--faint);font-size:12px;font-weight:650}
+.tc-btn{min-height:38px;padding:8px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface-2);font-size:13px;font-weight:650;color:var(--ink)}
 .tc-btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tourcap.hero{text-align:center;padding-top:19px}.tourcap.hero .tc-head{margin-top:3px}.tourcap.hero .tc-title{font-family:ui-serif,"New York",Georgia,serif;font-size:25px;font-weight:570}.tourcap.hero .tc-body{max-width:34ch;margin-left:auto;margin-right:auto}.tourcap.hero .tc-row{text-align:left}
+.tourpreview{position:fixed;z-index:2;left:22px;right:22px;max-width:404px;margin:0 auto;padding:15px;opacity:0;transform:translateY(12px) scale(.975);pointer-events:none;
+  border:1px solid color-mix(in srgb,var(--accent) 30%,var(--line));border-radius:21px;background:color-mix(in srgb,var(--surface) 95%,transparent);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);box-shadow:0 20px 66px rgba(0,0,0,.34);transition:opacity .28s ease,transform .34s cubic-bezier(.2,.78,.24,1)}
+.tourpreview.on{opacity:1;transform:none}.td-eyebrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}.td-eyebrow span,.td-eyebrow b{font-size:8px;font-weight:770;letter-spacing:.13em}.td-eyebrow span{color:var(--accent)}.td-eyebrow b{color:var(--faint)}
+.td-gesture{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:15px;background:var(--surface-2)}.td-actions{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 13px}.td-actions span{width:31px;height:31px;border-radius:10px;display:grid;place-items:center;color:#fff}.td-actions span:first-child{background:#3b7dd8}.td-actions span:last-child{background:#c9453c}.td-actions svg{width:16px;height:16px}
+.td-task{position:relative;display:flex;align-items:center;gap:11px;padding:13px;background:var(--surface);animation:tdgesture 4.8s .35s ease-in-out infinite}.td-task>i{width:25px;height:25px;border:2px solid var(--faint);border-radius:50%;display:grid;place-items:center;color:transparent;font-style:normal}.td-task>i svg{width:13px}.td-task>div{display:flex;flex:1;min-width:0;flex-direction:column}.td-task b{font-size:14px;font-weight:650}.td-task small{margin-top:2px;color:var(--muted);font-size:10.5px}.td-task em{font-size:15px;font-style:normal}
+@keyframes tdgesture{0%,12%,36%,62%,100%{transform:none;box-shadow:none}24%{transform:translateX(42px)}50%{transform:translateX(-42px)}76%{transform:translateY(-5px) scale(1.025);box-shadow:0 14px 28px rgba(0,0,0,.2)}86%{transform:translateY(3px) scale(1)}}
+.td-legend{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:10px}.td-legend span{color:var(--faint);font-size:8px;font-weight:690;text-align:center;letter-spacing:.01em}
+.td-install{display:flex;align-items:center;gap:14px}.td-appicon{width:58px;height:58px;border-radius:16px;display:grid;place-items:center;flex:none;color:#fff;background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 72%,#111),var(--accent));box-shadow:0 12px 26px color-mix(in srgb,var(--accent) 28%,transparent)}.td-appicon svg{width:34px;height:34px}.td-install>div:last-child{display:flex;min-width:0;flex-direction:column}.td-install span{color:var(--accent);font-size:8px;font-weight:780;letter-spacing:.14em}.td-install b{margin-top:4px;font-size:14px;line-height:1.25}.td-install small{margin-top:5px;color:var(--muted);font-size:10.5px}.td-install small i{display:inline-grid;width:17px;height:17px;border:1px solid var(--line);border-radius:5px;place-items:center;color:var(--accent);font-style:normal}
+@media(max-width:350px){.tourcap{left:8px;right:8px;padding:14px}.tourcap .tc-title{font-size:18px}.tourcap .tc-body{font-size:12.5px}.tc-btn{padding:7px 10px}.tourpreview{left:14px;right:14px}}
 
 /* ============ Manage (reorder/archive), undo toast, starters ============ */
 .mgacts{display:flex;gap:5px;align-items:center;flex:none}
@@ -404,17 +421,13 @@
   .who:hover{border-color:var(--faint)}
 }
 
-/* tour: blurred backdrop behind caption-only steps + caption entrance */
-.tourbackdrop{position:fixed;inset:0;background:rgba(6,8,6,.5);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);opacity:0;pointer-events:none;transition:opacity .24s ease}
-.tourbackdrop.on{opacity:1}
-.tourcap.pop{animation:tcpop .32s cubic-bezier(.22,.61,.36,1)}
-@keyframes tcpop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.tourfocus{position:relative;z-index:201;animation:tourpulse 1.8s .42s ease-in-out infinite}
-@keyframes tourpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.018)}}
-.tourcap.welcome .tc-title,.tourcap.welcome .tc-body,.tourcap.welcome .tc-dots,.tourcap.welcome .tc-row{opacity:0;animation:tourline .3s cubic-bezier(.22,.7,.3,1) forwards}
-.tourcap.welcome .tc-title{animation-delay:.06s}.tourcap.welcome .tc-body{animation-delay:.13s}.tourcap.welcome .tc-dots{animation-delay:.2s}.tourcap.welcome .tc-row{animation-delay:.27s}
+/* tour: restrained exposure shift, staged copy, and the original stone-stack bookend */
+.tourfocus{animation:tourexpose 2s .32s ease-in-out infinite}
+@keyframes tourexpose{0%,100%{filter:none}50%{filter:brightness(1.08) saturate(1.08)}}
+.tourcap.welcome .tc-head,.tourcap.welcome .tc-title,.tourcap.welcome .tc-body,.tourcap.welcome .tc-dots,.tourcap.welcome .tc-row{opacity:0;animation:tourline .32s cubic-bezier(.22,.7,.3,1) forwards}
+.tourcap.welcome .tc-head{animation-delay:.04s}.tourcap.welcome .tc-title{animation-delay:.1s}.tourcap.welcome .tc-body{animation-delay:.17s}.tourcap.welcome .tc-dots{animation-delay:.23s}.tourcap.welcome .tc-row{animation-delay:.29s}
 @keyframes tourline{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
-.tourcairn{width:48px;height:58px;margin:0 auto 2px;transform:scale(.72)}
+.tourcairn{width:48px;height:58px;margin:0 auto 5px;transform:scale(.72)}
 .tourcairn i{animation-name:stoneland!important}
 .tc-btn{transition:transform .12s ease, background .18s, filter .18s}
 .tc-btn:active{transform:scale(.95)}

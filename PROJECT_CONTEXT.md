@@ -3,7 +3,28 @@
 _Handoff doc. Read this + TODO.md + DECISIONS.md + CHANGELOG.md, then the code._
 _Last updated: 2026-07-22._
 
-## LATEST RELEASE — three web-first product lanes (activated in production)
+## LATEST RELEASE — professional tutorial aligned to the current UI
+`runTour()` is now the current product walkthrough instead of the pre-redesign summary tour. It
+preserves the original traveling spotlight, task gestures, rest/week/history/settings guidance,
+Home Screen step, and stone-stack bookends while teaching the actual day stone, Cairn Close,
+Weekly Trail, account trust, partner boundary, and present Settings rows. A new account still
+starts blank and automatically enters the tour after onboarding; Settings → See the tutorial
+again replays the same sequence for established accounts.
+
+The installed PWA has 14 steps; Safari/browser adds a fifteenth Home Screen step. Live targets
+remain crisp inside a dimmed traveling exposure frame. Caption-only and blank-account steps use a
+stronger blur plus a non-persistent animated showcase; the gesture showcase appears only when no
+real `.rowwrap` exists and never creates or syncs sample data. The overlay freezes background
+scroll, keeps captions inside the viewport, supports Back/Continue/Skip and keyboard arrows/Escape,
+traps keyboard focus inside the dialog, restores Today on finish, marks first-run completion, and
+honors reduced motion. A temporary local
+Supabase fixture (removed after QA) verified automatic blank-account launch, every step through
+the finale, the real-task spotlight fallback, and Settings replay. Real-iPhone feel remains in
+TODO.md. `sw.js` shell v5 forces the updated app/CSS onto installed copies.
+The release is live at `https://cairn.surge.sh`; production app.js, styles.css, and sw.js matched
+local byte-for-byte after deployment, and the removed QA fixture returns 404 in production.
+
+## PRIOR RELEASE — three web-first product lanes (activated in production)
 The user explicitly asked to build three sellability upgrades together while postponing all
 native/widget/HealthKit work until they buy the Apple Developer account. The clean checkpoint
 before this pass is `4d6d367` (`Smooth row gestures`); implementation checkpoints are `5923dbd`
@@ -137,8 +158,9 @@ There are **two deliverables**:
 - **FLIP** (`captureRows`/`playFlip`) animates rows gliding between positions on complete/drop.
 - **Motion state also lives outside rendered DOM:** the cold-launch overlay is appended to `body`
   while auth/data load behind it, and is capped below 900ms; the tour overlay likewise survives
-  app re-renders so its spotlight can travel between targets. All JS motion exits through
-  `prefersReduce()` and CSS is covered by the existing reduced-motion rule.
+  app re-renders so its spotlight can travel between targets. Empty accounts use a tour-only
+  gesture showcase rather than fake app data. All JS motion exits through `prefersReduce()` and
+  CSS is covered by the existing reduced-motion rule.
 - **Completion motion is deliberately causal:** `mSetStatus` captures rows, renders the new
   state, starts FLIP, then lets the ring sweep follow 90ms later. Ring/streak/hydration previous
   values live in globals because their DOM nodes do not survive `render()`.
@@ -151,8 +173,9 @@ There are **two deliverables**:
   floating tabs remain at the phone edge. Do not remove `#root`'s flex/min-height rules.
 
 ## Rules (product)
-- New members ALWAYS start with a blank task list, then a spotlight product tour (`runTour`) that drives the real app. No
-  preset routines exist in code (owner/gf data lives only in their DB rows).
+- New members ALWAYS start with a blank task list, then the professional spotlight product tour
+  (`runTour`) drives the real app. No preset routines exist in code (owner/gf data lives only in
+  their DB rows); the animated gesture example is overlay-only and is never added to `state`.
 - Streak day "succeeds" if all tasks done OR all non-negotiables (`keystone`) done.
 - Rest days: **max 3 per Sun–Sat week**. Streak-save: **1 per calendar month**, only when it
   would extend the streak. Rest + saved days are neutral in streak math.
