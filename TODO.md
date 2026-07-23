@@ -1,4 +1,4 @@
-# Cairn — TODO
+# Trailhead (formerly Cairn) — TODO
 
 _Last updated: 2026-07-22. Keep prioritized; delete done items (they go to CHANGELOG)._
 
@@ -11,12 +11,12 @@ Everything below is verified with synthetic pointer events in a desktop browser 
 4. **Undo toast** on delete ("Deleted — Undo") — visually confirmed in mobile browser QA and
    restored the exact row; still confirm real touch timing.
 5. **Sheet notch** drag-down-to-dismiss + no background scrolling behind sheets.
-6. **Flagship motion + professional tutorial feel** — cold-launch skip/shared-ring handoff,
+6. **Flagship motion + professional tutorial feel** — cold-launch skip/shared-logo handoff,
    traveling spotlight, blur/exposure transitions, blank-account gesture showcase, caption safe
    areas, and Back/Continue/Skip need real iPhone timing/visual confirmation. Automatic first-run
    launch and Settings replay passed browser QA, but a desktop browser cannot establish 60fps or
    exact safe-area feel on the phone.
-7. **Today daily-ritual shell + Cairn Close** — verify hero density, internal scrolling,
+7. **Today daily-ritual shell + Trailhead Close** — verify hero density, internal scrolling,
    floating-tab safe-area placement/auto-hide, one-shot seal motion, and Close-sheet feel in both
    Light and OLED on the iPhone 17.
 8. **Two-phone Proud nudge** — the live server link/send-once/unlink rules passed with isolated
@@ -26,10 +26,12 @@ If a gesture fails, the likely culprit is touch-scroll stealing the gesture — 
 non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action` on `.rowwrap`.
 
 ## Blocked / waiting on a phone
-- **Paxton's phone:** after this deployment, open Cairn → Settings → Reminders, turn reminders
-  off, then back on and allow notifications. This replaces the old push subscription with one
-  signed by the rotated public VAPID key.
-- **Her phone, whenever available:** do the same reminders off/on cycle, then complete the
+- **Paxton's phone:** open `https://cairn.surge.sh` once so the new shell loads. Delete the old
+  Cairn Home Screen icon, then in Safari use Share → Add to Home Screen, confirm the name is
+  **Trailhead**, and add it. Open Trailhead, sign in if asked, then go to Settings → Reminders and
+  turn reminders off/back on. Removing the shortcut does not delete synced account data.
+- **Her phone, whenever available:** do the same Cairn-icon removal, Trailhead re-add, and
+  reminders off/on cycle, then complete the
   in-app six-digit pairing flow and real two-phone Proud nudge/quiet-hours/lock-screen test above.
   The owner is currently unlinked and her account ID is not documented, so do not guess among
   approved members. The reciprocal link, once-daily nudge, and unlink authorization already
@@ -47,6 +49,9 @@ non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action`
 - App-URL scheme presets (mfp://, youversion://, instagram://) are best guesses.
 - Web push needs the PWA added to the Home Screen on iOS.
 - Reorder pushes an upsert for every active task (fine at personal scale).
+- **Trailhead is a user-directed working/private brand, not a cleared public trademark.**
+  Salesforce actively uses Trailhead/Trailhead GO. Do not charge the general public under this
+  name until professional clearance is obtained or the product is renamed.
 
 ## Testing gotcha (cost ~30 min once — don't repeat it)
 The in-app browser pane can collapse to a **0×0 viewport**, which makes every

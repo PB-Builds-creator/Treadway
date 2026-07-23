@@ -1,8 +1,20 @@
-# Cairn — Changelog
+# Trailhead (formerly Cairn) — Changelog
 
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
 ## 2026-07-22
+- **Trailhead brand and identity release:** replaced the customer-facing Cairn identity with
+  Trailhead across launch, Today, auth/lock/onboarding, tutorial, Home Screen metadata, formal
+  privacy policy, setup guide, exports, reminders, and account copy. A new shared four-stone mark
+  with a rising trail now powers the code-native UI, realistic SVG/180/192/512 installed icons,
+  a restrained launch settle/draw, a prominent animated-once Today wordmark, tutorial bookends,
+  and a one-shot completion pulse. Shell cache v6 handles existing-device refreshes; the live
+  origin and `cairn_*` compatibility identifiers intentionally remain. Sign-in, populated Today,
+  tutorial cover, Light/OLED, launch handoff, no-overflow geometry, and clean logs passed at
+  375×812; the temporary QA file was removed. No SQL is required. Existing users must delete and
+  re-add the Home Screen icon to receive the Trailhead name/art. Because Salesforce actively uses
+  Trailhead/Trailhead GO, this user-directed working/private brand remains blocked from a paid
+  public launch pending professional clearance or another rename.
 - **Professional current-UI tutorial overhaul:** rebuilt `runTour()` around the unified day
   stone, real Add control, direct task gestures, rest, Cairn Close, Weekly Trail, History,
   task management, reminders/quiet hours, the narrow partner boundary, appearance, and data

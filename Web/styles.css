@@ -141,6 +141,7 @@
   /* ---------- Lock screen ---------- */
   .lock{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:40px 30px}
   .lock .glyph{width:60px;height:60px;color:var(--accent)}
+  .lock .glyph.brandglyph{height:70px}
   .lock h1{margin:0;font-size:23px;font-weight:640;letter-spacing:-.02em}
   .lock p{margin:0;color:var(--muted);font-size:14px;text-align:center}
   .dots{display:flex;gap:14px;margin:4px 0}
@@ -212,6 +213,8 @@
 /* ============ Auth screen (added for the synced web app) ============ */
 .auth{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:48px 30px;text-align:center}
 .auth .glyph{width:54px;height:54px;color:var(--accent)}
+.auth .glyph.brandglyph{width:66px;height:76px}
+.brandglyph .trailmark{width:100%;height:100%}
 .auth h1{margin:0;font-size:25px;font-weight:660;letter-spacing:-.02em}
 .auth p{margin:0;color:var(--muted);font-size:14px;max-width:30ch;line-height:1.45}
 .auth form{width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px;margin-top:6px}
@@ -228,22 +231,30 @@
 @keyframes sp{to{transform:rotate(360deg)}}
   .loading{flex:1;display:flex;align-items:center;justify-content:center}
 
-/* ============ Cold launch ritual ============ */
+/* ============ Trailhead identity + cold launch ritual ============ */
+.trailmark{display:block;overflow:visible}
+.trailmark .stone{stroke:color-mix(in srgb,var(--ink) 28%,transparent);stroke-width:1.15;stroke-linejoin:round}
+.trailmark .s1{fill:color-mix(in srgb,var(--accent) 70%,var(--ink))}
+.trailmark .s2{fill:color-mix(in srgb,var(--accent) 82%,var(--ink))}
+.trailmark .s3{fill:color-mix(in srgb,var(--accent) 88%,var(--surface))}
+.trailmark .s4{fill:color-mix(in srgb,var(--accent) 78%,var(--surface))}
+.trailmark .trailblaze{fill:none;stroke:color-mix(in srgb,var(--surface) 88%,#eadbbf);stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round}
+.trailmark-icon{width:100%;height:100%}
 .launch{position:fixed;inset:0;z-index:500;background:var(--bg);display:grid;place-items:center;touch-action:none}
 .launch.leaving{animation:launchout .18s cubic-bezier(.4,0,.7,1) forwards}
-.launchmark{display:flex;flex-direction:column;align-items:center;gap:17px;color:var(--ink)}
-.launchmark>span{font-size:19px;font-weight:650;letter-spacing:.12em;opacity:0;animation:launchname .22s .43s ease forwards}
-.cairnstack{position:relative;width:72px;height:86px;flex:none}
-.cairnstack i{position:absolute;left:50%;bottom:0;height:13px;border-radius:52% 48% 44% 56% / 58% 60% 40% 42%;
-  background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 72%, var(--ink)),var(--accent));
-  box-shadow:inset 0 1px rgba(255,255,255,.2),0 5px 12px rgba(20,22,20,.16);transform:translate(-50%,-70px);opacity:0}
-.cairnstack i:nth-child(1){width:66px;height:16px;bottom:0;animation:stoneland .23s .02s cubic-bezier(.16,.72,.2,1) forwards}
-.cairnstack i:nth-child(2){width:55px;height:15px;bottom:13px;animation:stoneland .23s .1s cubic-bezier(.16,.72,.2,1) forwards}
-.cairnstack i:nth-child(3){width:43px;height:14px;bottom:26px;animation:stoneland .22s .18s cubic-bezier(.16,.72,.2,1) forwards}
-.cairnstack i:nth-child(4){width:32px;height:13px;bottom:38px;animation:stoneland .21s .26s cubic-bezier(.16,.72,.2,1) forwards}
-.cairnstack i:nth-child(5){width:21px;height:12px;bottom:49px;animation:stoneland .2s .34s cubic-bezier(.16,.72,.2,1) forwards}
-@keyframes stoneland{0%{transform:translate(-50%,-62px) scale(.96);opacity:0}78%{transform:translate(-50%,1px) scale(1.015);opacity:1}100%{transform:translate(-50%,0) scale(1);opacity:1}}
-@keyframes launchname{from{opacity:0;transform:translateY(5px)}to{opacity:.78;transform:none}}
+.launchmark{display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--ink)}
+.launchtrail{width:88px;height:103px}
+.launchtrail .stone{transform-box:fill-box;transform-origin:center;opacity:0;animation:trailstonein .28s cubic-bezier(.16,.72,.2,1) forwards}
+.launchtrail .s1{animation-delay:.02s}.launchtrail .s2{animation-delay:.09s}.launchtrail .s3{animation-delay:.16s}.launchtrail .s4{animation-delay:.23s}
+.launchtrail .trailblaze{stroke-dasharray:96;stroke-dashoffset:96;animation:traildraw .28s .31s cubic-bezier(.5,0,.2,1) forwards}
+.launchword{display:flex;flex-direction:column;align-items:center;gap:4px}
+.launchword strong{font-size:22px;font-weight:700;letter-spacing:.075em;opacity:0;animation:launchname .22s .41s ease forwards}
+.launchword span{color:var(--faint);font-size:8px;font-weight:760;letter-spacing:.22em;text-transform:uppercase;opacity:0;animation:launchname .2s .47s ease forwards}
+.launch.reduced .stone,.launch.reduced .launchword strong,.launch.reduced .launchword span{opacity:1;transform:none}
+.launch.reduced .trailblaze{stroke-dashoffset:0}
+@keyframes trailstonein{0%{transform:translateY(-24px) rotate(-2deg) scale(.96);opacity:0}78%{transform:translateY(1px) scale(1.012);opacity:1}100%{transform:none;opacity:1}}
+@keyframes traildraw{to{stroke-dashoffset:0}}
+@keyframes launchname{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
 @keyframes launchout{to{opacity:0;transform:scale(.985)}}
 
 /* first-run routine picker */
@@ -367,7 +378,7 @@ body.tour-open{overflow:hidden}body.tour-open .scroll{overflow:hidden!important}
 .td-task{position:relative;display:flex;align-items:center;gap:11px;padding:13px;background:var(--surface);animation:tdgesture 4.8s .35s ease-in-out infinite}.td-task>i{width:25px;height:25px;border:2px solid var(--faint);border-radius:50%;display:grid;place-items:center;color:transparent;font-style:normal}.td-task>i svg{width:13px}.td-task>div{display:flex;flex:1;min-width:0;flex-direction:column}.td-task b{font-size:14px;font-weight:650}.td-task small{margin-top:2px;color:var(--muted);font-size:10.5px}.td-task em{font-size:15px;font-style:normal}
 @keyframes tdgesture{0%,12%,36%,62%,100%{transform:none;box-shadow:none}24%{transform:translateX(42px)}50%{transform:translateX(-42px)}76%{transform:translateY(-5px) scale(1.025);box-shadow:0 14px 28px rgba(0,0,0,.2)}86%{transform:translateY(3px) scale(1)}}
 .td-legend{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:10px}.td-legend span{color:var(--faint);font-size:8px;font-weight:690;text-align:center;letter-spacing:.01em}
-.td-install{display:flex;align-items:center;gap:14px}.td-appicon{width:58px;height:58px;border-radius:16px;display:grid;place-items:center;flex:none;color:#fff;background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 72%,#111),var(--accent));box-shadow:0 12px 26px color-mix(in srgb,var(--accent) 28%,transparent)}.td-appicon svg{width:34px;height:34px}.td-install>div:last-child{display:flex;min-width:0;flex-direction:column}.td-install span{color:var(--accent);font-size:8px;font-weight:780;letter-spacing:.14em}.td-install b{margin-top:4px;font-size:14px;line-height:1.25}.td-install small{margin-top:5px;color:var(--muted);font-size:10.5px}.td-install small i{display:inline-grid;width:17px;height:17px;border:1px solid var(--line);border-radius:5px;place-items:center;color:var(--accent);font-style:normal}
+.td-install{display:flex;align-items:center;gap:14px}.td-appicon{width:58px;height:58px;border-radius:16px;display:grid;place-items:center;flex:none;color:#fff;background:linear-gradient(145deg,color-mix(in srgb,var(--accent) 72%,#111),var(--accent));box-shadow:0 12px 26px color-mix(in srgb,var(--accent) 28%,transparent)}.td-appicon svg{width:38px;height:44px}.td-appicon .stone{fill:rgba(255,255,255,.88);stroke:rgba(255,255,255,.24)}.td-appicon .trailblaze{stroke:color-mix(in srgb,var(--accent) 62%,#1a1d1b)}.td-install>div:last-child{display:flex;min-width:0;flex-direction:column}.td-install span{color:var(--accent);font-size:8px;font-weight:780;letter-spacing:.14em}.td-install b{margin-top:4px;font-size:14px;line-height:1.25}.td-install small{margin-top:5px;color:var(--muted);font-size:10.5px}.td-install small i{display:inline-grid;width:17px;height:17px;border:1px solid var(--line);border-radius:5px;place-items:center;color:var(--accent);font-style:normal}
 @media(max-width:350px){.tourcap{left:8px;right:8px;padding:14px}.tourcap .tc-title{font-size:18px}.tourcap .tc-body{font-size:12.5px}.tc-btn{padding:7px 10px}.tourpreview{left:14px;right:14px}}
 
 /* ============ Manage (reorder/archive), undo toast, starters ============ */
@@ -421,14 +432,18 @@ body.tour-open{overflow:hidden}body.tour-open .scroll{overflow:hidden!important}
   .who:hover{border-color:var(--faint)}
 }
 
-/* tour: restrained exposure shift, staged copy, and the original stone-stack bookend */
+/* tour: restrained exposure shift, staged copy, and Trailhead bookends */
 .tourfocus{animation:tourexpose 2s .32s ease-in-out infinite}
 @keyframes tourexpose{0%,100%{filter:none}50%{filter:brightness(1.08) saturate(1.08)}}
 .tourcap.welcome .tc-head,.tourcap.welcome .tc-title,.tourcap.welcome .tc-body,.tourcap.welcome .tc-dots,.tourcap.welcome .tc-row{opacity:0;animation:tourline .32s cubic-bezier(.22,.7,.3,1) forwards}
 .tourcap.welcome .tc-head{animation-delay:.04s}.tourcap.welcome .tc-title{animation-delay:.1s}.tourcap.welcome .tc-body{animation-delay:.17s}.tourcap.welcome .tc-dots{animation-delay:.23s}.tourcap.welcome .tc-row{animation-delay:.29s}
 @keyframes tourline{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
-.tourcairn{width:48px;height:58px;margin:0 auto 5px;transform:scale(.72)}
-.tourcairn i{animation-name:stoneland!important}
+.tourtrail{width:51px;height:60px;margin:0 auto 5px}
+.tourcap.welcome .tourtrail .stone{transform-box:fill-box;transform-origin:center;animation:tourstone .3s both cubic-bezier(.2,.78,.25,1)}
+.tourcap.welcome .tourtrail .s2{animation-delay:.04s}.tourcap.welcome .tourtrail .s3{animation-delay:.08s}.tourcap.welcome .tourtrail .s4{animation-delay:.12s}
+.tourcap.welcome .tourtrail .trailblaze{stroke-dasharray:96;animation:tourtraildraw .34s .18s both ease}
+@keyframes tourstone{from{opacity:0;transform:translateY(-8px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes tourtraildraw{from{stroke-dashoffset:96}to{stroke-dashoffset:0}}
 .tc-btn{transition:transform .12s ease, background .18s, filter .18s}
 .tc-btn:active{transform:scale(.95)}
 
@@ -544,12 +559,19 @@ body.dragging-row{cursor:grabbing}
 .daystone.resting{border-color:var(--line);background:linear-gradient(155deg,var(--surface),var(--surface-2))}
 .daystone.complete{border-color:color-mix(in srgb,#b99654 52%,var(--line))}
 .daytop{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.dayidentity,.daytitle{min-width:0}.homebrand{display:flex;align-items:center;gap:9px;margin:-2px 0 13px;color:var(--ink)}
+.homebrandmark{width:35px;height:41px;flex:none}.homebrandcopy{display:flex;flex-direction:column;gap:1px}
+.homebrandcopy strong{font-size:17.5px;line-height:1;font-weight:720;letter-spacing:.015em}.homebrandcopy span{color:var(--accent);font-size:7.5px;font-weight:780;letter-spacing:.17em;text-transform:uppercase}
+.homebrand.enter .stone{transform-box:fill-box;transform-origin:center;animation:brandstone .34s both cubic-bezier(.2,.78,.25,1)}
+.homebrand.enter .s2{animation-delay:.045s}.homebrand.enter .s3{animation-delay:.09s}.homebrand.enter .s4{animation-delay:.135s}
+.homebrand.enter .trailblaze{stroke-dasharray:96;animation:brandtrail .35s .15s both ease}.homebrand.enter .homebrandcopy{animation:brandcopy .34s .13s both ease}
+.homebrandmark.trailpulse .trailblaze{animation:brandpulse .55s ease}
 .daytitle{min-width:0}.daylabel{display:block;color:var(--accent);font-size:10.5px;font-weight:750;letter-spacing:.16em;text-transform:uppercase;margin-bottom:4px}
 .daytitle h1{margin:0;font-size:22px;line-height:1.08;font-weight:680;letter-spacing:-.025em;text-wrap:balance}
 .daystatus{display:flex;align-items:center;gap:6px;margin-top:7px;color:var(--faint);font-size:10.5px;font-weight:580;letter-spacing:.015em}
 .daystatus i{width:2px;height:2px;border-radius:50%;background:var(--faint)}
 .daystatus .syncdot{width:6px;height:6px;margin:0}
-.dayactions{display:flex;gap:8px;align-items:center;flex:none}
+.dayactions{display:flex;gap:8px;align-items:center;flex:none;padding-top:1px}
 .dayactions .addbtn,.dayactions .who{width:38px;height:38px;min-width:38px;padding:0;border-radius:13px;display:grid;place-items:center;
   background:color-mix(in srgb,var(--surface-2) 72%,transparent);border:1px solid var(--line);box-shadow:none}
 .dayactions .addbtn{font-size:23px}.dayactions .who .av{width:26px;height:26px;font-size:11px}
@@ -624,7 +646,7 @@ body.dragging-row{cursor:grabbing}
 .journalcta i{font-style:normal;font-size:18px;font-weight:400;line-height:.8}.notecard.written{border-color:color-mix(in srgb,var(--accent) 28%,var(--line))}
 .sheeteyebrow{display:block;color:var(--accent);font-size:9.5px;font-weight:760;letter-spacing:.14em;text-transform:uppercase;margin:2px 0 5px}
 .todayfoot{display:flex;align-items:center;justify-content:center;gap:9px;padding:27px 0 12px;color:var(--faint);font-size:10px;letter-spacing:.05em}
-.todayfoot svg{width:24px;height:24px;color:var(--accent);opacity:.65}
+.todayfoot svg{width:24px;height:28px;color:var(--accent);opacity:.72}.todayfoot b{color:var(--muted);font-weight:720;letter-spacing:.025em}
 
 /* Floating navigation turns the app chrome into one calm, persistent object. */
 .tabs{left:12px;right:12px;bottom:calc(8px + env(safe-area-inset-bottom));padding:6px;border:1px solid var(--line);border-radius:20px;
@@ -640,6 +662,10 @@ body.dragging-row{cursor:grabbing}
 .scroll.enter .pathgroup>.grouphead{animation:ritualin .32s calc(.2s + var(--group-i)*45ms) cubic-bezier(.2,.75,.25,1) both}
 @keyframes daystonein{from{opacity:0;transform:translateY(13px) scale(.987)}to{opacity:1;transform:none}}
 @keyframes ritualin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes brandstone{from{opacity:0;transform:translateY(-8px) scale(.95)}to{opacity:1;transform:none}}
+@keyframes brandtrail{from{stroke-dashoffset:96}to{stroke-dashoffset:0}}
+@keyframes brandcopy{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:none}}
+@keyframes brandpulse{0%,100%{stroke-width:5.5}45%{stroke-width:8;stroke:color-mix(in srgb,#d5b66e 85%,var(--surface))}}
 @keyframes heroambient{0%,100%{transform:translate(0,0) scale(1);opacity:.62}50%{transform:translate(-12px,10px) scale(1.07);opacity:.9}}
 @keyframes metricsettle{0%{opacity:.6;transform:translateY(5px)}65%{opacity:1;transform:translateY(-1px)}100%{transform:none}}
 @keyframes pathbreath{0%,100%{transform:scale(1);opacity:.72}50%{transform:scale(1.22);opacity:1}}

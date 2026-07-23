@@ -1,12 +1,38 @@
-# Cairn — Project Context
+# Trailhead (formerly Cairn) — Project Context
 
 _Handoff doc. Read this + TODO.md + DECISIONS.md + CHANGELOG.md, then the code._
 _Last updated: 2026-07-22._
 
-## LATEST RELEASE — professional tutorial aligned to the current UI
+## LATEST RELEASE — Trailhead identity system and PWA rebrand
+The active customer-facing product is now **Trailhead**. A new code-native identity uses four
+weathered trail stones crossed by one rising route. The same geometry now drives the realistic
+installed icon, the sub-900ms cold launch, a prominent `Trailhead · Your daily path` lockup at the
+top of Today, auth/lock/onboarding, the tutorial bookends and install demo, footer, setup guide,
+privacy policy, export filename, service-worker fallback notifications, and Edge reminder titles.
+The Today mark enters once per app session and gives a single light trail pulse after completion;
+there is no new endless brand animation or gesture-time layout work.
+
+The origin intentionally remains `https://cairn.surge.sh` so existing Supabase auth redirects,
+sessions, and web-push origin assumptions do not migrate. Compatibility identifiers also remain:
+`window.CAIRN_CONFIG`, `cairn_*` localStorage keys, SQL filenames, and the repository directory.
+They are implementation details, not visible product copy. There is no SQL for this rebrand.
+Existing iPhone Home Screen labels/icons are not remotely renamed; users must open the refreshed
+site, delete the old Home Screen icon, and add it again as Trailhead. Account data remains in
+Supabase and is not deleted by removing the shortcut.
+
+Light and OLED Today, sign-in, the welcome tutorial cover, launch-to-header handoff, 375×812
+horizontal containment, and browser logs passed local QA. `sw.js` shell v6 forces current assets.
+The temporary signed-in fixture was deleted after QA.
+
+**Commercial naming boundary:** Salesforce actively uses Trailhead/Trailhead GO. The user
+explicitly chose Trailhead after being warned of that conflict, so it is implemented as the
+user-directed working/private brand. It is not cleared for a paid public launch. Before charging
+the general public, obtain a professional trademark clearance or choose a lower-conflict name.
+
+## PRIOR RELEASE — professional tutorial aligned to the current UI
 `runTour()` is now the current product walkthrough instead of the pre-redesign summary tour. It
 preserves the original traveling spotlight, task gestures, rest/week/history/settings guidance,
-Home Screen step, and stone-stack bookends while teaching the actual day stone, Cairn Close,
+Home Screen step, and stone-stack bookends while teaching the actual day stone, Trailhead Close,
 Weekly Trail, account trust, partner boundary, and present Settings rows. A new account still
 starts blank and automatically enters the tour after onboarding; Settings → See the tutorial
 again replays the same sequence for established accounts.
@@ -81,7 +107,7 @@ There are **two deliverables**:
 ## Web app — architecture
 - **No framework, no build step.** Plain static files served by Surge.
   - `Web/index.html` — shell; loads Supabase UMD from CDN, `config.js`, `styles.css`, `app.js`; registers `sw.js`.
-  - `Web/app.js` — the ENTIRE app (~1550 lines, vanilla JS). State + logic + all screens.
+  - `Web/app.js` — the ENTIRE app (~1600 lines, vanilla JS). State + logic + all screens.
   - `Web/styles.css` — design system via CSS custom properties (tokens).
   - `Web/config.js` — Supabase URL + publishable key + VAPID public key (all safe to expose).
   - `Web/sw.js` — service worker: network-first shell cache + web-push handlers.

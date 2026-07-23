@@ -1,6 +1,23 @@
-# Cairn — Key Decisions
+# Trailhead (formerly Cairn) — Key Decisions
 
 _Last updated: 2026-07-22. Brief rationale for choices that aren't obvious from the code._
+
+- **Trailhead is the visible working brand, with a deliberate commercial hold.** The user
+  explicitly selected Trailhead after being warned that Salesforce actively uses Trailhead and
+  Trailhead GO. The app therefore shows Trailhead everywhere the customer sees the product, but
+  this choice is not represented as trademark-cleared. Do not launch paid public marketing under
+  this name until a qualified trademark search clears it or a lower-conflict name is chosen.
+
+- **Keep the current origin and compatibility IDs during the visual rebrand.** The live address
+  stays `cairn.surge.sh`; Supabase redirects, sessions, web-push origin, `CAIRN_CONFIG`, `cairn_*`
+  device keys, repo paths, and SQL names remain unchanged. Renaming those internals would create
+  migration risk without improving the visible brand. Existing installed PWA names/icons require
+  deleting and re-adding the Home Screen shortcut; there is no SQL or account-data migration.
+
+- **One identity geometry, restrained motion.** The installed icon, inline app mark, launch,
+  Today lockup, auth, and tutorial all use the same four-stone/rising-route shape. Startup settles
+  stones and draws the route once; Today enters once per session and only pulses after a completed
+  task. No continuous logo loop or pointer-time work was added, preserving gesture frame pacing.
 
 - **Current sellability work stays web-first.** The user explicitly deferred widgets, HealthKit,
   and other native-only surfaces until they have the paid Apple Developer account. The active

@@ -1,4 +1,4 @@
-// Cairn — "send-reminders" Supabase Edge Function.
+// Trailhead — "send-reminders" Supabase Edge Function.
 // Invoked every 5 minutes by pg_cron. Computes the current Mountain-Time moment,
 // finds each user's tasks that are due, timed, still-incomplete, and just reached
 // their time, plus an optional nightly "unfinished" summary — and sends a web push
@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
       if (t.remind === false) continue;            // per-task reminder turned off
       if (quiet) continue;                          // inside quiet hours
       const delta = minutes - tmin;
-      if (delta >= 0 && delta < WINDOW_MIN) toSend.push({ kind: `task:${t.id}`, title: "Cairn", body: `⏰ ${t.title}` });
+      if (delta >= 0 && delta < WINDOW_MIN) toSend.push({ kind: `task:${t.id}`, title: "Trailhead", body: `⏰ ${t.title}` });
     }
     const smin = timeToMin(s.summary_time || "21:30");
     if (smin !== null) {

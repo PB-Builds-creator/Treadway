@@ -1,4 +1,4 @@
-# Cairn — synced web app
+# Trailhead — synced web app
 
 A private daily-discipline checklist for **you and your girlfriend**. Each person
 signs in with their own email/password and gets their **own** list, synced across
@@ -26,8 +26,8 @@ Web/
 2. Drag the **entire `Web` folder** onto the page.
 3. It uploads and gives you a live URL like `https://random-name.netlify.app`.
 4. (Optional) Make a free Netlify account to keep the URL and rename it
-   (Site settings → Change site name → e.g. `paxton-cairn` →
-   `https://paxton-cairn.netlify.app`).
+   (Site settings → Change site name → e.g. `paxton-trailhead` →
+   `https://paxton-trailhead.netlify.app`).
 
 That URL is the app. Open it on any device.
 
@@ -52,7 +52,7 @@ signed in.
 
 ## Add to home screen (feels like a native app)
 - **iPhone (Safari):** open the URL → Share → **Add to Home Screen**. Launches
-  full-screen with the Cairn icon.
+  full-screen with the Trailhead icon.
 - **Mac (Safari):** File → **Add to Dock**. **Chrome:** install icon in the address bar.
 
 ## What works

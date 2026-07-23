@@ -1,4 +1,4 @@
-// Cairn web app — connection settings.
+// Trailhead web app — connection settings. CAIRN_CONFIG stays for device compatibility.
 // The publishable/anon key is SAFE to expose in a static site: every table is
 // protected by row-level security, so it can only read/write the signed-in
 // user's own rows.

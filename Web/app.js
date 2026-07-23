@@ -1,6 +1,6 @@
 "use strict";
 /* ============================================================================
-   Cairn — synced web app.
+   Trailhead — synced web app.
    Auth + data via Supabase (per-user, row-level-secured). The UI renders from a
    local `state` mirror for instant response; every change is cached to this
    device AND pushed to Supabase, so it syncs across your devices and stays
@@ -52,7 +52,7 @@ const ICON={
   lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5"/><path d="M8 10.5V7a4 4 0 018 0v3.5"/></svg>',
   pencil:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M14.5 6.5l3 3"/></svg>',
   trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5h6v2M6.5 7l1 13h9l1-13"/></svg>',
-  cairn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 21h8M6.5 17.5h11M9 14h6M10 10.6h4M11 7.4h2" stroke-linecap="round"/></svg>',
+  trailhead:'<svg class="trailmark trailmark-icon" viewBox="0 0 96 112" aria-hidden="true"><path class="stone s1" d="M11 97c-5-8 0-18 11-22 16-6 42-5 56 2 12 6 12 16 2 23-14 9-57 8-69-3Z"/><path class="stone s2" d="M19 75c-6-7 0-16 12-20 13-5 31-3 42 2 10 5 10 14 0 19-13 7-44 7-54-1Z"/><path class="stone s3" d="M29 54c-5-7 0-15 10-18 11-4 25-2 32 5 7 7 2 15-8 18-12 4-28 2-34-5Z"/><path class="stone s4" d="M38 35c-4-7 1-15 10-17 9-2 19 2 20 10 1 7-6 12-15 12-7 0-13-1-15-5Z"/><path class="trailblaze" d="M24 89c10-7 10-15 19-21 9-7 4-13 14-20 9-6 5-13 13-19"/></svg>',
   drop:"💧",pills:"💊",fork:"🍽️",book:"📖",hands:"🙏",chart:"📈",run:"🏃",moon:"🌙",sun:"☀️",heart:"❤️",leaf:"🍃",cup:"☕",star:"⭐",flag:"🚩",dumbbell:"🏋️"
 };
 function symChar(s){return ICON[s]&&ICON[s].length<5?ICON[s]:"•";}
@@ -285,32 +285,33 @@ async function flushOutbox(){
 function setSync(on){syncOn=on;const el=document.getElementById("syncdot");if(el)el.className="syncdot"+(on?"":" off");}
 
 /* transient one-shot animation flags (consumed by the next render) */
-let justCompletedId=null, justAddedId=null, justClosedDay=null, ringLast=0, ringWait=0, streakLast=null, waterLast=null, waterPulse=false, rowStagger=0;
+let justCompletedId=null, justAddedId=null, justClosedDay=null, ringLast=0, ringWait=0, streakLast=null, waterLast=null, waterPulse=false, rowStagger=0, brandHasEntered=false;
 let launchEl=null, launchTimer=0, launchStarted=0;
 function prefersReduce(){return !!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches);}
-function cairnHtml(cls=""){return `<div class="cairnstack ${cls}"><i></i><i></i><i></i><i></i><i></i></div>`;}
+function trailheadMarkHtml(cls=""){return `<svg class="trailmark ${cls}" viewBox="0 0 96 112" aria-hidden="true"><path class="stone s1" d="M11 97c-5-8 0-18 11-22 16-6 42-5 56 2 12 6 12 16 2 23-14 9-57 8-69-3Z"/><path class="stone s2" d="M19 75c-6-7 0-16 12-20 13-5 31-3 42 2 10 5 10 14 0 19-13 7-44 7-54-1Z"/><path class="stone s3" d="M29 54c-5-7 0-15 10-18 11-4 25-2 32 5 7 7 2 15-8 18-12 4-28 2-34-5Z"/><path class="stone s4" d="M38 35c-4-7 1-15 10-17 9-2 19 2 20 10 1 7-6 12-15 12-7 0-13-1-15-5Z"/><path class="trailblaze" d="M24 89c10-7 10-15 19-21 9-7 4-13 14-20 9-6 5-13 13-19"/></svg>`;}
 function startLaunch(){
-  if(prefersReduce()||launchEl)return;
+  if(launchEl)return;
   launchStarted=performance.now();
-  launchEl=document.createElement("div");launchEl.className="launch";
-  launchEl.innerHTML=`<div class="launchmark">${cairnHtml("launchcairn")}<span>Cairn</span></div>`;
+  launchEl=document.createElement("div");launchEl.className="launch"+(prefersReduce()?" reduced":"");
+  launchEl.innerHTML=`<div class="launchmark">${trailheadMarkHtml("launchtrail")}<div class="launchword"><strong>Trailhead</strong><span>Your daily path</span></div></div>`;
   document.body.appendChild(launchEl);
   launchEl.addEventListener("pointerdown",()=>finishLaunch(true),{once:true});
-  launchTimer=setTimeout(()=>finishLaunch(false),680);
+  launchTimer=setTimeout(()=>finishLaunch(prefersReduce()),prefersReduce()?420:680);
 }
 function finishLaunch(skip){
   if(!launchEl)return;clearTimeout(launchTimer);
-  const ov=launchEl,stack=ov.querySelector(".cairnstack"),ring=root.querySelector(".ring");launchEl=null;
+  const ov=launchEl,mark=ov.querySelector(".trailmark"),target=root.querySelector(".homebrandmark");launchEl=null;
   if(skip||prefersReduce()){ov.remove();return;}
-  if(ring&&stack){
-    const a=stack.getBoundingClientRect(),b=ring.getBoundingClientRect();
+  if(target&&mark){
+    const a=mark.getBoundingClientRect(),b=target.getBoundingClientRect();
     const dx=b.left+b.width/2-a.left-a.width/2,dy=b.top+b.height/2-a.top-a.height/2,sc=b.width/a.width;
-    stack.animate([{transform:"translate(0,0) scale(1)",opacity:1},{transform:`translate(${dx}px,${dy}px) scale(${sc})`,opacity:.12}],{duration:210,easing:"cubic-bezier(.3,0,.15,1)",fill:"forwards"});
-    ov.animate([{opacity:1},{opacity:0}],{duration:210,easing:"cubic-bezier(.4,0,.7,1)",fill:"forwards"});
-    setTimeout(()=>ov.remove(),220);
+    target.style.opacity="0";
+    mark.animate([{transform:"translate(0,0) scale(1)",opacity:1},{transform:`translate(${dx}px,${dy}px) scale(${sc})`,opacity:.35}],{duration:210,easing:"cubic-bezier(.3,0,.15,1)",fill:"forwards"});
+    ov.animate([{backgroundColor:"var(--bg)"},{backgroundColor:"transparent"}],{duration:210,easing:"cubic-bezier(.4,0,.7,1)",fill:"forwards"});
+    setTimeout(()=>{ov.remove();target.style.opacity="";target.animate([{opacity:.2,transform:"scale(.94)"},{opacity:1,transform:"none"}],{duration:240,easing:"cubic-bezier(.2,.8,.25,1)"});},215);
   }else{ov.classList.add("leaving");setTimeout(()=>ov.remove(),180);}
 }
-function resolveLaunch(){if(launchEl&&root.querySelector(".ring")&&performance.now()-launchStarted<640)finishLaunch(false);}
+function resolveLaunch(){if(launchEl&&root.querySelector(".homebrandmark")&&performance.now()-launchStarted<640)finishLaunch(false);}
 /* mutations: update local state instantly, cache, render, then push */
 /* FLIP: remember where every row is, then glide each from its old spot to its new one. */
 function captureRows(){
@@ -498,12 +499,12 @@ async function updateReminderLabel(){
   const el=document.getElementById("remVal");if(el)el.textContent=(remindersFlag?"On":"Off")+" ›";
 }
 async function enableReminders(){
-  if(!pushSupported()){alert("This browser can't do reminders. On iPhone, add Cairn to your Home Screen first, then open it from there.");return;}
+  if(!pushSupported()){alert("This browser can't do reminders. On iPhone, add Trailhead to your Home Screen first, then open it from there.");return;}
   if(/iphone|ipad|ipod/i.test(navigator.userAgent) && !isStandalone()){
-    alert("On iPhone: tap the Share button → Add to Home Screen, then open Cairn from the Home Screen and turn reminders on there.");return;
+    alert("On iPhone: tap the Share button → Add to Home Screen, then open Trailhead from the Home Screen and turn reminders on there.");return;
   }
   const perm=await Notification.requestPermission();
-  if(perm!=="granted"){alert("Notifications are blocked. Allow them for Cairn in Settings, then try again.");return;}
+  if(perm!=="granted"){alert("Notifications are blocked. Allow them for Trailhead in Settings, then try again.");return;}
   try{
     const reg=await navigator.serviceWorker.ready;
     let sub=await reg.pushManager.getSubscription();
@@ -511,7 +512,7 @@ async function enableReminders(){
     const j=sub.toJSON();
     await SB.from("push_subscriptions").upsert({user_id:userId,endpoint:j.endpoint,p256dh:j.keys.p256dh,auth:j.keys.auth,updated_at:new Date().toISOString()},{onConflict:"endpoint"});
     await SB.from("reminder_settings").upsert({user_id:userId,enabled:true,updated_at:new Date().toISOString()});
-    reg.showNotification("Reminders on",{body:"Cairn will nudge you at your task times and each night.",icon:"icon-192.png"});
+    reg.showNotification("Reminders on",{body:"Trailhead will nudge you at your task times and each night.",icon:"icon-192.png"});
     remindersFlag=true;render();
   }catch(e){alert("Couldn't turn on reminders: "+(e&&e.message||e));}
 }
@@ -568,7 +569,7 @@ function showApp(){
 function renderLockEnter(){
   setAccent();entry="";
   root.innerHTML=`<div class="screen"><div class="lock" id="lock">
-    <div class="glyph">${ICON.lock}</div><h1>Cairn</h1><p>Enter your code</p>
+    <div class="glyph brandglyph">${ICON.trailhead}</div><h1>Trailhead</h1><p>Enter your code</p>
     <div class="dots" id="dots">${dotsHtml()}</div>
     <div class="keypad">${keypadHtml()}</div>
     <button class="swap" data-signout="1">Forgot code? Sign out</button></div></div>`;
@@ -600,13 +601,13 @@ function renderLockSetup(firstRun){
 function renderHomeScreenTip(){
   setAccent();
   root.innerHTML=`<div class="screen"><div class="auth">
-    <div class="glyph">${ICON.cairn}</div>
-    <h1>Add Cairn to your Home Screen</h1>
+    <div class="glyph brandglyph">${ICON.trailhead}</div>
+    <h1>Add Trailhead to your Home Screen</h1>
     <p>So it opens full-screen like a real app — and can send you reminders.</p>
     <ol class="hstip">
       <li>In Safari, tap the <b>Share</b> button (the square with an ↑ arrow).</li>
       <li>Scroll down and tap <b>Add to Home Screen</b>.</li>
-      <li>Tap <b>Add</b>, then open Cairn from its new icon.</li>
+      <li>Tap <b>Add</b>, then open Trailhead from its new icon.</li>
     </ol>
     <button class="btn" id="hs-ok">Got it</button>
   </div></div>`;
@@ -616,9 +617,9 @@ function renderHomeScreenTip(){
 function renderAuth(msg){
   authMode=authMode||"signin";setAccent();
   root.innerHTML=`<div class="screen"><div class="auth">
-    <div class="glyph">${ICON.cairn}</div>
-    <h1>Cairn</h1>
-    <p>${msg?msg:(authMode==="signup"?"Request access to try Cairn — the owner approves new members.":"Sign in to your account.")}</p>
+    <div class="glyph brandglyph">${ICON.trailhead}</div>
+    <h1>Trailhead</h1>
+    <p>${msg?msg:(authMode==="signup"?"Request access to try Trailhead — the owner approves new members.":"Sign in to your account.")}</p>
     <form id="a-form" autocomplete="on">
       ${authMode==="signup"?'<input id="a-name" autocomplete="name" placeholder="Your name" required>':''}
       <input id="a-email" type="email" inputmode="email" autocomplete="username" placeholder="Email" required>
@@ -656,7 +657,7 @@ function renderPending(){
   root.innerHTML=`<div class="screen"><div class="auth">
     <div class="glyph">${ICON.lock}</div>
     <h1>${denied?"Not approved":"Waiting for approval"}</h1>
-    <p>${denied?"The owner hasn't granted you access to Cairn.":"Your request was sent. You'll get in as soon as the owner approves you — check back shortly."}</p>
+    <p>${denied?"The owner hasn't granted you access to Trailhead.":"Your request was sent. You'll get in as soon as the owner approves you — check back shortly."}</p>
     ${denied?"":'<button class="btn" id="pg-check">Check again</button>'}
     <button class="swap" id="pg-out">Sign out</button><button class="swap pendingdelete" id="pg-delete">Delete my account</button>
   </div></div>`;
@@ -664,7 +665,7 @@ function renderPending(){
   document.getElementById("pg-out").onclick=signOut;document.getElementById("pg-delete").onclick=deleteAccountSheet;
 }
 function renderAccessError(){setAccent();root.innerHTML=`<div class="screen"><div class="auth"><div class="glyph">${ICON.lock}</div>
-  <h1>Couldn't verify access</h1><p>Cairn kept your private data closed because the account check didn't finish.</p>
+  <h1>Couldn't verify access</h1><p>Trailhead kept your private data closed because the account check didn't finish.</p>
   <button class="btn" id="av-try">Try again</button><button class="swap" id="av-out">Sign out</button></div></div>`;
   document.getElementById("av-try").onclick=enterApp;document.getElementById("av-out").onclick=signOut;}
 
@@ -673,13 +674,13 @@ function renderOnboard(){ // new user: a brief promise, then a blank page and th
   const p=presetEmpty();
   const meta=session?.user?.user_metadata?.name;
   try{const nm=localStorage.getItem("cairn_name_"+userId)||meta;if(nm&&nm.trim())p.name=nm.trim();}catch(_){if(meta&&meta.trim())p.name=meta.trim();}
-  setAccent();root.innerHTML=`<div class="screen"><div class="auth onboard"><div class="glyph">${ICON.cairn}</div>
-    <span class="onboardeyebrow">YOUR DAILY PATH</span><h1>Build a day worth remembering.</h1>
+  setAccent();root.innerHTML=`<div class="screen"><div class="auth onboard"><div class="glyph brandglyph">${ICON.trailhead}</div>
+    <span class="onboardeyebrow">TRAILHEAD · YOUR DAILY PATH</span><h1>Build a day worth remembering.</h1>
     <p>Keep the commitments that matter. Close each day honestly. See the trail you leave behind.</p>
     <div class="onboardpoints"><div><i>01</i><span><b>Place the stones</b><small>Track the work without the noise.</small></span></div>
       <div><i>02</i><span><b>Close the day</b><small>One win. One honest line. One intention.</small></span></div>
       <div><i>03</i><span><b>Read the trail</b><small>Watch consistency become a story.</small></span></div></div>
-    <button class="btn" id="ob-start">Enter Cairn</button><span class="onboardfine">Private by design. Your first page starts blank.</span>
+    <button class="btn" id="ob-start">Enter Trailhead</button><span class="onboardfine">Private by design. Your first page starts blank.</span>
   </div></div>`;
   document.getElementById("ob-start").onclick=()=>onboard(p);
 }
@@ -691,7 +692,7 @@ function tourDemoHtml(kind){
     <div class="td-gesture"><div class="td-actions"><span>${ICON.pencil}</span><span>${ICON.trash}</span></div>
       <div class="td-task"><i>${ICON.check}</i><div><b>Morning walk</b><small>8:00 AM · daily</small></div><em>🏃</em></div></div>
     <div class="td-legend"><span>Swipe right · edit</span><span>Hold · move</span><span>Delete · left</span></div>`;
-  if(kind==="install")return `<div class="td-install"><div class="td-appicon">${ICON.cairn}</div><div><span>ADD TO HOME SCREEN</span><b>Cairn, without the browser chrome.</b><small>Safari Share <i>↑</i> → Add to Home Screen</small></div></div>`;
+  if(kind==="install")return `<div class="td-install"><div class="td-appicon">${ICON.trailhead}</div><div><span>ADD TO HOME SCREEN</span><b>Trailhead, without the browser chrome.</b><small>Safari Share <i>↑</i> → Add to Home Screen</small></div></div>`;
   return "";
 }
 
@@ -701,24 +702,24 @@ function runTour(){
   if(document.querySelector(".tourwrap")||!state)return;
   pendingTour=true;
   const steps=[
-    {tab:"today",k:"WELCOME",hero:true,t:"Welcome to Cairn",b:"Your day, your reflection, and the trail they become — one quiet system, in under a minute."},
+    {tab:"today",k:"WELCOME",hero:true,t:"Welcome to Trailhead",b:"Your day, your reflection, and the trail they become — one quiet system, in under a minute."},
     {tab:"today",k:"TODAY",sel:".daystone",pad:7,t:"One clear daily command center",b:"Progress, streak, hydration, sync, recovery, and the next marker now live together at the top."},
     {tab:"today",k:"BUILD",sel:".addbtn",pad:10,t:"Place the first stone",b:"Tap ＋ to add a habit, responsibility, prayer, workout, or measured goal. Your page starts blank on purpose."},
     {tab:"today",k:"DIRECT CONTROL",sel:".rowwrap",fallback:"gesture",t:"Your order stays yours",b:"Tap to complete. Swipe right to edit, left to delete with Undo, or hold and drag to rearrange."},
-    {tab:"today",k:"RECOVERY",sel:'[data-act="restday"]',pad:8,t:"Rest without losing ground",b:"Use up to three rest days each week. Cairn protects the streak without pretending recovery is failure."},
-    {tab:"today",k:"CAIRN CLOSE",sel:".closecard",pad:7,t:"End the day on purpose",b:"Keep one win, one honest line, and tomorrow’s first stone. Your journal text is never shared with a partner."},
+    {tab:"today",k:"RECOVERY",sel:'[data-act="restday"]',pad:8,t:"Rest without losing ground",b:"Use up to three rest days each week. Trailhead protects the streak without pretending recovery is failure."},
+    {tab:"today",k:"TRAILHEAD CLOSE",sel:".closecard",pad:7,t:"End the day on purpose",b:"Keep one win, one honest line, and tomorrow’s first stone. Your journal text is never shared with a partner."},
     {tab:"week",k:"WEEKLY TRAIL",sel:".trailrail",pad:10,t:"Read the trail you are leaving",b:"The Week view holds daily progress and a rolling seven-day story: rhythm, recovery, closes, water, and the next foothold."},
     {tab:"history",k:"HISTORY",sel:".statwrap",pad:7,t:"Watch consistency compound",b:"See current and longest streaks, your 30-day rate, per-task streaks, and measured trends."},
     {tab:"settings",k:"CONTROL",sel:'[data-act="manage"]',pad:6,t:"Shape the system around real life",b:"Manage tasks whenever life changes — add, edit, reorder, archive, duplicate, or remove without losing your history."},
-    {tab:"settings",k:"REMINDERS",sel:'[data-act="reminders"]',pad:6,t:"Useful nudges, on your terms",b:"Enable task-time reminders, choose a nightly summary, and protect quiet hours. On iPhone, Cairn works best from the Home Screen."},
+    {tab:"settings",k:"REMINDERS",sel:'[data-act="reminders"]',pad:6,t:"Useful nudges, on your terms",b:"Enable task-time reminders, choose a nightly summary, and protect quiet hours. On iPhone, Trailhead works best from the Home Screen."},
     {tab:"settings",k:"TOGETHER",sel:'[data-act="partner"]',pad:6,t:"Encouragement without surveillance",b:"Link one person to share only a name, daily counts, and one Proud nudge. Never tasks, hydration, measurements, or journal text."},
-    {tab:"settings",k:"MAKE IT YOURS",sel:'[data-act="accent"]',pad:6,t:"A Cairn that feels like yours",b:"Choose a calm accent, then set Appearance to Light, Dark, System, or Pure Black for OLED."},
+    {tab:"settings",k:"MAKE IT YOURS",sel:'[data-act="accent"]',pad:6,t:"A Trailhead that feels like yours",b:"Choose a calm accent, then set Appearance to Light, Dark, System, or Pure Black for OLED."},
     {tab:"settings",k:"YOUR DATA",sel:'[data-act="privacy"]',pad:6,t:"Your account is the boundary",b:"Export your data, change your password, read the privacy policy, unlink a partner, or permanently delete your account."},
     {tab:"today",k:"BEGIN",hero:true,final:true,t:"Start with one",b:"Add one thing worth keeping. Close the day honestly. Little by little is how it holds."}
   ];
-  if(!isStandalone())steps.splice(steps.length-1,0,{tab:"today",k:"IPHONE",demo:"install",t:"Give Cairn a place on your Home Screen",b:"Open Cairn from its icon for a full-screen app experience and reliable reminder permission."});
+  if(!isStandalone())steps.splice(steps.length-1,0,{tab:"today",k:"IPHONE",demo:"install",t:"Give Trailhead a place on your Home Screen",b:"Open Trailhead from its icon for a full-screen app experience and reliable reminder permission."});
   let i=0;
-  const ov=document.createElement("div");ov.className="tourwrap";ov.setAttribute("role","dialog");ov.setAttribute("aria-modal","true");ov.setAttribute("aria-label","Cairn guided tour");
+  const ov=document.createElement("div");ov.className="tourwrap";ov.setAttribute("role","dialog");ov.setAttribute("aria-modal","true");ov.setAttribute("aria-label","Trailhead guided tour");
   ov.innerHTML='<div class="tourbackdrop" id="tourbd"></div><div class="tourspot" id="tourspot"></div><div class="tourpreview" id="tourpreview"></div><div class="tourcap" id="tourcap" aria-live="polite" tabindex="-1"></div>';
   document.body.appendChild(ov);document.body.classList.add("tour-open");
   const spot=ov.querySelector("#tourspot"),cap=ov.querySelector("#tourcap"),bd=ov.querySelector("#tourbd"),preview=ov.querySelector("#tourpreview");
@@ -757,7 +758,7 @@ function runTour(){
       spotRect=next;el.classList.add("tourfocus");focused=el;
     }else spot.style.opacity="0";
     const final=!!st.final,hero=!!st.hero;
-    cap.innerHTML=`${hero?cairnHtml("tourcairn"):""}<div class="tc-head"><span class="tc-kicker"><i>◆</i>${st.k}</span><span class="tc-num">${i+1} / ${steps.length}</span></div>
+    cap.innerHTML=`${hero?trailheadMarkHtml("tourtrail"):""}<div class="tc-head"><span class="tc-kicker"><i>◆</i>${st.k}</span><span class="tc-num">${i+1} / ${steps.length}</span></div>
       <div class="tc-title">${st.t}</div><div class="tc-body">${st.b}</div>
       <div class="tc-dots" aria-hidden="true">${steps.map((_,k)=>`<i class="${k===i?"on":k<i?"past":""}"></i>`).join("")}</div>
       <div class="tc-row"><button class="swap" id="tc-skip">Skip tour</button><span class="tc-spacer"></span>
@@ -789,6 +790,7 @@ function render(){
   const dir=from<0?"":to>from?" dir-left":" dir-right";
   let body=tab==="today"?todayView():tab==="week"?weekView():tab==="history"?historyView():settingsView();
   root.innerHTML=`<div class="screen"><div class="scroll${keepScroll?"":" enter"}${keepScroll?"":dir}">${body}</div>${tabbar()}</div>`;
+  if(tab==="today"&&root.querySelector(".homebrand"))brandHasEntered=true;
   const ns=root.querySelector(".scroll"); if(ns&&prev)ns.scrollTop=prev;
   bindApp();
   lastRenderedTab=tab;
@@ -861,10 +863,11 @@ function todayView(){
     groups+=`<div class="pathgroup" style="--group-i:${gi++}"><div class="grouphead"><span class="pathnode"></span><span class="ghname">${g.t}</span><span class="n">${items.length} ${items.length===1?"marker":"markers"}</span></div><div class="card pathcard" data-group="${g.k}">${items.map(rowHtml).join("")}</div></div>`;}
   const hyTask=due.find(x=>x.hydration);
   const completed=doneItems.length?`<section class="completedblock"><div class="sectionhead compact"><div><span>Placed today</span><h3>${doneItems.length} ${doneItems.length===1?"stone":"stones"}</h3></div><span class="sectioncount">${done}/${total}</span></div><div class="card completedcard">${doneItems.sort(bySort).map(rowHtml).join("")}</div></section>`:"";
-  const av=(state.name||"?").trim().charAt(0).toUpperCase();
+  const av=(state.name||"?").trim().charAt(0).toUpperCase(),brandEnter=!brandHasEntered;
   return `<section class="daystone ${rest?"resting":""} ${allDone?"complete":""}">
-    <div class="daytop"><div class="daytitle"><span class="daylabel">Today</span><h1>${prettyDate(t)}</h1>
-      <div class="daystatus"><span id="syncdot" class="syncdot${syncOn?"":" off"}"></span>${syncOn?"Synced":"Offline"}<i></i>Mountain · ${tzAbbr()}</div></div>
+    <div class="daytop"><div class="dayidentity"><div class="homebrand ${brandEnter?"enter":""}">${trailheadMarkHtml("homebrandmark "+(justCompletedId?"trailpulse":""))}<div class="homebrandcopy"><strong>Trailhead</strong><span>Your daily path</span></div></div>
+      <div class="daytitle"><span class="daylabel">Today</span><h1>${prettyDate(t)}</h1>
+      <div class="daystatus"><span id="syncdot" class="syncdot${syncOn?"":" off"}"></span>${syncOn?"Synced":"Offline"}<i></i>Mountain · ${tzAbbr()}</div></div></div>
     <div class="dayactions">
       <button class="addbtn" data-act="add-task" aria-label="Add task">＋</button>
       <button class="who" data-act="go-settings" aria-label="Open settings for ${escapeAttr(state.name)}"><span class="av">${av}</span></button>
@@ -889,7 +892,7 @@ function todayView(){
   </section>
   ${completed}
   ${closeCard()}
-  <div class="todayfoot">${ICON.cairn}<span>Little by little is how it holds.</span></div>`;
+  <div class="todayfoot">${ICON.trailhead}<span><b>Trailhead</b> · Little by little is how it holds.</span></div>`;
 }
 function emptyToday(){
   const starters=[["Drink water","drop",1],["Workout","dumbbell",0],["Read","book",0],["Sleep","moon",0],["Pray","hands",0]];
@@ -948,13 +951,13 @@ function closeCard(){
   const justSealed=closed&&justClosedDay===t;if(justSealed)justClosedDay=null;
   const body=(closed||remembered)&&!!(c.win||c.text)?`<div class="closewords">${c.win?`<span><small>WIN</small>${escapeHtml(c.win)}</span>`:""}${c.text?`<span><small>HONEST LINE</small>${escapeHtml(c.text)}</span>`:""}</div>`:
     `<p>One win. One honest line. Tomorrow’s first stone.</p>`;
-  return `<section class="closeblock ${closed?"closed":""} ${justSealed?"justsealed":""} ${ready?"ready":""}"><div class="sectionhead"><div><span>Cairn Close</span><h3>${closed?"The day is sealed.":remembered?"Finish the close.":"Close the loop."}</h3></div><span class="closemark">${closed?"◆":"✦"}</span></div>
+  return `<section class="closeblock ${closed?"closed":""} ${justSealed?"justsealed":""} ${ready?"ready":""}"><div class="sectionhead"><div><span>Trailhead Close</span><h3>${closed?"The day is sealed.":remembered?"Finish the close.":"Close the loop."}</h3></div><span class="closemark">${closed?"◆":"✦"}</span></div>
     <button class="closecard" data-act="close-day"><div class="closehead"><span>${closed?"CLOSED "+isoTime(c.closedAt):remembered?"REFLECTION SAVED":ready?"READY WHEN YOU ARE":"20 SECONDS"}</span><b>${closed?"Keep what mattered.":remembered?"The honest line is safe.":"Leave the day lighter."}</b></div>${body}
       <div class="closefoot"><span>${c.tomorrow?`Tomorrow · ${escapeHtml(c.tomorrow)}`:closed?"No intention set for tomorrow.":remembered?"Add a win and tomorrow’s first stone.":"Nothing here is shared with your partner."}</span><i>${closed?"Reopen":remembered?"Finish":"Begin"} ›</i></div></button></section>`;
 }
 function editCloseSheet(){
   const t=todayStr(),c=closeFor(t);
-  const s=openSheet(`<span class="sheeteyebrow">Cairn Close</span><h3>${prettyDate(t)}</h3>
+  const s=openSheet(`<span class="sheeteyebrow">Trailhead Close</span><h3>${prettyDate(t)}</h3>
     <p class="closeprompt">Keep only what deserves to come with you.</p>
     <div class="field"><label>One win worth keeping</label><input id="c-win" value="${escapeAttr(c.win)}" placeholder="What moved forward?"></div>
     <div class="field"><label>One honest line</label><textarea id="c-text" rows="4" placeholder="What held today together?">${escapeHtml(c.text)}</textarea></div>
@@ -1057,13 +1060,13 @@ async function exportData(){
       SB.from("reminder_settings").select("enabled,summary_time,quiet_start,quiet_end").maybeSingle()
     ]);
     for(const r of [c,h,v,rs])if(r.error)throw r.error;
-    const payload={app:"Cairn",version:2,exportedAt:new Date().toISOString(),timeZone:TZ,
+    const payload={app:"Trailhead",legacyAppId:"cairn",version:2,exportedAt:new Date().toISOString(),timeZone:TZ,
       account:{email:session?.user?.email||""},profile:{name:state.name,accent:state.accent,goalOz:state.goalOz},
       tasks:state.tasks,restDays:state.restDays||[],savedDays:state.savedDays||[],
       completions:c.data||[],hydration:h.data||[],notes:n,taskValues:v.data||[],reminderSettings:rs.data||null};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
     const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");a.href=url;a.download=`cairn-backup-${todayStr()}.json`;
+    const a=document.createElement("a");a.href=url;a.download=`trailhead-backup-${todayStr()}.json`;
     document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),2000);
   }catch(e){alert("Couldn't export: "+(e&&e.message||e));}
@@ -1308,7 +1311,7 @@ function handle(act,el,e){
   else if(act==="partner")partnerSheet();
   else if(act==="nudge")nudgeSheet();
   else if(act==="members")membersSheet();
-  else if(act==="signout"){if(confirm("Sign out of Cairn on this device?"))signOut();}
+  else if(act==="signout"){if(confirm("Sign out of Trailhead on this device?"))signOut();}
 }
 function setTheme(val){ // 'system' | 'light' | 'dark' | 'oled'
   const root=document.documentElement;
@@ -1335,7 +1338,7 @@ function themeSheet(){
 function privacySheet(){
   const s=openSheet(`<span class="sheeteyebrow">Account</span><h3>Data & privacy</h3>
     <div class="trustlist"><div><i>◆</i><span><b>Your account is the boundary.</b><small>Supabase row-level rules keep each member's records separate.</small></span></div>
-      <div><i>◆</i><span><b>No ads. No analytics.</b><small>Cairn has no ad network or behavioral tracking SDK.</small></span></div>
+      <div><i>◆</i><span><b>No ads. No analytics.</b><small>Trailhead has no ad network or behavioral tracking SDK.</small></span></div>
       <div><i>◆</i><span><b>Partner sharing stays narrow.</b><small>Name, daily counts, and a fixed Proud nudge only. Never tasks or journal text.</small></span></div>
       <div><i>◆</i><span><b>Honest limitation.</b><small>Your journal is access-controlled and sent over HTTPS, but it is not end-to-end encrypted.</small></span></div></div>
     <button class="btn ghost" id="dp-export">Download my data</button><button class="btn ghost" id="dp-password">Change password</button>
@@ -1355,9 +1358,9 @@ function changePasswordSheet(){const s=openSheet(`<span class="sheeteyebrow">Sec
     if(a.length<8){er.textContent="Use at least 8 characters.";return;}if(a!==b){er.textContent="Passwords don't match.";return;}
     const {error}=await SB.auth.updateUser({password:a});if(error){er.textContent=friendlyAuthError(error);return;}s.close();showToast("Password updated");};
 }
-function finishAccountDeletion(id,s){outbox=[];clearDeviceData(id);try{SB.auth.signOut({scope:"local"});}catch(_){}state=null;session=null;userId=null;unlocked=false;s.close();renderAuth("Your Cairn account and data were deleted.");}
+function finishAccountDeletion(id,s){outbox=[];clearDeviceData(id);try{SB.auth.signOut({scope:"local"});}catch(_){}state=null;session=null;userId=null;unlocked=false;s.close();renderAuth("Your Trailhead account and data were deleted.");}
 function deleteAccountSheet(){const s=openSheet(`<span class="sheeteyebrow">Permanent</span><h3>Delete your account</h3>
-  <p class="closeprompt">This cannot be undone. Re-enter your password to remove your synced Cairn data and this device's private cache.</p>
+  <p class="closeprompt">This cannot be undone. Re-enter your password to remove your synced Trailhead data and this device's private cache.</p>
   <div class="field"><label>Current password</label><input id="da-password" type="password" autocomplete="current-password"></div>
   <div class="field"><label>Type DELETE to confirm</label><input id="da-confirm" autocomplete="off" placeholder="DELETE"></div>
   <div class="err" id="da-err"></div><button class="btn danger" id="da-go">Delete everything</button>`);
@@ -1366,7 +1369,7 @@ function deleteAccountSheet(){const s=openSheet(`<span class="sheeteyebrow">Perm
     btn.disabled=true;btn.textContent="Verifying…";const email=session?.user?.email;const verified=email&&await SB.auth.signInWithPassword({email,password});
     if(!verified||verified.error){er.textContent="That password couldn't be verified.";btn.disabled=false;btn.textContent="Delete everything";return;}
     const id=userId;btn.textContent="Deleting…";const {error}=await SB.functions.invoke("delete-account",{body:{confirm:"DELETE"}});
-    if(error){er.textContent="Couldn't confirm deletion. Reopen Cairn to check your account before trying again.";btn.disabled=false;btn.textContent="Delete everything";return;}
+    if(error){er.textContent="Couldn't confirm deletion. Reopen Trailhead to check your account before trying again.";btn.disabled=false;btn.textContent="Delete everything";return;}
     finishAccountDeletion(id,s);};
 }
 
@@ -1421,7 +1424,7 @@ function nudgeSheet(){if(!state.partnerId)return;
   const btn=s.bg.querySelector("#ng-send");if(sent)return;
   btn.onclick=async()=>{const er=s.bg.querySelector("#ng-err");if(!navigator.onLine){er.textContent="Reconnect before sending — nudges never queue for later.";return;}
     btn.disabled=true;btn.textContent="Sending…";const {data,error}=await SB.rpc("send_partner_nudge");
-    if(error||!data||!data.ok){await loadCouple();if(state.nudgeSentToday){s.close();render();showToast("Proud of you shared");return;}er.textContent=(data&&data.error)||"Couldn't confirm the nudge. Reopen Cairn before trying again — it will not queue on this device.";btn.disabled=false;btn.textContent="Send Proud of you";return;}
+    if(error||!data||!data.ok){await loadCouple();if(state.nudgeSentToday){s.close();render();showToast("Proud of you shared");return;}er.textContent=(data&&data.error)||"Couldn't confirm the nudge. Reopen Trailhead before trying again — it will not queue on this device.";btn.disabled=false;btn.textContent="Send Proud of you";return;}
     state.nudgeSentToday=true;cacheSave();s.close();render();showToast(data.already_sent?"Already shared today":"Proud of you shared");};
 }
 function partnerSheet(){
@@ -1481,7 +1484,7 @@ function membersSheet(){
 }
 async function unlinkPartner(){
   if(!navigator.onLine){alert("Reconnect before unlinking so access is removed for both people at once.");return false;}
-  const {data,error}=await SB.rpc("unlink_partner");if(error||!data||!data.ok){alert("Couldn't confirm unlinking. Reopen Cairn to check the link before trying again.");return false;}
+  const {data,error}=await SB.rpc("unlink_partner");if(error||!data||!data.ok){alert("Couldn't confirm unlinking. Reopen Trailhead to check the link before trying again.");return false;}
   state.partnerId=null;state.partnerName=null;state.partnerStatus=null;state.partnerNudge=null;state.nudgeSentToday=false;cacheSave();render();return true;
 }
 function manageSheet(){
