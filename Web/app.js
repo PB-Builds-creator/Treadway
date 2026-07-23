@@ -74,16 +74,26 @@ function occurs(task,ymd){const r=task.rule||{type:"daily"};
   if(r.type==="weekly")return weekdayOf(ymd)===r.day;
   return true;}
 function statusOf(ymd,taskId){return (state.completions[ymd]||{})[taskId]||null;}
+function isSatisfiedStatus(st){return st==="done"||st==="cheat";}
+function cheatConfig(task){const c=task&&task.rule&&task.rule.cheat;if(!c||c.enabled!==true)return null;
+  return{days:Math.max(7,Math.floor(Number(c.days)||7))};}
+/* Count consecutive disciplined scheduled completions immediately before a day.
+   The first missed or previously used Cheat Day resets the reward cycle. */
+function cheatDisciplineBefore(task,ymd=todayStr()){let floor=ymd;for(const d in (state.completions||{}))if(d<floor)floor=d;
+  let day=addDays(ymd,-1),count=0;if(floor===ymd)return 0;
+  while(day>=floor){if(!occurs(task,day)){day=addDays(day,-1);continue;}
+    if(statusOf(day,task.id)==="done"){count++;day=addDays(day,-1);continue;}
+    return count;}return count;}
 function dueTasks(ymd){return state.tasks.filter(t=>!t.archived&&occurs(t,ymd));}
 function dayFraction(ymd){const due=dueTasks(ymd);if(!due.length)return{done:0,total:0,frac:0};
-  const done=due.filter(t=>statusOf(ymd,t.id)==="done").length;return{done,total:due.length,frac:done/due.length};}
+  const done=due.filter(t=>isSatisfiedStatus(statusOf(ymd,t.id))).length;return{done,total:due.length,frac:done/due.length};}
 function isRestDay(ymd){return !!state && Array.isArray(state.restDays) && state.restDays.includes(ymd);}
 function isSavedDay(ymd){return !!state && Array.isArray(state.savedDays) && state.savedDays.includes(ymd);}
 function isProtected(ymd){return isRestDay(ymd)||isSavedDay(ymd);}   // neutral for streaks
 function daySuccess(ymd){const due=dueTasks(ymd);if(!due.length)return false;
-  if(due.every(t=>statusOf(ymd,t.id)==="done"))return true;   // everything done
+  if(due.every(t=>isSatisfiedStatus(statusOf(ymd,t.id))))return true;   // everything fulfilled
   const keys=due.filter(t=>t.keystone);                        // …or all non-negotiables done
-  return keys.length>0 && keys.every(t=>statusOf(ymd,t.id)==="done");}
+  return keys.length>0 && keys.every(t=>isSatisfiedStatus(statusOf(ymd,t.id)));}
 function currentStreak(){let ymd=todayStr(),s=0,g=0;if(isProtected(ymd)||!daySuccess(ymd))ymd=addDays(ymd,-1);
   while(g++<400){
     if(isProtected(ymd)){ymd=addDays(ymd,-1);continue;}          // rest/saved day: neutral
@@ -93,11 +103,11 @@ function longestStreak(days=180){let ymd=addDays(todayStr(),-days),run=0,best=0;
   for(let i=0;i<=days;i++){
     if(!isProtected(ymd)){const due=dueTasks(ymd);if(due.length){if(daySuccess(ymd)){run++;best=Math.max(best,run);}else run=0;}}
     ymd=addDays(ymd,1);}return best;}
-function taskStreak(task){let ymd=todayStr(),s=0,g=0;if(statusOf(ymd,task.id)!=="done")ymd=addDays(ymd,-1);
+function taskStreak(task){let ymd=todayStr(),s=0,g=0;if(!isSatisfiedStatus(statusOf(ymd,task.id)))ymd=addDays(ymd,-1);
   while(g++<400){
     if(isProtected(ymd)){ymd=addDays(ymd,-1);continue;}
     if(!occurs(task,ymd)){ymd=addDays(ymd,-1);continue;}
-    if(statusOf(ymd,task.id)==="done"){s++;ymd=addDays(ymd,-1);}else break;}return s;}
+    if(isSatisfiedStatus(statusOf(ymd,task.id))){s++;ymd=addDays(ymd,-1);}else break;}return s;}
 
 /* Streak-save: once per calendar month, retroactively protect the most recent
    missed scheduled day so it doesn't break the streak. */
@@ -142,19 +152,24 @@ function cacheLoad(){try{const r=localStorage.getItem(cacheKey());return r?JSON.
 
 function rowToTask(r){return{id:r.id,title:r.title,sym:r.sym,group:r.group_key,time:r.time||"",pri:!!r.pri,rule:r.rule||{type:"daily"},hydration:!!r.hydration,appUrl:r.app_url||"",keystone:!!r.keystone,measureUnit:r.measure_unit||"",remind:r.remind!==false,sort_index:r.sort_index||0,archived:!!r.archived};}
 function taskToRow(t,i){return{id:t.id,user_id:userId,title:t.title,sym:t.sym,group_key:t.group,time:t.time||"",pri:!!t.pri,rule:t.rule,hydration:!!t.hydration,app_url:t.appUrl||null,keystone:!!t.keystone,measure_unit:t.measureUnit||null,remind:t.remind!==false,sort_index:(i??t.sort_index??0),archived:!!t.archived,updated_at:new Date().toISOString()};}
+/* PostgREST projects commonly cap one response at 1,000 rows. Page explicitly so
+   an intentionally long Cheat Day interval always sees the complete history. */
+async function loadCompletionRows(){const rows=[],pageSize=1000;let from=0;
+  while(true){const r=await SB.from("completions").select("task_id,day,status").eq("user_id",userId).order("day",{ascending:false}).order("task_id",{ascending:true}).range(from,from+pageSize-1);
+    if(r.error)throw r.error;rows.push(...(r.data||[]));if((r.data||[]).length<pageSize)return rows;from+=pageSize;}}
 
 async function loadAll(){
   const since=addDays(todayStr(),-90);
-  const [prof,tasks,comps,hyd]=await Promise.all([
+  const [prof,tasks,completionRows,hyd]=await Promise.all([
     SB.from("profiles").select("*").eq("user_id",userId).maybeSingle(),
     SB.from("tasks").select("*").eq("user_id",userId).order("sort_index"),
-    SB.from("completions").select("task_id,day,status").eq("user_id",userId).gte("day",since),
+    loadCompletionRows(),
     SB.from("hydration").select("day,oz").eq("user_id",userId).gte("day",since)
   ]);
-  if(prof.error||tasks.error||comps.error||hyd.error)
-    throw (prof.error||tasks.error||comps.error||hyd.error);
+  if(prof.error||tasks.error||hyd.error)
+    throw (prof.error||tasks.error||hyd.error);
   if(!prof.data) return {needsOnboarding:true};
-  const completions={};for(const c of comps.data){(completions[c.day]||(completions[c.day]={}))[c.task_id]=c.status;}
+  const completions={};for(const c of completionRows){(completions[c.day]||(completions[c.day]={}))[c.task_id]=c.status;}
   const hydration={};for(const h of hyd.data){hydration[h.day]=Number(h.oz);}
   state={name:prof.data.name,accent:prof.data.accent,goalOz:prof.data.goal_oz,
     tasks:tasks.data.map(rowToTask),completions,hydration,
@@ -202,11 +217,12 @@ function mSetValue(taskId,ymd,val){
   if(!state.values)state.values={};
   state.values[taskId+"#"+ymd]=val;
   if(!state.completions[ymd])state.completions[ymd]={};
-  if(val>0)state.completions[ymd][taskId]="done";else delete state.completions[ymd][taskId];
+  const activeCheat=statusOf(ymd,taskId)==="cheat";
+  if(!activeCheat){if(val>0)state.completions[ymd][taskId]="done";else delete state.completions[ymd][taskId];}
   cacheSave();render();pushDailyStatus();
   push(()=>SB.from("task_values").upsert({user_id:userId,task_id:taskId,day:ymd,value:val,updated_at:new Date().toISOString()},{onConflict:"user_id,task_id,day"}));
-  if(val>0)push(()=>SB.from("completions").upsert({user_id:userId,task_id:taskId,day:ymd,status:"done",updated_at:new Date().toISOString()},{onConflict:"user_id,task_id,day"}));
-  else push(()=>SB.from("completions").delete().match({user_id:userId,task_id:taskId,day:ymd}));
+  if(!activeCheat){if(val>0)push(()=>SB.from("completions").upsert({user_id:userId,task_id:taskId,day:ymd,status:"done",updated_at:new Date().toISOString()},{onConflict:"user_id,task_id,day"}));
+    else push(()=>SB.from("completions").delete().match({user_id:userId,task_id:taskId,day:ymd}));}
 }
 function closeForCached(v){v=v||{};
   if(typeof v==="string")return{text:v,win:"",tomorrow:"",closedAt:""};
@@ -253,7 +269,7 @@ async function loadCouple(){
 async function loadTotals(){
   try{
     const [c,h]=await Promise.all([
-      SB.from("completions").select("*",{count:"exact",head:true}).eq("status","done"),
+      SB.from("completions").select("*",{count:"exact",head:true}).in("status",["done","cheat"]),
       SB.from("hydration").select("oz")
     ]);
     const oz=(h.data||[]).reduce((s,r)=>s+Number(r.oz||0),0);
@@ -338,8 +354,8 @@ function mSetStatus(taskId,ymd,st){
   const first=(ymd===todayStr()&&tab==="today")?captureRows():null;
   if(!state.completions[ymd])state.completions[ymd]={};
   if(st===null)delete state.completions[ymd][taskId];else state.completions[ymd][taskId]=st;
-  justCompletedId=(st==="done"&&ymd===todayStr())?taskId:null;
-  ringWait=(st==="done"&&first)?90:0;
+  justCompletedId=(isSatisfiedStatus(st)&&ymd===todayStr())?taskId:null;
+  ringWait=(isSatisfiedStatus(st)&&first)?90:0;
   cacheSave();render();justCompletedId=null;playFlip(first);
   if(st===null) push(()=>SB.from("completions").delete().match({user_id:userId,task_id:taskId,day:ymd}));
   else push(()=>SB.from("completions").upsert({user_id:userId,task_id:taskId,day:ymd,status:st,updated_at:new Date().toISOString()},{onConflict:"user_id,task_id,day"}));
@@ -710,7 +726,7 @@ function runTour(){
     {tab:"today",k:"TRAILHEAD CLOSE",sel:".closecard",pad:7,t:"End the day on purpose",b:"Keep one win, one honest line, and tomorrow’s first stone. Your journal text is never shared with a partner."},
     {tab:"week",k:"WEEKLY TRAIL",sel:".trailrail",pad:10,t:"Read the trail you are leaving",b:"The Week view holds daily progress and a rolling seven-day story: rhythm, recovery, closes, water, and the next foothold."},
     {tab:"history",k:"HISTORY",sel:".statwrap",pad:7,t:"Watch consistency compound",b:"See current and longest streaks, your 30-day rate, per-task streaks, and measured trends."},
-    {tab:"settings",k:"CONTROL",sel:'[data-act="manage"]',pad:6,t:"Shape the system around real life",b:"Manage tasks whenever life changes — add, edit, reorder, archive, duplicate, or remove without losing your history."},
+    {tab:"settings",k:"CONTROL",sel:'[data-act="manage"]',pad:6,t:"Shape the system around real life",b:"Manage tasks whenever life changes — add, edit, reorder, archive, duplicate, or remove. Meal-plan tasks can also earn a clearly marked Cheat Day after 7 or more disciplined scheduled days."},
     {tab:"settings",k:"REMINDERS",sel:'[data-act="reminders"]',pad:6,t:"Useful nudges, on your terms",b:"Enable task-time reminders, choose a nightly summary, and protect quiet hours. On iPhone, Trailhead works best from the Home Screen."},
     {tab:"settings",k:"TOGETHER",sel:'[data-act="partner"]',pad:6,t:"Encouragement without surveillance",b:"Link one person to share only a name, daily counts, and one Proud nudge. Never tasks, hydration, measurements, or journal text."},
     {tab:"settings",k:"MAKE IT YOURS",sel:'[data-act="accent"]',pad:6,t:"A Trailhead that feels like yours",b:"Choose a calm accent, then set Appearance to Light, Dark, System, or Pure Black for OLED."},
@@ -849,13 +865,14 @@ function animateHydration(){
 function todayView(){
   const t=todayStr(),{done,total,frac}=dayFraction(t),pct=Math.round(frac*100),streak=currentStreak();
   const rest=isRestDay(t);
-  const summary=total===0?"The day is open.":done===total?"The day is held.":frac>=.75?"Close the loop.":frac>=.4?"The day is taking shape.":"Set the first stone.";
   const due=dueTasks(t);rowStagger=0;
-  const doneItems=due.filter(x=>statusOf(t,x.id)==="done");
-  const pending=due.filter(x=>statusOf(t,x.id)!=="done");
+  const cheatActive=due.some(x=>statusOf(t,x.id)==="cheat");
+  const summary=cheatActive?"Enjoy the reward you earned.":total===0?"The day is open.":done===total?"The day is held.":frac>=.75?"Close the loop.":frac>=.4?"The day is taking shape.":"Set the first stone.";
+  const doneItems=due.filter(x=>isSatisfiedStatus(statusOf(t,x.id)));
+  const pending=due.filter(x=>!isSatisfiedStatus(statusOf(t,x.id)));
   const water=hydOz(t),waterPct=Math.min(100,Math.round(water/state.goalOz*100));
-  const keys=due.filter(x=>x.keystone),allDone=due.length&&due.every(x=>statusOf(t,x.id)==="done");
-  const coreDone=keys.length&&!allDone&&keys.every(x=>statusOf(t,x.id)==="done");
+  const keys=due.filter(x=>x.keystone),allDone=due.length&&due.every(x=>isSatisfiedStatus(statusOf(t,x.id)));
+  const coreDone=keys.length&&!allDone&&keys.every(x=>isSatisfiedStatus(statusOf(t,x.id)));
   const next=pending.slice().sort(bySort)[0],saveReady=canSaveStreak();
   const daySignal=allDone?'<span class="heldbadge"><i>◆</i> Day held</span>':coreDone?'<span class="corebadge"><i>✓</i> Core held</span>':saveReady?'<button class="savecontrol" data-act="savestreak">Save streak</button>':next&&!rest?`<span class="nextmarker"><small>Next marker</small><b>${escapeHtml(next.title)}</b></span>`:total===0?'<span class="nextmarker"><small>First marker</small><b>Add one thing</b></span>':"";
   let groups="",gi=0;
@@ -864,7 +881,7 @@ function todayView(){
   const hyTask=due.find(x=>x.hydration);
   const completed=doneItems.length?`<section class="completedblock"><div class="sectionhead compact"><div><span>Placed today</span><h3>${doneItems.length} ${doneItems.length===1?"stone":"stones"}</h3></div><span class="sectioncount">${done}/${total}</span></div><div class="card completedcard">${doneItems.sort(bySort).map(rowHtml).join("")}</div></section>`:"";
   const av=(state.name||"?").trim().charAt(0).toUpperCase(),brandEnter=!brandHasEntered;
-  return `<section class="daystone ${rest?"resting":""} ${allDone?"complete":""}">
+  return `<section class="daystone ${rest?"resting":""} ${allDone?"complete":""} ${cheatActive?"cheatday":""}">
     <div class="daytop"><div class="dayidentity"><div class="homebrand ${brandEnter?"enter":""}">${trailheadMarkHtml("homebrandmark "+(justCompletedId?"trailpulse":""))}<div class="homebrandcopy"><strong>Trailhead</strong><span>Your daily path</span></div></div>
       <div class="daytitle"><span class="daylabel">Today</span><h1>${prettyDate(t)}</h1>
       <div class="daystatus"><span id="syncdot" class="syncdot${syncOn?"":" off"}"></span>${syncOn?"Synced":"Offline"}<i></i>Mountain · ${tzAbbr()}</div></div></div>
@@ -873,7 +890,7 @@ function todayView(){
       <button class="who" data-act="go-settings" aria-label="Open settings for ${escapeAttr(state.name)}"><span class="av">${av}</span></button>
     </div></div>
     <div class="daycore"><div class="ring" data-pct="${rest?0:pct}" data-rest="${rest?1:0}" style="--v:${rest?0:ringLast}"><div class="lbl"><b>${rest?'🌙':ringLast+'%'}</b><span>${rest?'rest':'placed'}</span></div></div>
-      <div class="daymessage"><span>${rest?"REST DAY":allDone?"DAY HELD":total===0?"OPEN DAY":"TODAY'S PATH"}</span><h2>${rest?"Rest without losing ground.":summary}</h2>
+      <div class="daymessage"><span>${rest?"REST DAY":cheatActive?"EARNED CHEAT DAY":allDone?"DAY HELD":total===0?"OPEN DAY":"TODAY'S PATH"}</span><h2>${rest?"Rest without losing ground.":summary}</h2>
         <p>${rest?"Your streak stays protected.":total?`${done} of ${total} markers placed.`:"Add one thing worth keeping."}</p></div></div>
     <div class="daystats">
       <div class="daystat ${justCompletedId?"changed":""}"><span>Progress</span><strong>${done}<small> / ${total}</small></strong></div>
@@ -884,6 +901,7 @@ function todayView(){
       ${daySignal}
     </div>
   </section>
+  ${cheatRewardBlock(due)}
   ${partnerCard()}
   ${hyTask?`<section class="rhythmblock">${hydCard()}</section>`:""}
   ${carriedStone()}
@@ -901,18 +919,30 @@ function emptyToday(){
 }
 /* Your own order wins — time is only a reminder, never a sort key. */
 function bySort(a,b){return (a.sort_index||0)-(b.sort_index||0);}
-function rowHtml(t){const done=statusOf(todayStr(),t.id)==="done",ri=rowStagger++;const subs=[];
+function rowHtml(t){const st=statusOf(todayStr(),t.id),done=isSatisfiedStatus(st),cheat=st==="cheat",cfg=cheatConfig(t),ri=rowStagger++;const subs=[];
+  if(cheat)subs.push('<span class="cheatrowbadge">CHEAT DAY</span>');
+  else if(cfg&&!done&&cheatDisciplineBefore(t)>=cfg.days)subs.push('<span class="cheatready">Cheat Day earned</span>');
   if(t.time)subs.push(fmt12(t.time));if(t.hydration)subs.push(`${hydOz(todayStr())} / ${state.goalOz} oz`);
   if(t.measureUnit)subs.push(`${valueFor(t.id,todayStr())} ${escapeHtml(t.measureUnit)}`);
   const overdue=!done && t.time && hmToMin(t.time)!==null && hmToMin(t.time) < nowMinutes();
   if(overdue)subs.push('<span style="color:var(--warn);font-weight:600">overdue</span>');
   return `<div class="rowwrap ${t.id===justAddedId?"justadd":""}" data-rid="${t.id}" style="--row-i:${ri}">
     <div class="rowacts"><div class="ract edit">${ICON.pencil}</div><div class="ract del">${ICON.trash}</div></div>
-    <div class="row tap ${done?"done":""} ${t.id===justCompletedId?"justdone":""}" data-act="${t.measureUnit?"measure":"toggle"}" data-id="${t.id}">
+    <div class="row tap ${done?"done":""} ${cheat?"cheat":""} ${t.id===justCompletedId?"justdone":""}" data-act="${t.measureUnit?"measure":"toggle"}" data-id="${t.id}">
     <div class="check">${ICON.check}</div>
     <div class="rowmain"><div class="t">${t.keystone?'<span class="corepin" title="Non-negotiable">●</span> ':''}${escapeHtml(t.title)}</div>${subs.length?`<div class="sub">${subs.join(" · ")}</div>`:""}</div>
     ${t.appUrl?`<button class="openapp" data-act="openapp" data-url="${escapeAttr(t.appUrl)}" aria-label="Open app">↗</button>`:""}
     ${t.pri&&!done?'<span class="pri">!</span>':""}<div class="rowsym">${symChar(t.sym)}</div></div></div>`;}
+function cheatRewardBlock(due){const meals=due.filter(t=>cheatConfig(t));if(!meals.length)return"";const ymd=todayStr();
+  const cards=meals.map(t=>{const cfg=cheatConfig(t),st=statusOf(ymd,t.id),active=st==="cheat",done=st==="done";
+    const before=cheatDisciplineBefore(t,ymd),progress=Math.min(cfg.days,before+(done?1:0)),earned=before>=cfg.days;
+    const pct=active||earned||progress>=cfg.days?100:Math.round(progress/cfg.days*100);
+    let kicker="DISCIPLINE REWARD",title=`${progress} of ${cfg.days} days`,copy=`${cfg.days-progress} more disciplined scheduled ${cfg.days-progress===1?"day":"days"} to earn one Cheat Day.`,action="";
+    if(active){kicker="CHEAT DAY · ACTIVE";title="Today is your Cheat Day";copy=`Earned through ${cfg.days} disciplined scheduled days. Using it starts a fresh reward cycle.`;action=`<button class="cheataction end" data-act="cheatday" data-id="${t.id}">End Cheat Day</button>`;}
+    else if(earned&&!done){kicker="CHEAT DAY · EARNED";title="Your reward is ready";copy=`${cfg.days} disciplined scheduled days held. Use it today, or keep it ready while the run continues.`;action=`<button class="cheataction" data-act="cheatday" data-id="${t.id}">Use Cheat Day</button>`;}
+    else if(progress>=cfg.days){kicker="CHEAT DAY · EARNED";title="Ready for your next scheduled day";copy="Today's meal-plan marker is already complete. Your earned reward remains ready while the run continues.";}
+    return `<article class="cheatcard ${active?"active":earned||progress>=cfg.days?"earned":""}"><div class="cheaticon">◇</div><div class="cheatmain"><span>${kicker}</span><h3>${escapeHtml(title)}</h3><p><b>${escapeHtml(t.title)}</b> · ${escapeHtml(copy)}</p><div class="cheatrail"><i style="width:${pct}%"></i></div></div>${action}</article>`;}).join("");
+  return `<section class="cheatrewardblock" aria-label="Meal-plan Cheat Day rewards">${cards}</section>`;}
 function hydCard(){const o=hydOz(todayStr()),g=state.goalOz,pct=Math.min(100,Math.round(o/g*100));
   return `<div class="hyd ${waterPulse?"pour":""}" data-pct="${pct}"><div class="hydhead"><span class="hydicon">💧</span><div><span>Daily rhythm</span><b>Hydration</b></div><div class="hydtotal"><strong>${o}</strong><small> / ${g} oz</small></div></div>
     <div class="bar"><i></i><em></em></div>
@@ -982,12 +1012,12 @@ function weekView(){const t=todayStr(),dow=weekdayOf(t),start=addDays(t,-dow);le
 /* Backfill: edit a past day's completions (for days you forgot to check off). */
 function dayBackfillSheet(ymd){
   const due=dueTasks(ymd);
-  const rows=due.length?due.map(tk=>{const done=statusOf(ymd,tk.id)==="done";
+  const rows=due.length?due.map(tk=>{const done=isSatisfiedStatus(statusOf(ymd,tk.id));
     return `<div class="mrow"><div class="rowsym">${symChar(tk.sym)}</div><div class="t">${escapeHtml(tk.title)}</div>
       <button class="chip ${done?"on":""}" data-back="${tk.id}">${done?"✓ Done":"Mark done"}</button></div>`;}).join(""):'<div class="empty">Nothing was scheduled.</div>';
   const s=openSheet(`<h3>${prettyDate(ymd)}</h3><p class="note" style="margin-bottom:6px">Fix a day you forgot to check off.</p>${rows}`);
   s.bg.querySelectorAll("[data-back]").forEach(b=>b.onclick=()=>{
-    const id=b.dataset.back,nowDone=statusOf(ymd,id)==="done";
+    const id=b.dataset.back,nowDone=isSatisfiedStatus(statusOf(ymd,id));
     mSetStatus(id,ymd,nowDone?null:"done");
     b.classList.toggle("on",!nowDone);b.textContent=!nowDone?"✓ Done":"Mark done";
   });
@@ -1025,7 +1055,7 @@ function historyView(){const t=todayStr();let cells="",schedTot=0,doneTot=0;
 function weeklyTrail(){
   const t=todayStr(),days=[];let sched=0,done=0,closed=0,held=0,water=0;const per={},quotes=[];
   for(let i=6;i>=0;i--){const ymd=addDays(t,-i),f=dayFraction(ymd),protectedDay=isProtected(ymd),c=closeFor(ymd);
-    if(!protectedDay){sched+=f.total;done+=f.done;for(const tk of dueTasks(ymd)){const ok=statusOf(ymd,tk.id)==="done";
+    if(!protectedDay){sched+=f.total;done+=f.done;for(const tk of dueTasks(ymd)){const ok=isSatisfiedStatus(statusOf(ymd,tk.id));
       (per[tk.id]=per[tk.id]||{title:tk.title,d:0,n:0}).n++;if(ok)per[tk.id].d++;}}
     if(protectedDay||daySuccess(ymd))held++;if(c.closedAt)closed++;
     if(state.goalOz>0&&hydOz(ymd)>=state.goalOz)water++;
@@ -1275,7 +1305,8 @@ function handle(act,el,e){
   if(act==="editday"){dayBackfillSheet(el.dataset.ymd);return;}
   if(act==="measure"){const tk=state.tasks.find(x=>x.id===el.dataset.id);const cur=valueFor(el.dataset.id,todayStr());
     const v=prompt(`How many ${tk?tk.measureUnit:""}?`,cur||"");if(v!==null&&v!=="")mSetValue(el.dataset.id,todayStr(),parseFloat(v));return;}
-  if(act==="toggle"){const id=el.dataset.id,t=todayStr();mSetStatus(id,t,statusOf(t,id)==="done"?null:"done");if(navigator.vibrate)navigator.vibrate(8);}
+  if(act==="toggle"){const id=el.dataset.id,t=todayStr();mSetStatus(id,t,isSatisfiedStatus(statusOf(t,id))?null:"done");if(navigator.vibrate)navigator.vibrate(8);}
+  else if(act==="cheatday")toggleCheatDay(el.dataset.id);
   else if(act==="water")mAddWater(+el.dataset.oz);
   else if(act==="water-custom"){const n=parseFloat(prompt("Add how many ounces?"));if(n>0)mAddWater(n);}
   else if(act==="go-settings"){tab="settings";render();}
@@ -1313,6 +1344,11 @@ function handle(act,el,e){
   else if(act==="members")membersSheet();
   else if(act==="signout"){if(confirm("Sign out of Trailhead on this device?"))signOut();}
 }
+function toggleCheatDay(id){const task=state.tasks.find(t=>t.id===id),cfg=cheatConfig(task),ymd=todayStr();if(!task||!cfg||!occurs(task,ymd))return;
+  const st=statusOf(ymd,id);if(st==="cheat"){mSetStatus(id,ymd,null);showToast("Cheat Day ended — reward restored");return;}
+  if(st==="done"){alert("Uncheck today's meal-plan task first if you want to use the earned Cheat Day today.");return;}
+  const held=cheatDisciplineBefore(task,ymd);if(held<cfg.days){alert(`${cfg.days-held} more disciplined scheduled ${cfg.days-held===1?"day":"days"} before this Cheat Day is earned.`);return;}
+  mSetStatus(id,ymd,"cheat");showToast("Cheat Day activated — enjoy the reward you earned");if(navigator.vibrate)navigator.vibrate([12,45,12]);}
 function setTheme(val){ // 'system' | 'light' | 'dark' | 'oled'
   const root=document.documentElement;
   if(val==="system"){root.removeAttribute("data-theme");try{localStorage.removeItem("cairn_theme");}catch(e){}}
@@ -1496,7 +1532,7 @@ function manageSheet(){
     const arch=state.tasks.filter(t=>t.archived);
     list.innerHTML=(active.length?active.map((t,i)=>`
       <div class="mrow"><div class="rowsym">${symChar(t.sym)}</div>
-        <div class="t">${escapeHtml(t.title)}<div style="font-size:12px;color:var(--muted)">${ruleLabel(t)}${t.time?" · "+fmt12(t.time):""}</div></div>
+        <div class="t">${escapeHtml(t.title)}<div style="font-size:12px;color:var(--muted)">${ruleLabel(t)}${t.time?" · "+fmt12(t.time):""}${cheatConfig(t)?` · Cheat Day after ${cheatConfig(t).days} days`:""}</div></div>
         <div class="mgacts">
           <button class="mgbtn" data-up="${t.id}" ${i===0?"disabled":""} aria-label="Move up">↑</button>
           <button class="mgbtn" data-down="${t.id}" ${i===active.length-1?"disabled":""} aria-label="Move down">↓</button>
@@ -1517,8 +1553,8 @@ function manageSheet(){
 function editSheet(task){const isNew=!task;
   const t=task?JSON.parse(JSON.stringify(task)):{id:uid(),title:"",sym:"check",group:"anytime",time:"",rule:{type:"daily"}};
   const groupOpts=GROUPS.map(g=>`<option value="${g.k}" ${t.group===g.k?"selected":""}>${g.t}</option>`).join("");
-  const rt=t.rule.type,days=t.rule.days||[];
-  const adv = !!(t.appUrl||t.measureUnit||t.hydration||t.keystone); // auto-expand if any are set
+  const rt=t.rule.type,days=t.rule.days||[],cheat=cheatConfig(t);
+  const adv = !!(t.appUrl||t.measureUnit||t.hydration||t.keystone||cheat); // auto-expand if any are set
   const s=openSheet(`<h3>${isNew?"New task":"Edit task"}</h3>
     <div class="field"><label>Title</label><input id="f-title" value="${escapeAttr(t.title)}" placeholder="e.g. Stretch"></div>
     <div class="field"><label>Icon</label><div class="chips" id="f-sym">${SYMS.map(sm=>`<button class="chip ${t.sym===sm?"on":""}" data-sym="${sm}">${symChar(sm)}</button>`).join("")}</div></div>
@@ -1547,11 +1583,17 @@ function editSheet(task){const isNew=!task;
         <div class="note">Tapping the task asks for a number (sleep hours, gym minutes); History shows a trend.</div></div>
       <label style="display:flex;align-items:center;gap:10px;margin:6px 0 10px;font-size:15px"><input type="checkbox" id="f-hyd" ${t.hydration?"checked":""} style="width:20px;height:20px"> Measurable water goal</label>
       <label style="display:flex;align-items:center;gap:10px;margin:0 0 10px;font-size:15px"><input type="checkbox" id="f-key" ${t.keystone?"checked":""} style="width:20px;height:20px"> Non-negotiable <span style="color:var(--muted);font-size:13px">— a core task; a day "counts" if you hit these</span></label>
+      <div class="cheatsetup"><label><input type="checkbox" id="f-cheat" ${cheat?"checked":""}> <span><b>Meal-plan Cheat Day reward</b><small>Earn one clearly marked Cheat Day through consistency.</small></span></label>
+        <div class="cheatconfig" id="f-cheat-config" style="display:${cheat?"block":"none"}"><label for="f-cheat-days">Disciplined scheduled days required</label>
+          <div class="cheatdays"><input id="f-cheat-days" type="number" min="7" step="1" inputmode="numeric" value="${cheat?cheat.days:7}"><span>days → 1 Cheat Day</span></div>
+          <div class="note">Minimum 7; choose any larger whole number. Complete this task on consecutive scheduled days. Using the reward resets only this reward cycle.</div></div></div>
     </div>
     <button class="btn" id="f-save">${isNew?"Add task":"Save"}</button>
     ${isNew?"":`<div style="display:flex;gap:8px;margin-top:10px"><button class="btn ghost" id="f-dup" style="flex:1">Duplicate</button><button class="btn ghost" id="f-arch" style="flex:1">${t.archived?"Unarchive":"Archive"}</button></div>
     <button class="btn danger" id="f-del" style="margin-top:10px">Delete task</button>`}`);
   const tog=s.bg.querySelector("#f-advtog");if(tog)tog.onclick=()=>{s.bg.querySelector("#f-adv").style.display="block";tog.style.display="none";};
+  const cheatToggle=s.bg.querySelector("#f-cheat"),cheatBox=s.bg.querySelector("#f-cheat-config"),cheatDays=s.bg.querySelector("#f-cheat-days");
+  cheatToggle.onchange=()=>{cheatBox.style.display=cheatToggle.checked?"block":"none";if(cheatToggle.checked)setTimeout(()=>cheatDays.focus(),40);};
   let sym=t.sym,rtype=rt,wsel=new Set(days),wday=(t.rule.day??1);
   s.bg.querySelectorAll("[data-sym]").forEach(b=>b.onclick=()=>{sym=b.dataset.sym;s.bg.querySelectorAll("[data-sym]").forEach(x=>x.classList.toggle("on",x===b));});
   s.bg.querySelectorAll("[data-app]").forEach(b=>b.onclick=()=>{s.bg.querySelector("#f-app").value=b.dataset.app;});
@@ -1560,9 +1602,11 @@ function editSheet(task){const isNew=!task;
     if(rtype==="weekly"){wday=i;s.bg.querySelectorAll("[data-day]").forEach(x=>x.classList.toggle("on",x===b));}
     else{if(wsel.has(i))wsel.delete(i);else wsel.add(i);b.classList.toggle("on");}});
   s.bg.querySelector("#f-save").onclick=()=>{const title=s.bg.querySelector("#f-title").value.trim();if(!title){s.bg.querySelector("#f-title").focus();return;}
+    const rewardDays=Number(cheatDays.value);if(cheatToggle.checked&&(!Number.isInteger(rewardDays)||rewardDays<7)){cheatDays.setCustomValidity("Choose a whole number of 7 days or more.");cheatDays.reportValidity();cheatDays.focus();return;}cheatDays.setCustomValidity("");
     const nt={id:t.id,title,sym,group:s.bg.querySelector("#f-group").value,time:s.bg.querySelector("#f-time").value,hydration:s.bg.querySelector("#f-hyd").checked,keystone:s.bg.querySelector("#f-key").checked,remind:s.bg.querySelector("#f-remind").checked,measureUnit:s.bg.querySelector("#f-unit").value.trim(),appUrl:s.bg.querySelector("#f-app").value.trim(),sort_index:t.sort_index,archived:!!t.archived};
     if(rtype==="daily")nt.rule={type:"daily"};else if(rtype==="weekly")nt.rule={type:"weekly",day:wday};else nt.rule={type:"weekdays",days:[...wsel].sort()};
     if(nt.rule.type==="weekdays"&&!nt.rule.days.length)nt.rule={type:"daily"};
+    if(cheatToggle.checked)nt.rule.cheat={enabled:true,days:rewardDays};
     s.close();mUpsertTask(nt);};
   const del=s.bg.querySelector("#f-del");if(del)del.onclick=()=>{s.close();mDeleteWithUndo(t.id);};
   const dup=s.bg.querySelector("#f-dup");if(dup)dup.onclick=()=>{s.close();mDuplicate(t);};

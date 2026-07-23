@@ -2,6 +2,17 @@
 
 _Last updated: 2026-07-22. Brief rationale for choices that aren't obvious from the code._
 
+- **Cheat Days are an earned task state, not a separate calendar or database feature.** Any task
+  may opt in through `rule.cheat`, with a hard minimum of 7 disciplined scheduled completions and
+  no arbitrary maximum. The activated reward uses `completions.status = "cheat"`, which the
+  existing unconstrained text column already accepts. It fulfills ordinary app progress and
+  streaks but never advances the separate discipline run; a prior Cheat Day or missed scheduled
+  completion resets that run. This keeps a reward from punishing the user's main Trailhead streak
+  without falsely calling the reward another disciplined meal-plan day. Full completion history
+  is loaded in deterministic 1,000-row pages so long custom intervals remain honest. Storing the
+  config in rule JSON and the use in completions makes the behavior sync/offline/export-safe with
+  no SQL migration, new table, cron, or local-only counter.
+
 - **Trailhead is the visible working brand, with a deliberate commercial hold.** The user
   explicitly selected Trailhead after being warned that Salesforce actively uses Trailhead and
   Trailhead GO. The app therefore shows Trailhead everywhere the customer sees the product, but

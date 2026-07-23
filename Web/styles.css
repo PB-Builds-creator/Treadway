@@ -207,6 +207,13 @@
   .setrow{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);font-size:15px}
   .setrow .r{display:flex;gap:10px;align-items:center;color:var(--muted)}
   .note{font-size:12px;color:var(--faint);margin-top:4px;line-height:1.4}
+  .cheatsetup{margin:13px 0 15px;padding:13px;border:1px solid color-mix(in srgb,#b88a43 38%,var(--line));border-radius:15px;background:color-mix(in srgb,#b88a43 7%,var(--surface))}
+  .cheatsetup>label{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--ink);cursor:pointer}
+  .cheatsetup>label input{width:20px;height:20px;flex:none;margin:1px 0 0;accent-color:#a9772f}
+  .cheatsetup>label span{display:flex;flex-direction:column}.cheatsetup>label b{font-size:14px;font-weight:680}.cheatsetup>label small{margin-top:2px;color:var(--muted);font-size:11px;line-height:1.35}
+  .cheatconfig{margin-top:13px;padding-top:12px;border-top:1px solid color-mix(in srgb,#b88a43 25%,var(--line))}
+  .cheatconfig>label{display:block;color:var(--muted);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+  .cheatdays{display:flex;align-items:center;gap:9px}.cheatdays input{width:88px!important;padding:10px!important;border-color:color-mix(in srgb,#b88a43 45%,var(--line))!important;font-variant-numeric:tabular-nums}.cheatdays span{font-size:12px;color:var(--muted);font-weight:620}
 
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
@@ -558,6 +565,9 @@ body.dragging-row{cursor:grabbing}
   background:linear-gradient(112deg,transparent 0 55%,color-mix(in srgb,var(--accent) 8%,transparent) 55.2% 55.5%,transparent 55.7%)}
 .daystone.resting{border-color:var(--line);background:linear-gradient(155deg,var(--surface),var(--surface-2))}
 .daystone.complete{border-color:color-mix(in srgb,#b99654 52%,var(--line))}
+.daystone.cheatday{border-color:color-mix(in srgb,#c18a34 70%,var(--line));background:linear-gradient(150deg,color-mix(in srgb,#c18a34 12%,var(--surface)),var(--surface))}
+.daystone.cheatday::before{background:radial-gradient(circle,color-mix(in srgb,#d5a24c 30%,transparent),transparent 68%);opacity:.92}
+.daystone.cheatday .daymessage>span,.daystone.cheatday .daymessage h2{color:#a9772f}
 .daytop{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .dayidentity,.daytitle{min-width:0}.homebrand{display:flex;align-items:center;gap:9px;margin:-2px 0 13px;color:var(--ink)}
 .homebrandmark{width:35px;height:41px;flex:none}.homebrandcopy{display:flex;flex-direction:column;gap:1px}
@@ -607,6 +617,15 @@ body.dragging-row{cursor:grabbing}
 .partnercard{margin:12px 16px 0;padding:11px 13px;border-radius:17px;box-shadow:none;background:color-mix(in srgb,var(--surface) 90%,var(--accent-soft))}
 .partnercard .pav{width:32px;height:32px}.partnercard .pmain>span{font-size:8.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);font-weight:750;margin:0}
 .partnercard .pmain b{font-size:13px}.partnercard .pmain small{font-size:11px;color:var(--muted);margin-top:1px}.partnercard .pheart{color:var(--accent);font-size:15px}
+
+.cheatrewardblock{display:grid;gap:9px;margin:12px 16px 0}.cheatcard{display:grid;grid-template-columns:38px minmax(0,1fr);gap:11px;padding:13px 14px;border:1px solid color-mix(in srgb,#b88a43 30%,var(--line));border-radius:18px;background:linear-gradient(145deg,color-mix(in srgb,#b88a43 7%,var(--surface)),var(--surface));box-shadow:0 8px 26px rgba(70,48,18,.055)}
+.cheatcard.earned,.cheatcard.active{border-color:color-mix(in srgb,#bd8430 62%,var(--line));background:linear-gradient(145deg,color-mix(in srgb,#c28c37 13%,var(--surface)),var(--surface))}
+.cheaticon{width:38px;height:38px;border-radius:13px;display:grid;place-items:center;background:color-mix(in srgb,#c18a34 16%,var(--surface));color:#a9772f;font-size:23px;font-weight:500}
+.cheatmain{min-width:0}.cheatmain>span{display:block;color:#a9772f;font-size:8px;font-weight:790;letter-spacing:.145em}.cheatmain h3{margin:3px 0 0;font-size:16px;line-height:1.15;font-weight:680;letter-spacing:-.015em}.cheatmain p{margin:5px 0 0;color:var(--muted);font-size:10.5px;line-height:1.42}.cheatmain p b{color:var(--ink);font-weight:670}
+.cheatrail{height:5px;margin-top:9px;border-radius:99px;background:color-mix(in srgb,#b88a43 13%,var(--ring-track));overflow:hidden}.cheatrail i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8c682f,#d0a457)}
+.cheataction{grid-column:1/-1;width:100%;padding:10px 12px;border-radius:12px;background:#a9772f;color:#fff;font-size:12px;font-weight:700;transition:transform .13s ease,filter .18s ease}.cheataction:active{transform:scale(.975)}.cheataction.end{background:var(--surface);color:#9a6f2e;border:1px solid color-mix(in srgb,#b88a43 44%,var(--line))}
+.cheatrowbadge,.cheatready{display:inline-flex;align-items:center;padding:2px 6px;border-radius:99px;background:color-mix(in srgb,#bd8430 15%,var(--surface));color:#9a6f2e;font-size:8px;font-weight:780;letter-spacing:.09em}.cheatready{letter-spacing:.02em;text-transform:none}
+.row.cheat{background:color-mix(in srgb,#bd8430 7%,var(--surface))}.row.cheat .check{background:#b07b2e;border-color:#b07b2e}.row.cheat .rowmain .t{color:#956a2a;text-decoration:none}.row.cheat .rowsym{color:#a9772f}
 
 .rhythmblock{margin-top:12px}.hyd{padding:15px 15px 13px;border-radius:20px;box-shadow:0 8px 28px rgba(20,22,20,.06)}
 .hydhead{display:flex;align-items:center;gap:10px}.hydicon{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:var(--accent-soft);font-size:16px}
@@ -658,7 +677,7 @@ body.dragging-row{cursor:grabbing}
 .scroll.enter .daycore{animation:ritualin .38s .06s cubic-bezier(.2,.75,.25,1) both}
 .scroll.enter .daystats{animation:ritualin .38s .11s cubic-bezier(.2,.75,.25,1) both}
 .scroll.enter .daycontrols{animation:ritualin .36s .16s cubic-bezier(.2,.75,.25,1) both}
-.scroll.enter .rhythmblock,.scroll.enter .sectionhead{animation:ritualin .36s .18s cubic-bezier(.2,.75,.25,1) both}
+.scroll.enter .cheatrewardblock,.scroll.enter .rhythmblock,.scroll.enter .sectionhead{animation:ritualin .36s .18s cubic-bezier(.2,.75,.25,1) both}
 .scroll.enter .pathgroup>.grouphead{animation:ritualin .32s calc(.2s + var(--group-i)*45ms) cubic-bezier(.2,.75,.25,1) both}
 @keyframes daystonein{from{opacity:0;transform:translateY(13px) scale(.987)}to{opacity:1;transform:none}}
 @keyframes ritualin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}

@@ -3,6 +3,19 @@
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
 ## 2026-07-22
+- **Earned meal-plan Cheat Days:** any task can now enable a professional Cheat Day reward and
+  choose any whole-number discipline interval from a minimum of 7 scheduled days upward. Today
+  shows a gold progress/earned/active tracker, an active-day hero state, and an unmistakable task
+  badge; Use and End are reversible, using the reward resets its discipline cycle, and ordinary
+  Trailhead progress/streaks still treat the day as fulfilled. The task editor, Manage summary,
+  tutorial copy, Week/History/all-time counts, measured-task behavior, partner-safe daily status,
+  and timed reminders all understand the new state. Existing task-rule JSON plus
+  `completions.status = "cheat"` avoid any SQL migration. Completion history now loads in stable
+  paginated batches so intervals longer than 90 days or 1,000 rows remain accurate. Shell cache
+  v7 handles installed-copy refreshes. Earned, active, toggle-back, 30-day configuration,
+  minimum validation, no-overflow layout, and clean browser logs passed at 375×812; the temporary
+  QA fixture was removed. The web app and canonical reminder function are live; production app,
+  styles, service worker, and index assets matched local byte-for-byte after deployment.
 - **Trailhead brand and identity release:** replaced the customer-facing Cairn identity with
   Trailhead across launch, Today, auth/lock/onboarding, tutorial, Home Screen metadata, formal
   privacy policy, setup guide, exports, reminders, and account copy. A new shared four-stone mark

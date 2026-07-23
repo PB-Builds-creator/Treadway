@@ -1,4 +1,13 @@
-# Cairn — Animation & Polish Handoff Prompt
+# Historical Cairn animation prompt — superseded
+
+> **Do not use the old mission below as current project direction.** The active product is now
+> **Trailhead** at `https://cairn.surge.sh`; the identity, Today overhaul, professional tutorial,
+> account/privacy work, partner nudge, gesture performance pass, and earned meal-plan Cheat Days
+> are already implemented. Start with `PROJECT_CONTEXT.md`, `TODO.md`, `DECISIONS.md`, and
+> `CHANGELOG.md`; those maintained files are authoritative. This document remains only as a record
+> of the animation brief that created an earlier release.
+
+# Cairn — Animation & Polish Handoff Prompt (historical)
 
 _Copy everything below the line into a fresh session with your new model._
 

@@ -106,7 +106,7 @@ Deno.serve(async (req) => {
 
     const { data: tasks } = await sb.from("tasks").select("*").eq("user_id", uid).eq("archived", false);
     const { data: comps } = await sb.from("completions").select("task_id,status").eq("user_id", uid).eq("day", ymd);
-    const done = new Set((comps ?? []).filter((c) => c.status === "done").map((c) => c.task_id));
+    const done = new Set((comps ?? []).filter((c) => c.status === "done" || c.status === "cheat").map((c) => c.task_id));
     const due = (tasks ?? []).filter((t) => occurs(t.rule, weekday));
 
     const toSend: { kind: string; title: string; body: string }[] = [];

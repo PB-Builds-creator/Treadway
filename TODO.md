@@ -2,8 +2,9 @@
 
 _Last updated: 2026-07-22. Keep prioritized; delete done items (they go to CHANGELOG)._
 
-**Current release state:** Trailhead web assets and the renamed reminder function are deployed;
-the rebrand requires no SQL. The list below is intentionally limited to real-device confirmation,
+**Current release state:** the earned meal-plan Cheat Day web UI and reminder handling are the
+current release; they require no SQL. Trailhead identity assets remain live at the original
+`cairn.surge.sh` origin. The list below is intentionally limited to real-device confirmation,
 per-phone reinstall/resubscription, one unavailable-phone partner test, and one optional future
 gesture enhancement.
 
@@ -27,6 +28,10 @@ Everything below is verified with synthetic pointer events in a desktop browser 
 8. **Two-phone Proud nudge** — the live server link/send-once/unlink rules passed with isolated
    disposable accounts. When her phone is available, confirm quiet hours, lock-screen copy,
    received state, and reciprocal unlink in both real PWAs.
+9. **Meal-plan Cheat Day feel** — configure a meal task under Edit → More options, confirm the
+   progress card is readable in Light and OLED, and eventually verify Use/End Cheat Day on the
+   real iPhone. Earned/active/toggle-back logic, 7- and 30-day settings, minimum validation,
+   reminder suppression code, and 375×812 containment already passed local browser QA.
 If a gesture fails, the likely culprit is touch-scroll stealing the gesture — see the
 non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action` on `.rowwrap`.
 
@@ -41,8 +46,8 @@ non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action`
   The owner is currently unlinked and her account ID is not documented, so do not guess among
   approved members. The reciprocal link, once-daily nudge, and unlink authorization already
   passed server-side with isolated disposable accounts.
-- **No manual Supabase or SQL work is pending for the Trailhead rebrand.** Do not rerun product
-  migrations or rotate credentials just for the name/icon change.
+- **No manual Supabase or SQL work is pending for either the Trailhead rebrand or Cheat Day
+  rewards.** Do not rerun product migrations or rotate credentials for either change.
 
 ## Next features (not yet built)
 1. Dropping into an **empty/absent category** isn't possible (groups only render when they have

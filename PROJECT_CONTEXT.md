@@ -3,13 +3,47 @@
 _Handoff doc. Read this + TODO.md + DECISIONS.md + CHANGELOG.md, then the code._
 _Last updated: 2026-07-22._
 
-**Current handoff checkpoint:** repository source is at the deployed Trailhead identity release
-(`e4eb0eb`) plus its production record (`b970c46`). The web app and `send-reminders` function are
-live. No source or database work is pending from the rebrand; only the real-phone actions and
+**Current handoff checkpoint:** the earned meal-plan Cheat Day release described below is the
+current web product and reminder behavior. It builds on the deployed Trailhead identity release.
+No SQL or manual Supabase Editor step is required for Cheat Days; only the real-phone actions and
 feel tests in TODO.md remain. Treat the latest-release section as current truth and the later
 `PRIOR RELEASE` sections as historical implementation context.
 
-## LATEST RELEASE — Trailhead identity system and PWA rebrand
+## LATEST RELEASE — earned meal-plan Cheat Days
+Any task can now opt into **Meal-plan Cheat Day reward** under Edit task → More options. The user
+chooses a whole-number discipline interval from a minimum of 7 scheduled days with no artificial
+maximum. The editor explains that ordinary `done` completions must be consecutive on days when
+that task is scheduled, one earned Cheat Day remains available while the run continues, and using
+it starts a fresh reward cycle.
+
+The setting is stored inside the existing `tasks.rule` JSON as
+`cheat: { enabled: true, days: N }`; an activated reward is the existing completion row with
+`status: "cheat"`. The `completions.status` column is unconstrained text, so this requires no
+schema change. `cheat` fulfills the task for Today progress, whole-day/non-negotiable success,
+streaks, Week/History, all-time totals, partner-safe daily counts, and timed-reminder suppression,
+but only `done` advances the separate meal discipline run. A prior `cheat` or missed scheduled
+completion resets that reward calculation. Measured values may still be logged on an active
+Cheat Day without overwriting its status.
+
+Today shows one warm reward tracker per due configured meal task: progress, earned action, or
+active state. An active day also changes the day-stone label to **EARNED CHEAT DAY**, styles the
+task in gold, and adds a literal **CHEAT DAY** badge. `Use Cheat Day` and `End Cheat Day` are
+reversible optimistic mutations; ending it on the same day restores the earned reward. The task
+manager shows the configured interval, the current tutorial's task-management step explains the
+feature, and `send-reminders` treats both `done` and `cheat` as fulfilled so it never nags during
+the reward.
+
+Completion loading is now explicitly paginated in stable 1,000-row pages instead of keeping only
+90 days, so a deliberately long interval remains accurate past both the old lookback and the
+usual PostgREST response cap. Hydration, journal, and measured-value lookbacks remain unchanged.
+`sw.js` shell v7 refreshes installed web copies. QA at 375×812 covered 7/7 earned, active,
+toggle-back, 7/30 progress, minimum validation, the editor, no horizontal overflow, and clean
+browser logs; the temporary local-only fixture was removed. No continuous animation or
+pointer-move work was added. The web release and canonical `send-reminders` function are live;
+production `app.js`, `styles.css`, `sw.js`, and `index.html` matched local byte-for-byte after
+deployment.
+
+## PRIOR RELEASE — Trailhead identity system and PWA rebrand
 The active customer-facing product is now **Trailhead**. A new code-native identity uses four
 weathered trail stones crossed by one rising route. The same geometry now drives the realistic
 installed icon, the sub-900ms cold launch, a prominent `Trailhead · Your daily path` lockup at the
