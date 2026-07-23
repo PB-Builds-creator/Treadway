@@ -71,9 +71,8 @@ non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action`
   available hostname plus Supabase Auth redirect, PWA reinstall, and push-subscription migration —
   do not change origins casually. Note `trailhead.surge.sh` is occupied by an unrelated site; a
   `treadway.surge.sh` was NOT checked or claimed.
-- **Live reminder push title updates only after redeploying `send-reminders`.** The source now
-  says "Treadway"; until redeployed, lock-screen reminders still read "Trailhead". (Deploy cmd in
-  PROJECT_CONTEXT → Deploy/ops.)
+- ~~Redeploy `send-reminders` for the Treadway push title~~ — DONE 2026-07-23; live reminders
+  now title "Treadway".
 
 ## Testing gotcha (cost ~30 min once — don't repeat it)
 The in-app browser pane can collapse to a **0×0 viewport**, which makes every
