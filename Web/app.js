@@ -52,7 +52,7 @@ const ICON={
   lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5"/><path d="M8 10.5V7a4 4 0 018 0v3.5"/></svg>',
   pencil:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9a2.1 2.1 0 0 0-3-3L5 17v3z"/><path d="M14.5 6.5l3 3"/></svg>',
   trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5h6v2M6.5 7l1 13h9l1-13"/></svg>',
-  treadway:'<svg class="trailmark trailmark-icon" viewBox="0 0 96 112" aria-hidden="true"><path class="stone s1" d="M11 97c-5-8 0-18 11-22 16-6 42-5 56 2 12 6 12 16 2 23-14 9-57 8-69-3Z"/><path class="stone s2" d="M19 75c-6-7 0-16 12-20 13-5 31-3 42 2 10 5 10 14 0 19-13 7-44 7-54-1Z"/><path class="stone s3" d="M29 54c-5-7 0-15 10-18 11-4 25-2 32 5 7 7 2 15-8 18-12 4-28 2-34-5Z"/><path class="stone s4" d="M38 35c-4-7 1-15 10-17 9-2 19 2 20 10 1 7-6 12-15 12-7 0-13-1-15-5Z"/><path class="trailblaze" d="M24 89c10-7 10-15 19-21 9-7 4-13 14-20 9-6 5-13 13-19"/></svg>',
+  get treadway(){return treadwayMarkHtml("trailmark-icon");}, // single source of truth for the mark (see treadwayMarkHtml)
   drop:"💧",pills:"💊",fork:"🍽️",book:"📖",hands:"🙏",chart:"📈",run:"🏃",moon:"🌙",sun:"☀️",heart:"❤️",leaf:"🍃",cup:"☕",star:"⭐",flag:"🚩",dumbbell:"🏋️"
 };
 function symChar(s){return ICON[s]&&ICON[s].length<5?ICON[s]:"•";}
@@ -301,7 +301,7 @@ async function flushOutbox(){
 function setSync(on){syncOn=on;const el=document.getElementById("syncdot");if(el)el.className="syncdot"+(on?"":" off");}
 
 /* transient one-shot animation flags (consumed by the next render) */
-let justCompletedId=null, justAddedId=null, justClosedDay=null, ringLast=0, ringWait=0, streakLast=null, waterLast=null, waterPulse=false, rowStagger=0, brandHasEntered=false;
+let justCompletedId=null, justAddedId=null, justClosedDay=null, ringLast=0, ringWait=0, streakLast=null, waterLast=null, waterPulse=false, rowStagger=0;
 let launchEl=null, launchTimer=0, launchStarted=0;
 function prefersReduce(){return !!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion:reduce)").matches);}
 /* Four flat stones you tread across, with the worn way showing between them.
@@ -571,6 +571,10 @@ function lockSkipped(){try{return localStorage.getItem("cairn_lockskip_"+userId)
 function markLockSkipped(){try{localStorage.setItem("cairn_lockskip_"+userId,"1");}catch(e){}}
 function homeTipSeen(){try{return localStorage.getItem("cairn_hometip_"+userId)==="1";}catch(e){return false;}}
 function markHomeTipSeen(){try{localStorage.setItem("cairn_hometip_"+userId,"1");}catch(e){}}
+/* One-time rebrand notice: the app has a new name + Home Screen icon; existing users must re-add. */
+function rebrandSeen(){try{return localStorage.getItem("cairn_iconv2_"+userId)==="1";}catch(e){return true;}}
+function markRebrandSeen(){try{localStorage.setItem("cairn_iconv2_"+userId,"1");}catch(e){}}
+function rebrandNoteHtml(){if(rebrandSeen())return"";return `<div class="rebrandnote"><div class="rebrandmark">${treadwayMarkHtml("")}</div><div class="rebrandcopy"><strong>A new mark for the path.</strong><span>If Treadway sits on your Home Screen, remove it and add it again to update the icon.</span></div><button class="rebrandok" data-act="dismissRebrand">Got it</button></div>`;}
 
 /* Gate: PIN (if one is set) → first-run choice to set a code OR skip → one-time
    "add to Home Screen" tip (Safari, only if not already installed) → the app. */
@@ -808,7 +812,6 @@ function render(){
   const dir=from<0?"":to>from?" dir-left":" dir-right";
   let body=tab==="today"?todayView():tab==="week"?weekView():tab==="history"?historyView():settingsView();
   root.innerHTML=`<div class="screen"><div class="scroll${keepScroll?"":" enter"}${keepScroll?"":dir}">${body}</div>${tabbar()}</div>`;
-  if(tab==="today"&&root.querySelector(".homebrand"))brandHasEntered=true;
   const ns=root.querySelector(".scroll"); if(ns&&prev)ns.scrollTop=prev;
   bindApp();
   lastRenderedTab=tab;
@@ -882,8 +885,8 @@ function todayView(){
     groups+=`<div class="pathgroup" style="--group-i:${gi++}"><div class="grouphead"><span class="pathnode"></span><span class="ghname">${g.t}</span><span class="n">${items.length} ${items.length===1?"marker":"markers"}</span></div><div class="card pathcard" data-group="${g.k}">${items.map(rowHtml).join("")}</div></div>`;}
   const hyTask=due.find(x=>x.hydration);
   const completed=doneItems.length?`<section class="completedblock"><div class="sectionhead compact"><div><span>Placed today</span><h3>${doneItems.length} ${doneItems.length===1?"stone":"stones"}</h3></div><span class="sectioncount">${done}/${total}</span></div><div class="card completedcard">${doneItems.sort(bySort).map(rowHtml).join("")}</div></section>`:"";
-  const av=(state.name||"?").trim().charAt(0).toUpperCase(),brandEnter=!brandHasEntered;
-  return `<section class="daystone ${rest?"resting":""} ${allDone?"complete":""} ${cheatActive?"cheatday":""}">
+  const av=(state.name||"?").trim().charAt(0).toUpperCase(),brandEnter=(lastRenderedTab!=="today"); // replay the mark whenever you arrive on Today, not on in-place re-renders
+  return `${rebrandNoteHtml()}<section class="daystone ${rest?"resting":""} ${allDone?"complete":""} ${cheatActive?"cheatday":""}">
     <div class="daytop"><div class="dayidentity"><div class="homebrand ${brandEnter?"enter":""}">${treadwayMarkHtml("homebrandmark "+(justCompletedId?"trailpulse":""))}<div class="homebrandcopy"><strong>Treadway</strong><span>Your daily path</span></div></div>
       <div class="daytitle"><span class="daylabel">Today</span><h1>${prettyDate(t)}</h1>
       <div class="daystatus"><span id="syncdot" class="syncdot${syncOn?"":" off"}"></span>${syncOn?"Synced":"Offline"}<i></i>Mountain · ${tzAbbr()}</div></div></div>
@@ -1311,6 +1314,7 @@ function handle(act,el,e){
   else if(act==="cheatday")toggleCheatDay(el.dataset.id);
   else if(act==="water")mAddWater(+el.dataset.oz);
   else if(act==="water-custom"){const n=parseFloat(prompt("Add how many ounces?"));if(n>0)mAddWater(n);}
+  else if(act==="dismissRebrand"){markRebrandSeen();render();}
   else if(act==="go-settings"){tab="settings";render();}
   else if(act==="manage")manageSheet();
   else if(act==="add-task")editSheet(null);
