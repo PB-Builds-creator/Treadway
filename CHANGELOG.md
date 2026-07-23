@@ -18,10 +18,13 @@ _Concise milestone log, newest first. Keep to meaningful milestones._
   function are live; eight production assets matched local byte-for-byte, and the live phone-size
   sign-in view reports Trailhead across document/PWA/UI metadata with no warnings or overflow.
 - **Professional current-UI tutorial overhaul:** rebuilt `runTour()` around the unified day
-  stone, real Add control, direct task gestures, rest, Cairn Close, Weekly Trail, History,
+  stone, real Add control, direct task gestures, rest, the close ritual (then Cairn Close; now
+  Trailhead Close), Weekly Trail, History,
   task management, reminders/quiet hours, the narrow partner boundary, appearance, and data
-  controls. The original traveling spotlight, Back/Skip flow, Home Screen guidance, and cairn
-  bookends remain, but now use polished material captions, animated progress stones, clamped
+  controls. The original traveling spotlight, Back/Skip flow, Home Screen guidance, and original
+  stone-stack bookends remained in this milestone; the later Trailhead identity release replaced
+  those bookends with the shared Trailhead mark. The tutorial otherwise uses polished material
+  captions, animated progress stones, clamped
   phone-safe placement, crisp target exposure, and deeper blur for showcase moments. Blank new
   accounts receive a non-persistent animated gesture card instead of losing the swipe/hold lesson
   or being seeded with fake data. First-run launch, every blank-account step/finale, populated
@@ -82,7 +85,9 @@ _Concise milestone log, newest first. Keep to meaningful milestones._
   the stack travels into the progress ring as a shared element. The tutorial spotlight now
   travels/morphs between targets, gently pulses the highlighted control, carries progress dots,
   staggers the welcome copy, and closes by completing the same cairn stack. All paths honor
-  reduced motion and keep animation state outside the render-replaced app DOM.
+  reduced motion and keep animation state outside the render-replaced app DOM. The later
+  Trailhead identity release superseded only the logo geometry and handoff destination: four
+  branded stones now travel to the Today wordmark instead of the progress ring.
 - **Flagship motion pass, phase 2:** synchronized completion FLIP with the decelerating ring and
   odometer, added restrained 25/50/75% acknowledgements plus weighted gold stone fragments at
   100%, and made streak increments roll. Hydration now fills by transform with a slow liquid

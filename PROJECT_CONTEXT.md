@@ -3,6 +3,12 @@
 _Handoff doc. Read this + TODO.md + DECISIONS.md + CHANGELOG.md, then the code._
 _Last updated: 2026-07-22._
 
+**Current handoff checkpoint:** repository source is at the deployed Trailhead identity release
+(`e4eb0eb`) plus its production record (`b970c46`). The web app and `send-reminders` function are
+live. No source or database work is pending from the rebrand; only the real-phone actions and
+feel tests in TODO.md remain. Treat the latest-release section as current truth and the later
+`PRIOR RELEASE` sections as historical implementation context.
+
 ## LATEST RELEASE — Trailhead identity system and PWA rebrand
 The active customer-facing product is now **Trailhead**. A new code-native identity uses four
 weathered trail stones crossed by one rising route. The same geometry now drives the realistic
@@ -62,7 +68,8 @@ before this pass is `4d6d367` (`Smooth row gestures`); implementation checkpoint
 and `e92bdc9`, with reviewed release code at `ff7736d`.
 
 Implemented and visually QA'd at 375×812 in Light/OLED:
-- Cairn Close with a win, honest line, tomorrow's first stone, yesterday carry-forward, legacy
+- The close ritual (then named Cairn Close, now Trailhead Close) with a win, honest line,
+  tomorrow's first stone, yesterday carry-forward, legacy
   reflection compatibility, a single structured upsert, local preservation/retry before the
   optional column exists, and one-shot seal motion.
 - Rolling Weekly Trail with seven-day rhythm, closes, water goals, memories, next foothold, and an
@@ -163,11 +170,14 @@ There are **two deliverables**:
 - Pure logic tested headlessly: read app.js, stub browser globals (window/document/navigator/
   localStorage/Notification), strip the trailing boot guard, `eval(src + tests)`. See git history
   / prior `/tmp/test_*.js`. Streak/grace/keystone logic all verified this way.
-- **Visual QA:** use a temporary local static server and a small Supabase stub in `/tmp` to inject
-  representative signed-in state; never commit the fixture. The current pass covered Today,
+- **Visual QA:** use a temporary local static server and a small non-production fixture to inject
+  representative signed-in state; remove it before committing or deploying. The current passes
+  covered Today,
   unsealed/sealed/legacy Close, Close editor, Trail, Settings/privacy, auth, onboarding, long
   hostile-looking text, missing-`close_data` fallback, Light, and OLED at 375×812 without browser
-  logs or horizontal overflow. Live shell/hash verification still follows deployment.
+  logs or horizontal overflow. The Trailhead release additionally verified the new sign-in,
+  populated Today header, launch handoff, and tutorial cover; eight live assets then matched local
+  byte-for-byte and the live phone-size sign-in view had no warnings or overflow.
 - Real device feel (gestures, iOS push, PWA) still needs the user.
 
 ## Row gestures & ordering (recent, non-obvious)
@@ -188,7 +198,9 @@ There are **two deliverables**:
   and re-flows all `sort_index`. Same-card drops fall back to `commitReorder`.
 - **FLIP** (`captureRows`/`playFlip`) animates rows gliding between positions on complete/drop.
 - **Motion state also lives outside rendered DOM:** the cold-launch overlay is appended to `body`
-  while auth/data load behind it, and is capped below 900ms; the tour overlay likewise survives
+  while auth/data load behind it, and is capped below 900ms. Its four-stone Trailhead mark draws
+  the route once and, when Today is ready quickly, hands off to `.homebrandmark` rather than the
+  progress ring. The tour overlay likewise survives
   app re-renders so its spotlight can travel between targets. Empty accounts use a tour-only
   gesture showcase rather than fake app data. All JS motion exits through `prefersReduce()` and
   CSS is covered by the existing reduced-motion rule.
@@ -212,10 +224,13 @@ There are **two deliverables**:
   would extend the streak. Rest + saved days are neutral in streak math.
 
 ## People / accounts
-- 2 accounts: owner (Paxton, email `paxtonraithel@gmail.com`) + girlfriend. Owner = admin.
+- Core personal users are owner Paxton (`paxtonraithel@gmail.com`) and his girlfriend; the
+  owner-gated hub can also contain other approved friends. Owner = admin. Do not assume an
+  approved member is the girlfriend merely because multiple approved rows exist.
 - PIN app-lock codes (per-device, localStorage, never shown): owner `0930`, gf `0307`.
-- Her phone is NOT available for a few days. The live couple/RLS/RPC layer passed with disposable
-  accounts, but her push subscription and the end-to-end two-phone notification remain untested.
+- Her phone is rarely available. The live couple/RLS/RPC layer passed with disposable accounts,
+  but her Trailhead reinstall, push resubscription, and end-to-end two-phone notification remain
+  untested.
 - The owner currently has no live `partner_id`. The girlfriend's auth ID/email is not documented;
   do not infer it from the other approved members. Use the in-app pairing code on both real PWAs.
 
@@ -225,7 +240,10 @@ There are **two deliverables**:
   relevant load/mutation fn, and hold the deploy until the user runs the SQL (writing a missing
   column breaks upserts).
 - Verify streak/date logic with a headless eval test before deploying.
-- Update these 4 handoff files after every significant change.
+- Update these 4 handoff files after every significant change: `PROJECT_CONTEXT.md` for current
+  truth and architecture, `TODO.md` for only unfinished work, `DECISIONS.md` for durable rationale,
+  and `CHANGELOG.md` for shipped milestones. State exactly what is live, local-only, manual,
+  unverified, or superseded so a replacement agent never has to infer status from old entries.
 
 ## Also see
 User-level memory: `~/.claude/projects/-Users-paxton/memory/` (cairn-project.md,

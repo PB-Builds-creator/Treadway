@@ -95,6 +95,10 @@ _Last updated: 2026-07-22. Brief rationale for choices that aren't obvious from 
 
 - **Handoff files (this + PROJECT_CONTEXT/TODO/CHANGELOG) are maintained every significant
   change** because sessions have low context limits and may hand off at any time.
+  `PROJECT_CONTEXT.md` is current operational truth; `TODO.md` contains only unfinished or
+  externally blocked work; `DECISIONS.md` records durable rationale; `CHANGELOG.md` preserves
+  shipped history. Historical branding may remain when it identifies an old milestone, but it
+  must be labeled as historical or superseded whenever it could mislead the next agent.
 
 - **Motion is transform/opacity-only and survives full DOM replacement in JS.** Launch and tour
   overlays sit outside `#app`; anything that crosses `render()` keeps its state in globals. The

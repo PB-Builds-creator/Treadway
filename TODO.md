@@ -2,6 +2,11 @@
 
 _Last updated: 2026-07-22. Keep prioritized; delete done items (they go to CHANGELOG)._
 
+**Current release state:** Trailhead web assets and the renamed reminder function are deployed;
+the rebrand requires no SQL. The list below is intentionally limited to real-device confirmation,
+per-phone reinstall/resubscription, one unavailable-phone partner test, and one optional future
+gesture enhancement.
+
 ## ⚠️ Needs confirmation on a REAL iPhone (dev env has no touch device)
 Everything below is verified with synthetic pointer events in a desktop browser only.
 1. **Hold-to-drag reorder** — press ~0.4s, row lifts, drag, release. Should stay put.
@@ -36,6 +41,8 @@ non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action`
   The owner is currently unlinked and her account ID is not documented, so do not guess among
   approved members. The reciprocal link, once-daily nudge, and unlink authorization already
   passed server-side with isolated disposable accounts.
+- **No manual Supabase or SQL work is pending for the Trailhead rebrand.** Do not rerun product
+  migrations or rotate credentials just for the name/icon change.
 
 ## Next features (not yet built)
 1. Dropping into an **empty/absent category** isn't possible (groups only render when they have
