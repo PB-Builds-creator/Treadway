@@ -3,6 +3,12 @@
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
 ## 2026-07-23
+- **Spinner removed + full-bleed icon.** The loading indicator is now the branded mark (breathing,
+  way redraw) via `brandLoader()`; deleted `.spin`/`.loading`/`@keyframes sp` and the spinner in
+  `enterApp`. With the pre-rendered launch, no spinner ever renders. The app icon is now full-bleed
+  (bg fills the whole 1024 square; removed the 24px inset, self-rounding, and border that left
+  white edges under iOS's squircle mask); regenerated `icon-180/192/512`. `sw.js` → v13. Users must
+  remove + re-add the Home Screen icon to pick up the new art (iOS caches icons).
 - **Flagship motion pass.** (1) **Launch = branded first paint:** the stepping-stones animation is
   now pre-rendered in `index.html` (with a no-flash theme script in `<head>`), so the very first
   frame is the mark laying itself in — the plain `.loading` spinner no longer shows on open
