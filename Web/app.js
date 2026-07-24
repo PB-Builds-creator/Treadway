@@ -462,8 +462,9 @@ async function loadAccess(){
   }
   return access;
 }
+function brandLoader(){return `<div class="brandloader">${treadwayMarkHtml("loadmark")}</div>`;} // the mark IS the loading indicator — no spinner
 async function enterApp(){
-  root.innerHTML='<div class="loading"><div class="spin"></div></div>';
+  root.innerHTML=brandLoader();
   try{await loadAccess();}catch(e){renderAccessError();return;}
   if(access.status!=="approved"){renderPending();return;}
   const cached=cacheLoad();

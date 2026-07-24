@@ -236,9 +236,12 @@
 .auth .status{color:var(--muted);font-size:12.5px}
 .syncdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--good);margin-right:6px;vertical-align:1px}
 .syncdot.off{background:var(--warn)}
-.spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:sp .8s linear infinite}
-@keyframes sp{to{transform:rotate(360deg)}}
-  .loading{flex:1;display:flex;align-items:center;justify-content:center}
+/* Branded loading state — the mark breathes; no spinner anywhere in the app. */
+.brandloader{flex:1;display:flex;align-items:center;justify-content:center;min-height:60vh;padding:40px}
+.brandloader .loadmark{width:104px;height:88px;filter:drop-shadow(0 9px 18px rgba(0,0,0,.15));animation:loadbreath 1.65s ease-in-out infinite}
+.brandloader .loadmark .trailblaze{stroke-dasharray:80;animation:loaddraw 1.65s ease-in-out infinite}
+@keyframes loadbreath{0%,100%{opacity:.48;transform:scale(.955)}50%{opacity:1;transform:scale(1)}}
+@keyframes loaddraw{0%,100%{stroke-dashoffset:80}45%,70%{stroke-dashoffset:0}}
 
 /* ============ Treadway identity + cold launch ritual ============ */
 .trailmark{display:block;overflow:visible}

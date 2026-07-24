@@ -27,9 +27,10 @@
       <stop stop-color="#f0d49d"/><stop offset=".55" stop-color="#fff0c8"/><stop offset="1" stop-color="#f2cf83"/>
     </linearGradient>
   </defs>
-  <rect x="24" y="24" width="976" height="976" rx="226" fill="url(#bg)"/>
-  <rect x="24" y="24" width="976" height="976" rx="226" fill="url(#light)"/>
-  <path d="M102 843C271 749 399 765 512 818c139 65 254 23 410-89v219H102Z" fill="#172431" opacity=".28"/>
+  <!-- Full-bleed: fills the entire square so iOS/Android apply their own corner mask with no white edges. -->
+  <rect x="0" y="0" width="1024" height="1024" fill="url(#bg)"/>
+  <rect x="0" y="0" width="1024" height="1024" fill="url(#light)"/>
+  <path d="M60 851C271 749 399 765 512 818c150 70 280 24 452-96v243H60Z" fill="#172431" opacity=".28"/>
   <g transform="translate(141 -193) scale(9.4)" stroke="#303a3e" stroke-opacity=".52" stroke-width="1.1" stroke-linejoin="round">
     <path d="M22 100C30 94 34 87 41 80 48 72 62 57 71 47" fill="none" stroke="#27343e" stroke-opacity=".32" stroke-width="7.4" stroke-linecap="round"/>
     <path d="M22 100C30 94 34 87 41 80 48 72 62 57 71 47" fill="none" stroke="url(#blaze)" stroke-width="4.6" stroke-linecap="round"/>
@@ -40,5 +41,4 @@
     <path d="M7 96c10-2 26-2 34 0" fill="none" stroke="#fff" stroke-opacity=".15" stroke-width="1.15" stroke-linecap="round"/>
     <path d="M30 78c7-2 16-2 21 0" fill="none" stroke="#fff" stroke-opacity=".15" stroke-width=".9" stroke-linecap="round"/>
   </g>
-  <rect x="24" y="24" width="976" height="976" rx="226" fill="none" stroke="#fff" stroke-opacity=".12" stroke-width="8"/>
 </svg>
