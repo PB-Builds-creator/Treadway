@@ -719,6 +719,16 @@ function renderOnboard(){ // new user: a brief promise, then a blank page and th
   document.getElementById("ob-start").onclick=()=>onboard(p);
 }
 function tourSeen(){try{return localStorage.getItem("cairn_tour_"+userId)==="1";}catch(e){return false;}}
+/* Teach swipe once or twice, only after the tour, only if a pending row exists — never during a gesture. */
+let swipeHintShown=false;
+function swipeHintN(){try{return +(localStorage.getItem("cairn_swipehint_"+userId)||0);}catch(e){return 9;}}
+function maybeSwipeHint(){
+  if(swipeHintShown||prefersReduce()||pendingTour||!tourSeen()||swipeHintN()>=2)return;
+  const wrap=root.querySelector(".pathcard .rowwrap");if(!wrap)return;
+  swipeHintShown=true;
+  try{localStorage.setItem("cairn_swipehint_"+userId,String(swipeHintN()+1));}catch(e){}
+  wrap.classList.add("peekhint");   // DOM already built (called after bindApp); the fresh node plays the .5s-delayed peek
+}
 function markTourSeen(){try{localStorage.setItem("cairn_tour_"+userId,"1");}catch(e){}}
 
 function tourDemoHtml(kind){
@@ -827,7 +837,7 @@ function render(){
   const ns=root.querySelector(".scroll"); if(ns&&prev)ns.scrollTop=prev;
   bindApp();
   lastRenderedTab=tab;
-  if(tab==="today"){animateRing();animateStreak();animateHydration();}
+  if(tab==="today"){animateRing();animateStreak();animateHydration();maybeSwipeHint();}
   if(tab==="settings")updateReminderLabel();
   if(tab==="history"&&!state.totalsLoaded)loadTotals();
 }
@@ -1245,6 +1255,7 @@ function bindRowGestures(){
     }
     wrap.addEventListener("pointerdown",e=>{
       if(e.button&&e.button!==0)return;
+      wrap.classList.remove("peekhint");   // a real touch cancels the teach-peek so they never fight
       sx=e.clientX;sy=e.clientY;mode="";pid=e.pointerId;
       swipeX=0;swipeDir=0;swipeArmed=false;
       row.classList.add("swiping");
