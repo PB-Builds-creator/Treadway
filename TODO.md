@@ -3,22 +3,22 @@
 _Last updated: 2026-07-23. Keep prioritized; delete done items (they go to CHANGELOG)._
 
 ## ⏳ ACTIVE — Impeccable full polish pass (in progress, user wants "the most polished app ever")
-Driven by `/impeccable critique` (score 33/40). Refinement of the incumbent world, NOT a redesign —
-preserve the stones/path metaphor + established kickers (user loves the look). CSS-led; verify each
-with browser + `detect.mjs` + `node --check`; commit after each; keep these docs current. Sequence:
-- [ ] **P1 contrast** — `--faint` fails WCAG AA in dark (~3.2:1) and OLED (~2.8:1); lift one step to
-      ≥4.5:1 in both. `--muted` is fine (~6:1). Tokens at styles.css lines 13-14 (dark), 20-21
-      (system-dark), 329-330 (oled). Verify computed ratios after.
-- [ ] **P2 hierarchy** — day-stone: make today's progress the hero; demote STREAK/WATER weight.
-- [ ] **P2 reveal gestures** — persistent affordance hint for swipe-edit/delete + hold-reorder.
-- [ ] **P3 side-tab border** — `.tut-hint` styles.css:355 `border-left:2px solid var(--accent)` →
-      subtler (tinted bg or ≤1px). (Blockquote :754 is a defensible FP — leave.)
-- [ ] **P3 transition:width** — `.tc-dots i` styles.css:385 animates width; move off layout props.
+Driven by `/impeccable critique` (score 33/40). Refinement of the incumbent world, NOT a redesign.
+CSS-led; verify each with browser + `detect.mjs` + `node --check`; commit after each. Progress:
+- [x] **P1 contrast** — `--faint` failed AA in all 3 themes; now dark #8e908a, oled #828480,
+      light #71736d (all clear 4.5:1 on real backgrounds; computed + browser-verified). commit 461891c
+- [x] **P2 hierarchy** — dissolved the nested `.daystats` card into a borderless band; ring is hero.
+- [x] **P2 reveal gestures** — one-time swipe `peekhint` (maybeSwipeHint); gated post-tour, max 2,
+      reduced-motion-safe, canceled on pointerdown. Verified: pencil reveals.
+- [x] **P3 detector** — side-tab callout, tutorial dots off `width`, blockquote 1px. Detector CLEAN (0).
 - [ ] `/impeccable polish` pass → verify-fix
-- [ ] `/impeccable audit` (a11y/perf) → verify-fix
-- [ ] `/impeccable critique` re-run → confirm score rises; deploy; update CHANGELOG/DECISIONS.
-Detector: `node /Users/paxton/.claude/skills/impeccable/scripts/detect.mjs --json <files>` (include
-styles.css to catch CSS anti-patterns; exit 2 = findings). Deploy = bump sw.js + `npx surge . cairn.surge.sh`.
+- [ ] `/impeccable audit` (a11y/perf) → verify-fix  (NOTE: accessibility roadmap #10 — rows are
+      clickable divs likely missing role/aria/focus; expect audit to flag. Fix there.)
+- [ ] `/impeccable critique` re-run → confirm score rises; final deploy; update CHANGELOG/DECISIONS.
+Deployed through sw.js **v15**. Detector: `node /Users/paxton/.claude/skills/impeccable/scripts/detect.mjs --json <files>`.
+Deploy = bump sw.js + `npx surge . cairn.surge.sh`. Live QA gotchas: launch overlay + rAF + CSS
+transitions are PAUSED while the preview isn't painting — remove `#launch`/read post-transition
+values or neutralize transitions when verifying; always resize to 375×812 first.
 
 
 **Current release state:** the product is renamed **Treadway** with a redesigned stepping-stone

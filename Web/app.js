@@ -954,7 +954,7 @@ function rowHtml(t){const st=statusOf(todayStr(),t.id),done=isSatisfiedStatus(st
   if(overdue)subs.push('<span style="color:var(--warn);font-weight:600">overdue</span>');
   return `<div class="rowwrap ${t.id===justAddedId?"justadd":""}" data-rid="${t.id}" style="--row-i:${ri}">
     <div class="rowacts"><div class="ract edit">${ICON.pencil}</div><div class="ract del">${ICON.trash}</div></div>
-    <div class="row tap ${done?"done":""} ${cheat?"cheat":""} ${t.id===justCompletedId?"justdone":""}" data-act="${t.measureUnit?"measure":"toggle"}" data-id="${t.id}">
+    <div class="row tap ${done?"done":""} ${cheat?"cheat":""} ${t.id===justCompletedId?"justdone":""}" data-act="${t.measureUnit?"measure":"toggle"}" data-id="${t.id}" ${t.measureUnit?`role="button" tabindex="0" aria-label="${escapeAttr(t.title)}, log ${escapeAttr(t.measureUnit)}"`:`role="checkbox" tabindex="0" aria-checked="${done?"true":"false"}" aria-label="${escapeAttr(t.title)}"`}>
     <div class="check">${ICON.check}</div>
     <div class="rowmain"><div class="t">${t.keystone?'<span class="corepin" title="Non-negotiable">●</span> ':''}${escapeHtml(t.title)}</div>${subs.length?`<div class="sub">${subs.join(" · ")}</div>`:""}</div>
     ${t.appUrl?`<button class="openapp" data-act="openapp" data-url="${escapeAttr(t.appUrl)}" aria-label="Open app">↗</button>`:""}
@@ -1161,6 +1161,7 @@ function tabbar(){const T=[["today","Today"],["week","Week"],["history","History
 function bindApp(){
   root.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{if(b.dataset.tab!==tab)haptic("tap");tab=b.dataset.tab;render();});
   root.querySelectorAll("[data-act]").forEach(el=>el.onclick=(e)=>{const a=el.dataset.act;if(a!=="toggle"&&a!=="cheatday")haptic("light");handle(a,el,e);});
+  root.querySelectorAll(".row[tabindex]").forEach(r=>r.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();r.click();}})); // keyboard toggle for screen-reader/switch users
   bindRowGestures();
   // Auto-hide the bottom tab bar: slide it away when scrolling down, reveal on scroll up.
   const sc=root.querySelector(".scroll");

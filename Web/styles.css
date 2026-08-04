@@ -229,6 +229,10 @@
 .auth form{width:100%;max-width:320px;display:flex;flex-direction:column;gap:10px;margin-top:6px}
 .auth input{width:100%;padding:13px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:16px;font-family:inherit}
 .auth input:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+/* Visible keyboard focus (pointer taps don't trigger :focus-visible, so this stays invisible in normal touch use). */
+button:focus-visible,.tab:focus-visible,.key:focus-visible,.chip:focus-visible,.who:focus-visible,.addbtn:focus-visible,.setrow:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .auth .btn{width:100%;padding:14px;border-radius:13px;background:var(--accent);color:#fff;font-size:15.5px;font-weight:650;border:none}
 .auth .btn:disabled{opacity:.55}
 .auth .swap{background:none;border:none;color:var(--accent);font-size:13.5px;font-weight:600;padding:8px}
