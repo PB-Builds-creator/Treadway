@@ -2,7 +2,20 @@
 
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
-## 2026-07-23
+## 2026-08-03
+- **Visual + motion evolution (App-Store-grade, 4 phases, sw.js v17→v19).** User-approved evolution
+  of the visuals (bolder color + real depth/materials) with weighted-quiet motion; identity/structure/
+  copy preserved. Heuristic re-score **35 → 36/40 (Excellent band)**, detector clean throughout.
+  - **P1 color+depth foundation:** `--accent` is now theme-aware and bold (light #43618a, dark #86a4c9,
+    oled #8aa8cd) — also fixed accent-text failing WCAG AA on dark (3.2→6.4:1). Fills split into
+    `--accent-fill #4a6890` + gradient `--accent-2 #35507a` (primary buttons); `--accent-soft` derives
+    from `--accent`. New `--edge-hi` top-highlight + `--shadow-2` elevation.
+  - **P2 material coherence:** the lit-from-above highlight now spans all cards (15+ surfaces); primary
+    button press compresses its shadow (weighted).
+  - **P3 Settings reorg:** flat 13-row list → 5 iOS grouped section cards (Your day/Appearance/Reminders/
+    Account/Learn) with staggered entrance; all actions/IDs preserved.
+  - **P4 verify:** OLED + light + sheet + grouped Settings all confirmed; reduced-motion covered by the
+    blanket rule; 0 console errors; live parity. See DECISIONS "accent is theme-aware, fills split".
 - **Impeccable-driven polish pass (critique → fixes → audit → re-critique).** Heuristic score
   **33 → 35/40** (upper "Good"), deterministic detector **3 findings → 0**, accessibility markedly up
   (role 0→2, tabindex 1→4, focus-visible rules 2→12). Refinement of the incumbent world, not a

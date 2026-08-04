@@ -2,7 +2,13 @@
 
 _Last updated: 2026-08-03. Keep prioritized; delete done items (they go to CHANGELOG)._
 
-## ⏳ ACTIVE — Visual + motion evolution (App-Store-grade; user: "make no mistakes")
+## ✅ DONE — Visual + motion evolution (all 4 phases; critique 35 → 36/40 Excellent)
+Shipped through sw.js **v19**, detector clean throughout, both themes verified. See CHANGELOG
+(2026-08-03) + DECISIONS ("accent is theme-aware, fills split"). Optional reworks the user OK'd for
+later: frosted sheet backdrop, secondary-button depth, richer empty-state motion, grouped-card pattern
+in Manage/other sheets. The phase notes below are kept for the record.
+
+## (history) Visual + motion evolution — phase log
 **Scope (user-chosen):** EVOLVE the visuals (richer surfaces/materials, real depth/elevation system,
 bolder-but-controlled color, redrawn components) + WEIGHTED-QUIET motion (Things/Oak/Apple — ease-out,
 short, nothing bounces) + intentional motion on EVERY button/placeholder + reorganize Settings (less
@@ -22,10 +28,14 @@ Deploy = bump sw.js + `npx surge . cairn.surge.sh`. Currently at sw.js **v16**.
       compresses its shadow (weighted). Existing press states (chips/rows/tabs/restcontrol) + directional
       transitions were already strong, so net-new = material + button depth. (Optional later reworks:
       per-control depth on secondary buttons, frosted sheet backdrop, richer empty-state motion.)
-- [ ] **Phase 3 — Settings reorganization.** Group into calm labeled sections; reduce clutter; add
-      section motion. (Read settingsView first; preserve every existing action/route.)
-- [ ] **Phase 4 — Polish + verify + detector + re-critique.** Both themes, keyboard, reduced-motion,
-      0 console errors, detector clean. Update CHANGELOG/DECISIONS.
+- [x] **Phase 3 — Settings reorganization.** DONE (commit 9c4ab5b, sw.js v19). Flat 13-row list →
+      5 iOS grouped section cards (Your day/Appearance/Reminders/Account/Learn) via `.setsection`/
+      `.setlabel`/`.setcard` + staggered entrance. All data-acts + #remVal/#themeLbl preserved.
+- [ ] **Phase 4 — Polish + verify + detector + re-critique.** Remaining: verify light-theme Settings
+      + reduced-motion + keyboard on the new surfaces; run /impeccable critique to re-score (was 35/40);
+      confirm the visual evolution reads cohesive end-to-end; final CHANGELOG/DECISIONS. Detector already
+      clean through v19. Optional reworks the user OK'd for later: frosted sheet backdrop, secondary-button
+      depth, richer empty-state motion, apply grouped-card pattern to Manage/other sheets if desired.
 **Guardrails:** craft-floor is the quality floor (depth shadows need offset+blur; motion exp ease-out;
 materials/blur/mask allowed when smooth). Reduced-motion must disable all new motion (blanket rule
 exists). Don't break gestures (`bindRowGestures`), sort_index ordering, or the a11y roles just added.
