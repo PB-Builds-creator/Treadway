@@ -10,10 +10,13 @@ clutter). PRESERVE the stones/path identity, structure, copy, function — evolv
 Work in verified, committed phases; both-theme browser QA each; keep detector clean; `node --check`.
 Deploy = bump sw.js + `npx surge . cairn.surge.sh`. Currently at sw.js **v16**.
 
-- [ ] **Phase 1 — Foundation (tokens/materials/depth).** Elevation shadow scale (offset+blur, layered),
-      surface top-highlight (lit-from-above material), refined surface gradients, evolved accent
-      (more luminous, still slate), frosted materials (backdrop-filter) on tab bar + sheet backdrops,
-      radii/spacing refinement. Apply to shared containers (.card/.daystone/.tabs/sheets). Verify both themes.
+- [x] **Phase 1 — Foundation (tokens/materials/depth).** DONE (commit c11d930, sw.js v17).
+      Theme-aware bold `--accent` (light #43618a, dark #86a4c9, oled #8aa8cd — also fixed accent-text
+      AA bug), `--accent-fill`/`--accent-2` fill split + gradient primary buttons, `--edge-hi` material
+      highlight + `--shadow-2` elevation on .card/.daystone/tabs/btn, `--accent-soft` now color-mix of
+      --accent. Verified OLED+light+sheet, detector clean. (Still TODO in later phases: apply edge-hi to
+      the remaining cards — hyd/pathcard/trailcard/closecard/notecard/reviewcard/stat/cheatcard — and
+      frosted materials on sheet backdrops.)
 - [ ] **Phase 2 — Components redraw + motion.** Buttons (primary/ghost/icon/chip): unified press +
       depth response, no dead controls. Ring, checkbox, rows, hydration, chips refined. Every
       placeholder/empty/loading state intentional (branded). Spatial screen transitions elevated.

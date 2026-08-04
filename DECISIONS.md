@@ -52,6 +52,17 @@ _Last updated: 2026-08-03. Brief rationale for choices that aren't obvious from 
   stones and draws the route once; Today enters once per session and only pulses after a completed
   task. No continuous logo loop or pointer-time work was added, preserving gesture frame pacing.
 
+- **Accent is theme-aware, and fills are split from text (visual evolution, 2026-08-03).** The
+  single `--accent #5b7089` used across all themes was too dim on dark — accent-colored text failed
+  WCAG AA (3.2:1 dark, 3.8:1 oled). `--accent` is now theme-aware and bolder: light #43618a,
+  dark #86a4c9, oled #8aa8cd (all ≥6:1 as text). Because a brighter accent can't also carry white
+  button text at AA, FILLS are a separate token: `--accent-fill #4a6890` (white-text-safe, constant)
+  for the 8 white-on-accent controls, and `--accent-2 #35507a` as the deep gradient companion +
+  primary-button gradient. `--accent-soft` is `color-mix(var(--accent))` so it tracks per theme.
+  **Never merge these back into one accent** — you'll reintroduce the AA failure or break buttons.
+  Depth: `--edge-hi` (per-theme top highlight) + `--shadow-2` elevation give a lit-from-above
+  material feel; this is the "bolder color + depth" the user chose, kept calm via weighted-quiet motion.
+
 - **Impeccable polish = refinement, not redesign.** The `/impeccable` pass treated the stones/path
   visual world (day stone, markers, small-caps kickers, the ritual copy) as the committed identity
   and only fixed mechanics: WCAG-AA contrast, hierarchy (dissolving the nested stats card), gesture
