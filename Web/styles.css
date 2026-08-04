@@ -213,6 +213,15 @@
   .seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--shadow),inset 0 1px 0 var(--edge-hi)}
   .setrow{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--line);font-size:15px}
   .setrow .r{display:flex;gap:10px;align-items:center;color:var(--muted)}
+  /* Grouped settings — iOS-style labeled section cards, far less clutter than one flat list */
+  .setsection{margin-bottom:20px}
+  .setlabel{margin:0 0 8px;padding:0 6px;color:var(--faint);font-size:10.5px;font-weight:750;letter-spacing:.12em;text-transform:uppercase}
+  .setcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow),inset 0 1px 0 var(--edge-hi)}
+  .setcard .setrow{padding:14px 15px;border-bottom:1px solid var(--line)}
+  .setcard .setrow:last-child{border-bottom:none}
+  .setswatch{width:17px;height:17px;border-radius:50%;background:var(--accent);display:inline-block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+  .adminbadge{color:var(--accent);font-size:12px;font-weight:600}
+  .scroll.enter .setsection{animation:ritualin .4s calc(.05s + var(--set-i,0)*55ms) both cubic-bezier(.2,.75,.25,1)}
   .note{font-size:12px;color:var(--faint);margin-top:4px;line-height:1.4}
   .cheatsetup{margin:13px 0 15px;padding:13px;border:1px solid color-mix(in srgb,#b88a43 38%,var(--line));border-radius:15px;background:color-mix(in srgb,#b88a43 7%,var(--surface))}
   .cheatsetup>label{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--ink);cursor:pointer}

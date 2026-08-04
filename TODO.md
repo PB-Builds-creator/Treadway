@@ -17,9 +17,11 @@ Deploy = bump sw.js + `npx surge . cairn.surge.sh`. Currently at sw.js **v16**.
       --accent. Verified OLED+light+sheet, detector clean. (Still TODO in later phases: apply edge-hi to
       the remaining cards — hyd/pathcard/trailcard/closecard/notecard/reviewcard/stat/cheatcard — and
       frosted materials on sheet backdrops.)
-- [ ] **Phase 2 — Components redraw + motion.** Buttons (primary/ghost/icon/chip): unified press +
-      depth response, no dead controls. Ring, checkbox, rows, hydration, chips refined. Every
-      placeholder/empty/loading state intentional (branded). Spatial screen transitions elevated.
+- [x] **Phase 2 — Material coherence + button depth.** DONE (commit 4e16c2e, sw.js v18). --edge-hi
+      highlight extended to 14 more surfaces (all cards now lit material); primary button press now
+      compresses its shadow (weighted). Existing press states (chips/rows/tabs/restcontrol) + directional
+      transitions were already strong, so net-new = material + button depth. (Optional later reworks:
+      per-control depth on secondary buttons, frosted sheet backdrop, richer empty-state motion.)
 - [ ] **Phase 3 — Settings reorganization.** Group into calm labeled sections; reduce clutter; add
       section motion. (Read settingsView first; preserve every existing action/route.)
 - [ ] **Phase 4 — Polish + verify + detector + re-critique.** Both themes, keyboard, reduced-motion,

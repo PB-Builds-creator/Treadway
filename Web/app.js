@@ -1130,21 +1130,27 @@ async function exportData(){
 
 /* ---------- Settings ---------- */
 function settingsView(){
+  let si=0;
+  const grp=(label,rows)=>`<section class="setsection" style="--set-i:${si++}"><h3 class="setlabel">${label}</h3><div class="setcard">${rows}</div></section>`;
+  const row=(act,name,r)=>`<div class="setrow" data-act="${act}"><span>${name}</span><span class="r">${r}</span></div>`;
   return `<div class="h2">Settings</div><div class="pad">
-    <div class="setrow" data-act="manage"><span>Manage tasks</span><span class="r">${state.tasks.length} ›</span></div>
-    <div class="setrow" data-act="goal"><span>Hydration goal</span><span class="r">${state.goalOz} oz ›</span></div>
-    <div class="setrow" data-act="accent"><span>Accent color</span><span class="r"><span style="width:16px;height:16px;border-radius:50%;background:var(--accent);display:inline-block"></span> ›</span></div>
-    <div class="setrow" data-act="theme"><span>Appearance</span><span class="r" id="themeLbl">${themeLabel()} ›</span></div>
-    <div class="setrow" data-act="rename"><span>Profile name</span><span class="r">${escapeHtml(state.name)} ›</span></div>
-    <div class="setrow" data-act="tutorial"><span>See the tutorial again</span><span class="r">Replay ›</span></div>
-    <div class="setrow" data-act="changecode"><span>Change unlock code</span><span class="r">${ICON.lock}</span></div>
-    <div class="setrow" data-act="reminders"><span>Reminders</span><span class="r" id="remVal">…</span></div>
-    <div class="setrow" data-act="summarytime"><span>Nightly summary time</span><span class="r">${fmt12(state.summaryTime||"21:30")} ›</span></div>
-    <div class="setrow" data-act="quiethours"><span>Quiet hours</span><span class="r">${state.quietStart&&state.quietEnd?fmt12(state.quietStart)+"–"+fmt12(state.quietEnd):"Off"} ›</span></div>
-    <div class="setrow" data-act="partner"><span>Partner</span><span class="r">${state.partnerId?escapeHtml(state.partnerName||"Linked")+" 💞":"Not linked"} ›</span></div>
-    <div class="setrow" data-act="privacy"><span>Data & privacy</span><span class="r">Account ›</span></div>
-    ${access.isAdmin?`<div class="setrow" data-act="members"><span>Members <span style="color:var(--accent);font-size:12px">· admin</span></span><span class="r">Manage ›</span></div>`:""}
-    <div style="height:22px"></div>
+    ${grp("Your day",
+      row("manage","Manage tasks",`${state.tasks.length} ›`)+
+      row("goal","Hydration goal",`${state.goalOz} oz ›`))}
+    ${grp("Appearance",
+      row("accent","Accent color",`<span class="setswatch"></span> ›`)+
+      `<div class="setrow" data-act="theme"><span>Appearance</span><span class="r" id="themeLbl">${themeLabel()} ›</span></div>`)}
+    ${grp("Reminders",
+      `<div class="setrow" data-act="reminders"><span>Reminders</span><span class="r" id="remVal">…</span></div>`+
+      row("summarytime","Nightly summary",`${fmt12(state.summaryTime||"21:30")} ›`)+
+      row("quiethours","Quiet hours",`${state.quietStart&&state.quietEnd?fmt12(state.quietStart)+"–"+fmt12(state.quietEnd):"Off"} ›`))}
+    ${grp("Account",
+      row("rename","Profile name",`${escapeHtml(state.name)} ›`)+
+      row("changecode","Change unlock code",`${ICON.lock}`)+
+      row("partner","Partner",`${state.partnerId?escapeHtml(state.partnerName||"Linked")+" 💞":"Not linked"} ›`)+
+      row("privacy","Data & privacy",`Account ›`)+
+      (access.isAdmin?row("members",`Members <span class="adminbadge">· admin</span>`,`Manage ›`):""))}
+    ${grp("Learn",row("tutorial","See the tutorial again",`Replay ›`))}
     <button class="btn ghost" data-act="add-task">＋ Add a task</button>
     <div style="height:10px"></div>
     <button class="btn danger" data-act="signout">Sign out</button>
