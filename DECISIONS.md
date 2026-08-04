@@ -1,6 +1,6 @@
 # Treadway (formerly Trailhead, formerly Cairn) — Key Decisions
 
-_Last updated: 2026-07-23. Brief rationale for choices that aren't obvious from the code._
+_Last updated: 2026-08-03. Brief rationale for choices that aren't obvious from the code._
 
 - **Renamed Trailhead → Treadway (2026-07-23), user-directed.** Trailhead collides head-on with
   Salesforce's active Trailhead/Trailhead GO brand — a launch-blocking conflict flagged in the
@@ -51,6 +51,16 @@ _Last updated: 2026-07-23. Brief rationale for choices that aren't obvious from 
   Today lockup, auth, and tutorial all use the same four-stone/rising-route shape. Startup settles
   stones and draws the route once; Today enters once per session and only pulses after a completed
   task. No continuous logo loop or pointer-time work was added, preserving gesture frame pacing.
+
+- **Impeccable polish = refinement, not redesign.** The `/impeccable` pass treated the stones/path
+  visual world (day stone, markers, small-caps kickers, the ritual copy) as the committed identity
+  and only fixed mechanics: WCAG-AA contrast, hierarchy (dissolving the nested stats card), gesture
+  discoverability, and keyboard/screen-reader access. Craft-floor's blanket "no kicker/eyebrow" and
+  "no hero-metric" defaults were deliberately NOT applied — the incumbent world (which the user
+  loves) overrides category defaults per the skill's own rule. **Contrast was chosen over the dim
+  aesthetic:** "quiet/premium" is kept via weight, spacing, and restraint, not by letting secondary
+  text fail AA. `--faint` is now the quietest tier that still passes 4.5:1; never revert it to the
+  old sub-3:1 greys to look "calmer."
 
 - **Current sellability work stays web-first.** The user explicitly deferred widgets, HealthKit,
   and other native-only surfaces until they have the paid Apple Developer account. The active

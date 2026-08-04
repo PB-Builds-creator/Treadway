@@ -1,7 +1,7 @@
 # Treadway (formerly Trailhead, formerly Cairn) — Project Context
 
 _Handoff doc. Read this + TODO.md + DECISIONS.md + CHANGELOG.md, then the code._
-_Last updated: 2026-07-23._
+_Last updated: 2026-08-03._
 
 **Current handoff checkpoint:** the product is now named **Treadway** (renamed from Trailhead,
 which collided with Salesforce). The rename + mark redesign is the newest release; the earned

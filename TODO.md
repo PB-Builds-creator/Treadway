@@ -1,24 +1,19 @@
 # Treadway (formerly Trailhead, formerly Cairn) — TODO
 
-_Last updated: 2026-07-23. Keep prioritized; delete done items (they go to CHANGELOG)._
+_Last updated: 2026-08-03. Keep prioritized; delete done items (they go to CHANGELOG)._
 
-## ⏳ ACTIVE — Impeccable full polish pass (in progress, user wants "the most polished app ever")
-Driven by `/impeccable critique` (score 33/40). Refinement of the incumbent world, NOT a redesign.
-CSS-led; verify each with browser + `detect.mjs` + `node --check`; commit after each. Progress:
-- [x] **P1 contrast** — `--faint` failed AA in all 3 themes; now dark #8e908a, oled #828480,
-      light #71736d (all clear 4.5:1 on real backgrounds; computed + browser-verified). commit 461891c
-- [x] **P2 hierarchy** — dissolved the nested `.daystats` card into a borderless band; ring is hero.
-- [x] **P2 reveal gestures** — one-time swipe `peekhint` (maybeSwipeHint); gated post-tour, max 2,
-      reduced-motion-safe, canceled on pointerdown. Verified: pencil reveals.
-- [x] **P3 detector** — side-tab callout, tutorial dots off `width`, blockquote 1px. Detector CLEAN (0).
-- [ ] `/impeccable polish` pass → verify-fix
-- [ ] `/impeccable audit` (a11y/perf) → verify-fix  (NOTE: accessibility roadmap #10 — rows are
-      clickable divs likely missing role/aria/focus; expect audit to flag. Fix there.)
-- [ ] `/impeccable critique` re-run → confirm score rises; final deploy; update CHANGELOG/DECISIONS.
-Deployed through sw.js **v15**. Detector: `node /Users/paxton/.claude/skills/impeccable/scripts/detect.mjs --json <files>`.
-Deploy = bump sw.js + `npx surge . cairn.surge.sh`. Live QA gotchas: launch overlay + rAF + CSS
-transitions are PAUSED while the preview isn't painting — remove `#launch`/read post-transition
-values or neutralize transitions when verifying; always resize to 375×812 first.
+## ✅ DONE — Impeccable polish pass (critique 33 → 35/40, detector 3 → 0)
+Shipped through sw.js **v16**. All CSS-led refinement of the incumbent world (no redesign).
+Contrast (`--faint` AA in all themes), day-stone hierarchy (nested card dissolved), swipe-peek
+discoverability, task-row keyboard/screen-reader a11y (role=checkbox + focus rings + Enter/Space),
+and the 3 detector nits — all fixed, both themes browser-verified, 0 console errors. See CHANGELOG.
+Impeccable itself is installed in `~/.claude` (design skill + PostToolUse/Stop detector hook).
+**Remaining a11y follow-ups (minor, next pass):** auth inputs use placeholder-only (no `<label>`);
+the blanket `prefers-reduced-motion:*{animation:none}` kill could keep instant state feedback;
+audit a few small touch targets (water chips, row trailing dot) for ≥44px on device.
+Live QA gotchas: launch overlay + rAF + CSS transitions are PAUSED while the preview isn't painting
+— remove `#launch` / neutralize transitions when verifying; always resize to 375×812 first.
+Detector: `node /Users/paxton/.claude/skills/impeccable/scripts/detect.mjs --json <files>` (include styles.css).
 
 
 **Current release state:** the product is renamed **Treadway** with a redesigned stepping-stone

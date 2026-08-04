@@ -3,6 +3,23 @@
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
 ## 2026-07-23
+- **Impeccable-driven polish pass (critique → fixes → audit → re-critique).** Heuristic score
+  **33 → 35/40** (upper "Good"), deterministic detector **3 findings → 0**, accessibility markedly up
+  (role 0→2, tabindex 1→4, focus-visible rules 2→12). Refinement of the incumbent world, not a
+  redesign. Fixes: **(P1 contrast)** `--faint` failed WCAG AA in all three themes (dark 3.2:1, oled
+  2.8:1, light 2.8:1) — recomputed to clear 4.5:1 on real backgrounds (dark #8e908a, oled #828480,
+  light #71736d); `--muted` was already fine. **(P2 hierarchy)** the `.daystats` stat row was a
+  bordered card nested inside the day-stone card — dissolved into a borderless band with a top
+  hairline so the ring is the single hero. **(P2 discoverability)** one-time swipe "peek"
+  (`maybeSwipeHint`/`.peekhint`) nudges the first row to reveal the edit action; gated post-tour,
+  max twice, reduced-motion-safe, canceled on pointerdown. **(a11y)** task rows are now
+  `role=checkbox`/`button` + `aria-checked` + `aria-label` + `tabindex=0` with Enter/Space
+  activation and `:focus-visible` rings — the primary action is keyboard/screen-reader accessible
+  (edit/delete/reorder already had Manage-screen keyboard paths). **(P3 detector)** side-tab callout
+  → tinted; tutorial dots off `transition:width` → transform; memory blockquote 2px→1px. Verified
+  live at 375×812 in OLED + light: contrast legible, band dissolved, peek reveals, keyboard toggle
+  works, 0 console errors. sw.js → v16. `impeccable` (design skill + detector hook) is installed in
+  `~/.claude`.
 - **Spinner removed + full-bleed icon.** The loading indicator is now the branded mark (breathing,
   way redraw) via `brandLoader()`; deleted `.spin`/`.loading`/`@keyframes sp` and the spinner in
   `enterApp`. With the pre-rendered launch, no spinner ever renders. The app icon is now full-bleed
