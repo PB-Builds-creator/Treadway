@@ -2,6 +2,31 @@
 
 _Last updated: 2026-08-03. Keep prioritized; delete done items (they go to CHANGELOG)._
 
+## ⏳ ACTIVE — Visual + motion evolution (App-Store-grade; user: "make no mistakes")
+**Scope (user-chosen):** EVOLVE the visuals (richer surfaces/materials, real depth/elevation system,
+bolder-but-controlled color, redrawn components) + WEIGHTED-QUIET motion (Things/Oak/Apple — ease-out,
+short, nothing bounces) + intentional motion on EVERY button/placeholder + reorganize Settings (less
+clutter). PRESERVE the stones/path identity, structure, copy, function — evolve execution only.
+Work in verified, committed phases; both-theme browser QA each; keep detector clean; `node --check`.
+Deploy = bump sw.js + `npx surge . cairn.surge.sh`. Currently at sw.js **v16**.
+
+- [ ] **Phase 1 — Foundation (tokens/materials/depth).** Elevation shadow scale (offset+blur, layered),
+      surface top-highlight (lit-from-above material), refined surface gradients, evolved accent
+      (more luminous, still slate), frosted materials (backdrop-filter) on tab bar + sheet backdrops,
+      radii/spacing refinement. Apply to shared containers (.card/.daystone/.tabs/sheets). Verify both themes.
+- [ ] **Phase 2 — Components redraw + motion.** Buttons (primary/ghost/icon/chip): unified press +
+      depth response, no dead controls. Ring, checkbox, rows, hydration, chips refined. Every
+      placeholder/empty/loading state intentional (branded). Spatial screen transitions elevated.
+- [ ] **Phase 3 — Settings reorganization.** Group into calm labeled sections; reduce clutter; add
+      section motion. (Read settingsView first; preserve every existing action/route.)
+- [ ] **Phase 4 — Polish + verify + detector + re-critique.** Both themes, keyboard, reduced-motion,
+      0 console errors, detector clean. Update CHANGELOG/DECISIONS.
+**Guardrails:** craft-floor is the quality floor (depth shadows need offset+blur; motion exp ease-out;
+materials/blur/mask allowed when smooth). Reduced-motion must disable all new motion (blanket rule
+exists). Don't break gestures (`bindRowGestures`), sort_index ordering, or the a11y roles just added.
+Live QA gotcha: launch overlay + rAF + CSS transitions PAUSE when the preview isn't painting — remove
+`#launch` / neutralize transitions when verifying; resize to 375×812 first.
+
 ## ✅ DONE — Impeccable polish pass (critique 33 → 35/40, detector 3 → 0)
 Shipped through sw.js **v16**. All CSS-led refinement of the incumbent world (no redesign).
 Contrast (`--faint` AA in all themes), day-stone hierarchy (nested card dissolved), swipe-peek
