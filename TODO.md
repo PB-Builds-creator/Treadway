@@ -1,6 +1,16 @@
 # Treadway (formerly Trailhead, formerly Cairn) — TODO
 
-_Last updated: 2026-08-03. Keep prioritized; delete done items (they go to CHANGELOG)._
+_Last updated: 2026-08-06. Keep prioritized; delete done items (they go to CHANGELOG)._
+
+## ✅ DONE — Treadway Brief explainable AI handoff (sw.js v20)
+Weekly Trail now produces an evidence-backed local brief and a versioned model-neutral prompt. It
+shows signal strength, the source counts behind every observation, a prompt preview, and a visible
+human-in-the-loop copy boundary. Task titles/counts are disclosed in the reviewed payload; private
+Close text is excluded by default and enters only when the user checks the one-action opt-in.
+`Web/insight-engine.js` performs no fetch and has no model/API cost. `scripts/test-insight-engine.cjs`
+evaluates metrics, confidence, ranking, provenance, determinism, immutability, privacy, grounding,
+and malformed/low-evidence behavior. Dark/light card and evidence-sheet QA used synthetic data only;
+the temporary fixture was removed. See `Documentation/AI_IMPLEMENTATION_CASE_STUDY.md`.
 
 ## ✅ DONE — Visual + motion evolution (all 4 phases; critique 35 → 36/40 Excellent)
 Shipped through sw.js **v19**, detector clean throughout, both themes verified. See CHANGELOG
@@ -55,8 +65,9 @@ Live QA gotchas: launch overlay + rAF + CSS transitions are PAUSED while the pre
 Detector: `node /Users/paxton/.claude/skills/impeccable/scripts/detect.mjs --json <files>` (include styles.css).
 
 
-**Current release state:** the product is renamed **Treadway** with a redesigned stepping-stone
-mark (live, no SQL). The earned meal-plan Cheat Day UI and reminder handling remain current.
+**Current release state:** the product is named **Treadway** with a stepping-stone mark and the
+Treadway Brief explainable AI handoff (no API or SQL). The earned meal-plan Cheat Day UI and
+reminder handling remain current.
 Treadway assets are live at the original `cairn.surge.sh` origin (origin deliberately unchanged).
 The list below is real-device confirmation, per-phone reinstall/resubscription, one
 unavailable-phone partner test, one optional gesture enhancement, plus the sellability roadmap.
@@ -136,9 +147,11 @@ Staged by what blocks charging money. Ordered; do top-down. "DONE" items shipped
     treatment; contrast issues found in the polish pass are fixed. A complete VoiceOver and real-device
     touch-target audit is still required before a broad public launch.
 11. **Landing page.** `index.html` IS the app; a stranger hits a login form with no explanation.
-12. **Automated tests.** All QA is manual. A small headless suite over streak/date/cheat-day logic
-    would catch the most expensive class of regression.
-13. **`app.js` is one ~1650-line / 130KB file.** No-build-step was right for personal scale; it's
+12. **Browser regression coverage.** Repository CI, web invariants, the standalone Treadway Brief
+    evaluation suite, and the 62-test Swift core now run automatically. The remaining gap is a
+    small real-browser suite over sign-in fixtures, streak/date/Cheat Day transitions, offline
+    recovery, prompt-sheet interaction, and accessibility state.
+13. **`app.js` is one ~1750-line / 137KB file.** No-build-step was right for personal scale; it's
     the ceiling on safe change velocity. Don't split yet, but know it's the limit.
 **Tier 3 — strategic**
 14. **$99 Apple Developer** buys distribution + payment rails + the two things habit apps get paid

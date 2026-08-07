@@ -32,11 +32,17 @@ The interface uses a consistent stepping-stone visual language. Direct-manipulat
 
 The product name changed while the installed origin, auth redirects, storage keys, and push subscriptions were already in use. Customer-facing branding changed, but the `cairn.surge.sh` origin and `cairn_*` identifiers were retained to avoid a destructive migration disguised as cleanup.
 
+### AI where it creates leverage, not theater
+
+Treadway Brief extends the existing Weekly Trail with a deterministic context engine rather than adding an open-ended chatbot. It ranks patterns from seven-day evidence, exposes the source behind every insight, labels evidence coverage, and prepares a versioned prompt for a user-selected AI chat. Private Close text is excluded by default and can enter only a reviewed, user-initiated copy payload.
+
+The engine is vendor-neutral, locally executed, offline-capable, and evaluated directly in Node. This provides immediate product value while demonstrating context engineering, grounding, prompt contracts, confidence behavior, privacy defaults, and human-in-the-loop workflow design. See the dedicated [AI implementation case study](AI_IMPLEMENTATION_CASE_STUDY.md).
+
 ## Quality and release discipline
 
 - Git checkpoints preserve each focused change and its rationale.
 - A maintained changelog, decision log, project context, and prioritized TODO make handoffs explicit.
-- Repository checks cover JavaScript syntax, PWA metadata/assets, privacy links, secret boundaries, and the tested Swift domain package.
+- Repository checks cover JavaScript syntax, PWA metadata/assets, privacy links, secret boundaries, the Treadway Brief evaluation contract, and the tested Swift domain package.
 - Live deployments are compared against local assets after meaningful releases.
 - Unverified device-specific behavior is listed rather than implied.
 
@@ -46,11 +52,11 @@ Treadway is openly AI-assisted and owner-directed. Paxton Raithel defines the us
 
 ## Current outcome
 
-The project demonstrates a complete vertical slice: product framing, interaction design, state and recurrence logic, offline behavior, authentication, authorization policies, data lifecycle controls, scheduled notifications, deployment, and operational documentation. It also demonstrates judgment about what not to claim: Treadway is not presented as commercially launch-ready, legally cleared, or fully real-device automated.
+The project demonstrates a complete vertical slice: product framing, interaction design, state and recurrence logic, offline behavior, authentication, authorization policies, data lifecycle controls, scheduled notifications, explainable AI context preparation, evaluation, deployment, and operational documentation. It also demonstrates judgment about what not to claim: Treadway is not presented as commercially launch-ready, legally cleared, autonomously intelligent, or fully real-device automated.
 
 ## Next milestones
 
-1. Add browser-level regression tests for the most expensive state transitions.
+1. Add browser-level regression tests for the most expensive state transitions and downstream prompt-response evaluations when a model is connected.
 2. Complete real-iPhone gesture, accessibility, safe-area, and notification validation.
 3. Separate the product landing experience from the access-gated application.
 4. Plan a branded-domain migration across auth, PWA installation, and push subscriptions.

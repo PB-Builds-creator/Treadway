@@ -7,6 +7,7 @@ Treadway is a static, installable PWA with a Supabase backend. Its design goal i
 ```text
 Browser / installed PWA
   ├─ app.js: state, rendering, recurrence, gestures, offline mutations
+  ├─ insight-engine.js: deterministic evidence, confidence, prompt contract
   ├─ styles.css: theme, layout, materials, motion, reduced motion
   ├─ service worker: versioned application shell
   └─ localStorage: account-scoped cache, preferences, bounded error buffer
@@ -27,6 +28,19 @@ Supabase
 `Web/app.js` keeps one in-memory state mirror and rebuilds the active view from that state. Mutations update the UI optimistically, write an account-scoped local cache, and then write to Supabase. Failed writes enter a local outbox for retry after connectivity returns.
 
 Because `render()` replaces the application DOM, animation state that must cross a render lives in JavaScript rather than in transient nodes. Row completion and reordering use FLIP-style measurements; pointer movement is coalesced to one paint per animation frame. New motion is limited to transform and opacity and is disabled under `prefers-reduced-motion`.
+
+## Explainable AI handoff
+
+`Web/insight-engine.js` consumes a bounded seven-day contract and returns metrics, confidence, ranked observations, an evidence ledger, privacy metadata, and a versioned prompt. It is a pure deterministic layer: it performs no fetch, reads no storage, mutates no product state, and makes no model call. The same source runs in the browser and in Node evaluation.
+
+The Week view constructs the contract from the existing state mirror. Treadway Close timestamps contribute reflection coverage, but reflective prose is omitted from the prompt unless the user checks a one-action opt-in. The complete payload can be previewed before a user-initiated clipboard copy. This separates four concerns that would otherwise be easy to blur:
+
+1. product facts and calendar rules;
+2. deterministic pattern selection;
+3. model instructions and context formatting;
+4. the user's choice of model/provider and send action.
+
+The current feature therefore has no inference cost, background CPU work, provider lock-in, API credential, or new server data. A future direct model integration must retain this context contract and add an explicit provider/consent/retention/failure review rather than bypassing it.
 
 ## Time and recurrence
 

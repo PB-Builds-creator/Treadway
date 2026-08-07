@@ -3,6 +3,18 @@
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
 ## 2026-08-06
+- **Treadway Brief — explainable AI handoff.** Weekly Trail now ends with a locally generated,
+  confidence-labeled brief whose observations expose their exact evidence and source. A versioned
+  `treadway-weekly-coach-v1` contract prepares a constrained prompt for any user-selected AI chat;
+  it forbids invented motives/diagnoses/events, requests one pattern + one seven-day experiment +
+  one non-judgmental question, and caps the response. Nothing is transmitted automatically. Task
+  titles and counts are visible in the reviewed copy payload; private Close text is excluded by
+  default and enters only through a one-action checkbox. The pure browser/Node engine has no API,
+  dependency, background CPU, database, or inference cost. Evaluation covers exact metrics,
+  confidence, ranking, evidence provenance, determinism, immutability, privacy opt-in/out,
+  grounding/prompt-injection instructions, bounded context, and malformed/low-evidence inputs. Dark/light card and evidence-sheet
+  QA used synthetic data only; a portfolio screenshot and AI implementation case study document
+  the feature. Shell cache advanced to v20.
 - **Public portfolio readiness.** Repositioned the repository around the deployed Treadway PWA,
   separated the Cairn-named SwiftUI prototype as a native research track, and added synthetic-data
   product screenshots, a code-native banner, web architecture, an engineering case study, MIT license,

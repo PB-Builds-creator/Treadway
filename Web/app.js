@@ -1051,6 +1051,55 @@ function dayBackfillSheet(ymd){
 function prettyMonthRange(start){const a=ymdToUTC(start),b=ymdToUTC(addDays(start,6));
   const f=d=>d.toLocaleDateString("en-US",{month:"short",day:"numeric",timeZone:"UTC"});return `${f(a)} – ${f(b)}`;}
 
+/* ---------- Treadway Brief ----------
+   A model-neutral, explainable context layer over the existing Weekly Trail.
+   Nothing is sent anywhere: the user reviews the evidence and explicitly copies
+   a prompt. Close text is excluded unless they opt in for that one copy action. */
+function weeklyBriefInput(){
+  const t=todayStr(),days=[],tasks={},reflections=[];
+  for(let i=6;i>=0;i--){const ymd=addDays(t,-i),protectedDay=isProtected(ymd),f=dayFraction(ymd),c=closeFor(ymd);
+    days.push({day:ymd,scheduled:protectedDay?0:f.total,completed:protectedDay?0:f.done,held:daySuccess(ymd),protected:protectedDay,closed:!!c.closedAt,waterGoalMet:state.goalOz>0&&hydOz(ymd)>=state.goalOz});
+    if(c.win||c.text||c.tomorrow)reflections.push({day:ymd,win:c.win,line:c.text,tomorrow:c.tomorrow});
+    if(protectedDay)continue;
+    for(const tk of dueTasks(ymd)){const item=tasks[tk.id]||(tasks[tk.id]={id:tk.id,title:tk.title,scheduled:0,completed:0});
+      item.scheduled++;if(isSatisfiedStatus(statusOf(ymd,tk.id)))item.completed++;}
+  }
+  return{range:`${addDays(t,-6)} to ${t}`,days,tasks:Object.values(tasks),reflections};
+}
+function weeklyBrief(includePrivateText=false){
+  if(!window.TreadwayBrief)return null;
+  return window.TreadwayBrief.analyzeWeek(weeklyBriefInput(),{includePrivateText});
+}
+function weeklyBriefCard(){const brief=weeklyBrief(false);if(!brief)return "";
+  const lead=brief.insights.find(x=>x.kind==="focus")||brief.insights[0],leadText=lead?(lead.kind==="focus"?`${lead.title}. ${lead.detail}`:lead.detail):"Complete a few markers to build a useful signal.";
+  return `<button class="briefcard" data-act="weekly-brief" aria-label="Review the explainable Treadway Brief">
+    <div class="brieftop"><span>AI-ready weekly brief</span><i>LOCAL · ${escapeHtml(brief.confidence.label)}</i></div>
+    <h4>${escapeHtml(brief.headline)}</h4>
+    <p>${escapeHtml(leadText)}</p>
+    <div class="brieffoot"><span>${brief.metrics.scheduled} observations · nothing sent</span><b>Review evidence ›</b></div>
+  </button>`;}
+async function copyPlainText(value){
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(value);return true;}}
+  catch(_){}
+  try{const ta=document.createElement("textarea");ta.value=value;ta.setAttribute("readonly","");ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();const ok=document.execCommand("copy");ta.remove();return ok;}catch(_){return false;}
+}
+function weeklyBriefSheet(){let includePrivate=false;
+  const s=openSheet(`<span class="sheeteyebrow">Treadway Brief</span><h3>Evidence before advice.</h3><p class="closeprompt">A local, deterministic context layer prepares a grounded coaching prompt. It never calls a model or sends data on its own.</p><div id="brief-sheet-body"></div>`);
+  const mount=s.bg.querySelector("#brief-sheet-body");
+  function paint(){const brief=weeklyBrief(includePrivate);if(!brief){mount.innerHTML='<div class="empty">The brief engine is unavailable.</div>';return;}
+    mount.innerHTML=`<div class="briefconfidence"><span>${escapeHtml(brief.confidence.label)}</span><b>${escapeHtml(brief.confidence.reason)}</b></div>
+      <div class="briefinsights">${brief.insights.map(item=>`<article><span>${escapeHtml(item.kind)}</span><h4>${escapeHtml(item.title)}</h4><p>${escapeHtml(item.detail)}</p><details><summary>Why this appeared</summary>${item.evidence.map(ev=>`<div><b>${escapeHtml(ev.label)}</b><span>${escapeHtml(ev.value)}</span><small>${escapeHtml(ev.source)}</small></div>`).join("")}</details></article>`).join("")}</div>
+      <label class="briefprivacy"><input type="checkbox" id="brief-private" ${includePrivate?"checked":""}><span><b>Include my private Close text</b><small>Off by default. Task titles and weekly counts are already in the reviewed prompt; Close wins, honest lines, and intentions are added only when checked.</small></span></label>
+      <div class="briefboundary"><b>Human-in-the-loop boundary</b><span>${escapeHtml(brief.privacy.statement)} Nothing leaves Treadway until you tap Copy.</span></div>
+      <button class="btn" id="brief-copy">Copy prompt for an AI chat</button><button class="swap" id="brief-preview">Preview exactly what will be copied</button>
+      <pre class="briefprompt" id="brief-prompt" hidden>${escapeHtml(brief.prompt)}</pre>`;
+    mount.querySelector("#brief-private").onchange=e=>{includePrivate=e.target.checked;paint();};
+    mount.querySelector("#brief-preview").onclick=()=>{const pre=mount.querySelector("#brief-prompt"),show=pre.hidden;pre.hidden=!show;mount.querySelector("#brief-preview").textContent=show?"Hide prompt preview":"Preview exactly what will be copied";};
+    mount.querySelector("#brief-copy").onclick=async()=>{const ok=await copyPlainText(brief.prompt);showToast(ok?"Grounded prompt copied":"Couldn't copy the prompt");};
+  }
+  paint();
+}
+
 /* ---------- History ---------- */
 function historyView(){const t=todayStr();let cells="",schedTot=0,doneTot=0;
   for(let i=29;i>=0;i--){const ymd=addDays(t,-i),f=dayFraction(ymd);schedTot+=f.total;doneTot+=f.done;
@@ -1101,7 +1150,7 @@ function weeklyTrail(){
       ${quotes.length?`<div class="trailmemories"><span>What stayed with you</span>${quotes.slice(-3).map(q=>`<blockquote><small>${q.day} · ${q.kind}</small>${escapeHtml(q.text)}</blockquote>`).join("")}</div>`:""}
       ${next?`<div class="trailnext"><span>Tomorrow’s first stone</span><b>${escapeHtml(next)}</b></div>`:""}
       <small class="trailbasis">Task edits reshape this rolling view.</small>
-    </div></section>`;
+    </div>${weeklyBriefCard()}</section>`;
 }
 async function exportNotes(){let r=await SB.from("notes").select("day,text,close_data").order("day");
   if(r.error&&/close_data/i.test((r.error.message||"")+" "+(r.error.details||"")))r=await SB.from("notes").select("day,text").order("day");
@@ -1337,6 +1386,7 @@ function handle(act,el,e){
   if(act==="openapp"){if(e)e.stopPropagation();const u=el.dataset.url;if(u)window.open(u,"_blank");return;}
   if(act==="savestreak"){saveStreak();return;}
   if(act==="editday"){dayBackfillSheet(el.dataset.ymd);return;}
+  if(act==="weekly-brief"){weeklyBriefSheet();return;}
   if(act==="measure"){const tk=state.tasks.find(x=>x.id===el.dataset.id);const cur=valueFor(el.dataset.id,todayStr());
     const v=prompt(`How many ${tk?tk.measureUnit:""}?`,cur||"");if(v!==null&&v!=="")mSetValue(el.dataset.id,todayStr(),parseFloat(v));return;}
   if(act==="toggle"){const id=el.dataset.id,t=todayStr();const completing=!isSatisfiedStatus(statusOf(t,id));mSetStatus(id,t,completing?"done":null);haptic(completing?"success":"light");}
@@ -1411,6 +1461,7 @@ function privacySheet(){
     <div class="trustlist"><div><i>◆</i><span><b>Your account is the boundary.</b><small>Supabase row-level rules keep each member's records separate.</small></span></div>
       <div><i>◆</i><span><b>No ads. No analytics.</b><small>Treadway has no ad network or behavioral tracking SDK.</small></span></div>
       <div><i>◆</i><span><b>Partner sharing stays narrow.</b><small>Name, daily counts, and a fixed Proud nudge only. Never tasks or journal text.</small></span></div>
+      <div><i>◆</i><span><b>The AI handoff stays in your control.</b><small>Treadway Brief runs locally and sends nothing. You review and copy the prompt; private Close text is off by default.</small></span></div>
       <div><i>◆</i><span><b>Honest limitation.</b><small>Your journal is access-controlled and sent over HTTPS, but it is not end-to-end encrypted.</small></span></div></div>
     <button class="btn ghost" id="dp-export">Download my data</button><button class="btn ghost" id="dp-password">Change password</button>
     <button class="swap privacylink" id="dp-policy">Read the privacy policy</button>

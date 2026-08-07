@@ -1,21 +1,38 @@
 # Treadway (formerly Trailhead, formerly Cairn) — Project Context
 
 _Handoff doc. Read this + TODO.md + DECISIONS.md + CHANGELOG.md, then the code._
-_Last updated: 2026-08-03._
+_Last updated: 2026-08-06._
 
-**Current handoff checkpoint:** Treadway is being prepared as an honest public portfolio repository.
-The deployed PWA remains the primary product; the older Cairn SwiftUI code is now described as a
-separate native research track rather than as the repository lead. Public-facing README, screenshots
-from synthetic data, MIT license, security/contribution policies, web architecture, case study, Node
-verification, and GitHub Actions were added on 2026-08-06. A pre-existing Swift test compile error in
-`ArchiveSeedTests` was corrected; `swift test` now executes 62 passing tests, `cairncore-verify` reports
-57/57, and the macOS local-only Xcode target builds. No production data or private secret was added.
-The product remains named **Treadway** (renamed from Trailhead, which collided with Salesforce).
-No SQL or manual Supabase step is pending. Treat the first release section as current truth and
+**Current handoff checkpoint:** the public portfolio repository now includes **Treadway Brief**, an
+explainable, local context layer over Weekly Trail. `Web/insight-engine.js` deterministically converts
+seven-day product facts into confidence-labeled observations, evidence provenance, and the versioned
+`treadway-weekly-coach-v1` prompt contract. It makes no model/network call. The user reviews the exact
+payload and explicitly copies it; private Close text is excluded unless checked for that one action.
+The production engine is evaluated directly by `scripts/test-insight-engine.cjs`, and the portfolio
+documentation includes an AI implementation case study plus a synthetic-data screenshot. The
+deployed PWA remains the primary product; the older Cairn SwiftUI code remains a separate native
+research track. The repository is public at `PB-Builds-creator/Treadway`, with local and remote branch
+`main`. No production data, private secret, SQL migration, Supabase change, API key, analytics event,
+or new persistent permission is involved. The product remains named **Treadway** (renamed from
+Trailhead, which collided with Salesforce). Treat the first release section as current truth and
 `PRIOR RELEASE` sections as historical implementation context. The product name is a user-directed
 working brand only — NOT a cleared trademark (see DECISIONS + TODO).
 
-## LATEST RELEASE — public portfolio readiness
+## LATEST RELEASE — Treadway Brief explainable AI handoff
+Weekly Trail now ends with a calm AI-ready brief that reports evidence coverage and a locally derived
+next pattern. Opening it shows three bounded observations, the exact counts behind each conclusion,
+and their data sources. The copy payload includes task titles and weekly counts; Close wins, honest
+lines, and tomorrow intentions remain excluded by default and require a visible checkbox. Nothing is
+automatically transmitted, and the provider-neutral prompt can be previewed before copying.
+
+The engine is a pure browser/Node file with no dependencies or build step. Evaluation covers exact
+metrics, confidence levels, ranking, evidence provenance, determinism, input immutability, default
+privacy exclusion, explicit opt-in inclusion, anti-fabrication/prompt-injection instructions,
+bounded context, and empty/malformed inputs. The shell cache is v20 and includes
+`insight-engine.js`. Visual QA used only the temporary
+synthetic fixture, which must remain absent from commits and deployment.
+
+## PRIOR RELEASE — public portfolio readiness
 The repository now presents the live Treadway PWA first, includes authentic synthetic-data UI
 screenshots, distinguishes verified behavior from device-only checks, and explains the system through
 a web architecture document and product-engineering case study. Public safeguards include an MIT
@@ -189,7 +206,8 @@ There are **two deliverables**:
 ## Web app — architecture
 - **No framework, no build step.** Plain static files served by Surge.
   - `Web/index.html` — shell; loads Supabase UMD from CDN, `config.js`, `styles.css`, `app.js`; registers `sw.js`.
-  - `Web/app.js` — the ENTIRE app (~1600 lines, vanilla JS). State + logic + all screens.
+  - `Web/app.js` — main app (~1750 lines, vanilla JS). State, product logic, and screens.
+  - `Web/insight-engine.js` — pure Treadway Brief evidence/prompt engine; browser + Node.
   - `Web/styles.css` — design system via CSS custom properties (tokens).
   - `Web/config.js` — Supabase URL + publishable key + VAPID public key (all safe to expose).
   - `Web/sw.js` — service worker: network-first shell cache + web-push handlers.
@@ -230,7 +248,7 @@ There are **two deliverables**:
 - **Edge fn deploy:** `cd /Users/paxton/Cairn && supabase functions deploy send-reminders --project-ref bckcawaiyybrjsphiqdc --no-verify-jwt --use-api`
 - **Trigger reminder fn (test):** `curl -X POST https://bckcawaiyybrjsphiqdc.supabase.co/functions/v1/send-reminders -H "x-cron-secret: <CRON_SECRET>"` → `{"ok":true,...,"sent":N}`
 - **Secrets (NOT in Web/, never deploy):** `Cairn/vapid-private-KEEP-SECRET.txt` (VAPID public/private, CRON_SECRET). Gitignored via `*KEEP-SECRET*` — keep it that way.
-- **Version control:** local git repo (no remote). Baseline commit `9f7f24b`, 2026-07-22.
+- **Version control:** local `main` tracks `origin/main` at `https://github.com/PB-Builds-creator/Treadway.git`. Baseline commit `9f7f24b`, 2026-07-22.
   Commit before risky edits; `git diff`/`git checkout -- <file>` is the rollback path for
   `Web/app.js`. Ignored: `.build/` (113M), `Cairn.xcodeproj/` (XcodeGen output), secrets, `.DS_Store`.
 - **SQL migrations** live in `Cairn/*.sql`. `cairn-product-upgrade.sql` is already active in the

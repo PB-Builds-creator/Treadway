@@ -10,12 +10,14 @@ Treadway is a private, installable daily-discipline app that turns routines into
 
 **Status:** working private beta, actively developed and used on real devices. The public deployment is access-gated; the repository documents the product and its engineering honestly while broader onboarding, automated browser coverage, and commercial infrastructure remain on the roadmap.
 
-[Open the live app](https://cairn.surge.sh) · [Read the case study](Documentation/PORTFOLIO_CASE_STUDY.md) · [Explore the architecture](Documentation/WEB_ARCHITECTURE.md) · [View current status](Documentation/DEVELOPMENT_STATUS.md)
+[Open the live app](https://cairn.surge.sh) · [Read the product case study](Documentation/PORTFOLIO_CASE_STUDY.md) · [Explore the AI implementation](Documentation/AI_IMPLEMENTATION_CASE_STUDY.md) · [View the architecture](Documentation/WEB_ARCHITECTURE.md)
 
 <p align="center">
-  <img src="Documentation/assets/treadway-today.jpg" width="360" alt="Treadway Today view with progress, an earned reward tracker, hydration, and the daily path">
-  &nbsp;&nbsp;
-  <img src="Documentation/assets/treadway-settings.jpg" width="360" alt="Treadway Settings view with grouped preferences, reminders, account, privacy, and learning controls">
+  <img src="Documentation/assets/treadway-today.jpg" width="285" alt="Treadway Today view with progress, an earned reward tracker, hydration, and the daily path">
+  &nbsp;
+  <img src="Documentation/assets/treadway-brief.jpg" width="285" alt="Treadway Weekly Trail and local explainable AI-ready brief">
+  &nbsp;
+  <img src="Documentation/assets/treadway-settings.jpg" width="285" alt="Treadway Settings view with grouped preferences, reminders, account, privacy, and learning controls">
 </p>
 
 ## What it does
@@ -23,6 +25,7 @@ Treadway is a private, installable daily-discipline app that turns routines into
 - Builds recurring daily and weekly routines with custom ordering, priorities, reminders, measurements, and deep links.
 - Tracks hydration, streaks, rest days, saved days, history, and rolling weekly progress in Mountain Time with DST-safe date handling.
 - Adds a short **Treadway Close** ritual: one win, one honest line, and tomorrow's first stone.
+- Turns seven-day product evidence into an explainable, confidence-labeled **Treadway Brief** and a privacy-controlled prompt for any AI chat—without an API or automatic data sharing.
 - Supports an earned **Cheat Day** state for meal-plan consistency without falsely counting the reward as another disciplined day.
 - Syncs across devices through Supabase while preserving a local cache and queued offline writes.
 - Keeps partner accountability intentionally narrow: a fixed “proud of you” signal and aggregate daily status, never tasks or journal text.
@@ -38,6 +41,7 @@ Treadway is intentionally framework-free on the client. A compact vanilla JavaSc
 - optimistic local mutations with a durable offline outbox and server reconciliation;
 - transform/opacity-only motion, frame-batched gestures, and reduced-motion fallbacks;
 - explicit separation between private reflections and partner-visible aggregate signals;
+- a deterministic context engine with evidence provenance, versioned prompt contracts, private-text opt-in, and a human-controlled AI handoff;
 - stable compatibility identifiers across product renames so existing sessions and installed PWAs keep working.
 
 ## Architecture at a glance
@@ -45,6 +49,7 @@ Treadway is intentionally framework-free on the client. A compact vanilla JavaSc
 ```text
 Installed PWA
   ├─ Vanilla JS state + deterministic date/recurrence logic
+  ├─ Explainable weekly context + model-neutral prompt contract
   ├─ Local cache + offline write queue
   ├─ CSS/Web Animations interaction system
   └─ Supabase client
@@ -74,7 +79,7 @@ npm test
 cd CairnCore && swift test && swift run cairncore-verify
 ```
 
-The web verification checks JavaScript syntax, required PWA assets and metadata, privacy links, cache-version consistency, secret placeholders, and repository invariants. `CairnCore` exercises recurrence, Mountain-Time/DST behavior, hydration, streaks, notification planning, seed/archive behavior, and sync merging.
+The web verification checks JavaScript syntax, required PWA assets and metadata, privacy links, cache-version consistency, secret placeholders, repository invariants, and the Treadway Brief's grounding, confidence, determinism, edge-case, and private-text boundaries. `CairnCore` exercises recurrence, Mountain-Time/DST behavior, hydration, streaks, notification planning, seed/archive behavior, and sync merging.
 
 Some interaction quality can only be confirmed on hardware. Current device-only checks are listed in [Development Status](Documentation/DEVELOPMENT_STATUS.md); automated checks are never presented as proof of real iPhone touch feel, notification delivery, or frame pacing.
 
@@ -84,6 +89,7 @@ The screenshots above use a local synthetic portfolio profile containing no prod
 
 ```text
 Web/                       Deployed Treadway PWA
+  insight-engine.js        Pure explainable context and prompt engine
 supabase/functions/        Reminder and account-deletion Edge Functions
 Documentation/             Architecture, status, and portfolio case study
 CairnCore/                  Tested Foundation-only domain package

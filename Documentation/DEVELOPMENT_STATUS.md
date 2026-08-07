@@ -12,11 +12,22 @@ hydration, streak/rest/save behavior, Treadway Close, Weekly Trail, earned Cheat
 narrow partner accountability, data export/deletion, themes, a guided tutorial, and
 scheduled web-push reminders.
 
+Weekly Trail now includes Treadway Brief: a deterministic, locally executed context engine that
+shows confidence and evidence provenance before preparing a versioned prompt for a user-chosen AI
+chat. It makes no model/network call, excludes private Close text by default, and requires an
+explicit copy action. The production engine has a Node evaluation suite covering exact metrics,
+ranking, grounding instructions, privacy opt-in/out, determinism, immutability, and edge cases.
+
 Desktop browser QA has covered 375×812 containment, light/OLED presentation, major
 state transitions, keyboard task activation, reduced-motion handling, and clean console
 behavior. The repository now adds repeatable syntax/PWA invariant checks. Real-iPhone
 gesture feel, safe-area pacing, VoiceOver, and end-to-end push delivery remain explicit
 manual checks; they are not implied by desktop or unit tests.
+
+Treadway Brief card and sheet presentation were visually checked with synthetic data in dark and
+light themes. Its prompt privacy behavior was inspected at runtime: default output omitted all
+Close prose, and the opt-in payload included it. Clipboard behavior still depends on the browser/
+OS permission surface and should be confirmed once on the installed iPhone PWA after deployment.
 
 ### Native Apple prototype — secondary research track
 

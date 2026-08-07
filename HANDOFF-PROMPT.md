@@ -1,11 +1,13 @@
 # Historical Cairn animation prompt — superseded
 
 > **Do not use the old mission below as current project direction.** The active product is now
-> **Trailhead** at `https://cairn.surge.sh`; the identity, Today overhaul, professional tutorial,
-> account/privacy work, partner nudge, gesture performance pass, and earned meal-plan Cheat Days
-> are already implemented. Start with `PROJECT_CONTEXT.md`, `TODO.md`, `DECISIONS.md`, and
-> `CHANGELOG.md`; those maintained files are authoritative. This document remains only as a record
-> of the animation brief that created an earlier release.
+> **Treadway** at `https://cairn.surge.sh`; the identity, Today overhaul, professional tutorial,
+> account/privacy work, partner nudge, gesture performance pass, earned meal-plan Cheat Days, public
+> portfolio package, and Treadway Brief explainable AI handoff are already implemented. Start with
+> `PROJECT_CONTEXT.md`, `TODO.md`, `DECISIONS.md`, `CHANGELOG.md`, and
+> `Documentation/AI_IMPLEMENTATION_CASE_STUDY.md`; those maintained files are authoritative. The
+> AI boundary is deliberate: no automatic model call, private Close text off by default, and a
+> user-reviewed copy action. This document remains only as a record of an earlier animation brief.
 
 # Cairn — Animation & Polish Handoff Prompt (historical)
 

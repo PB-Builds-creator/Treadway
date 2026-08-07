@@ -2,8 +2,8 @@
    when online, with a cached fallback so the app still opens offline. Supabase
    API calls are never intercepted (they hit the network; offline writes are
    handled by the app's outbox). Bump CACHE to force a clean refresh. */
-const CACHE = "treadway-shell-v19";
-const SHELL = ["./", "index.html", "privacy.html", "setup.html", "styles.css", "app.js", "config.js", "manifest.webmanifest", "icon.svg", "icon-180.png", "icon-192.png", "icon-512.png"];
+const CACHE = "treadway-shell-v20";
+const SHELL = ["./", "index.html", "privacy.html", "setup.html", "styles.css", "insight-engine.js", "app.js", "config.js", "manifest.webmanifest", "icon.svg", "icon-180.png", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

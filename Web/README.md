@@ -14,6 +14,7 @@ This folder is the deployed, installable Treadway PWA. It is a static client bac
 ```text
 index.html             application shell and first paint
 app.js                 state, auth, data, views, gestures, and offline behavior
+insight-engine.js      pure weekly evidence and model-neutral prompt contract
 styles.css             responsive design system and motion
 config.js              public browser configuration only
 manifest.webmanifest   installed-PWA metadata
@@ -44,4 +45,4 @@ Changing the origin is a migration, not a cosmetic rename. It must update Supaba
 
 ## Verification
 
-From the repository root, run `npm test`. After a meaningful deployment, compare the live assets with the local release and perform the device-specific checks listed in `Documentation/DEVELOPMENT_STATUS.md`.
+From the repository root, run `npm test`. This includes the production Treadway Brief engine's grounding, evidence, confidence, determinism, edge-case, and private-text evaluation. After a meaningful deployment, compare the live assets with the local release and perform the device-specific checks listed in `Documentation/DEVELOPMENT_STATUS.md`.

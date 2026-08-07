@@ -1,6 +1,17 @@
 # Treadway (formerly Trailhead, formerly Cairn) — Key Decisions
 
-_Last updated: 2026-08-03. Brief rationale for choices that aren't obvious from the code._
+_Last updated: 2026-08-06. Brief rationale for choices that aren't obvious from the code._
+
+- **The AI seam is deterministic and human-controlled before it is model-powered.** Treadway
+  already owns the facts and rules needed for a useful Weekly Trail, so a free-form chatbot would
+  add privacy, cost, latency, and hallucination risk without improving those computations.
+  `insight-engine.js` therefore normalizes a bounded seven-day contract, ranks patterns, attaches
+  evidence provenance, labels signal coverage, and produces the versioned
+  `treadway-weekly-coach-v1` prompt locally. It never fetches or persists. Task titles/counts are
+  visible in the reviewed copy payload; Close prose is excluded by default and may be included
+  only through a non-persistent, one-action checkbox. A direct local/hosted model may later sit
+  behind the same contract, but only after a separate provider, consent, retention, failure, cost,
+  and response-evaluation decision. Do not turn this into an ambient chatbot or silently send it.
 
 - **Renamed Trailhead → Treadway (2026-07-23), user-directed.** Trailhead collides head-on with
   Salesforce's active Trailhead/Trailhead GO brand — a launch-blocking conflict flagged in the
@@ -103,9 +114,11 @@ _Last updated: 2026-08-03. Brief rationale for choices that aren't obvious from 
   features that matter (widgets, Health) and per-device install friction; the web PWA gives
   sync + logins + reminders + home-screen install for free. Native is a "later" path.
 
-- **No framework / no build step for the web app.** One `app.js` served statically. Keeps the
-  project trivially deployable (Surge drag/CLI), easy to reason about, zero toolchain rot. Cost:
-  a large single file and manual DOM rebuilds — accepted for a personal-scale app.
+- **No framework / no build step for the web app.** `app.js` plus the pure
+  `insight-engine.js` are served as ordinary scripts. The second file is a deliberate test seam,
+  not a framework migration: the same deterministic engine can run in Node evaluation without
+  importing DOM/Supabase state. This keeps deployment trivial and avoids toolchain rot while the
+  main app still pays the accepted cost of a large renderer and manual DOM rebuilds.
 
 - **Optimistic local `state` + fire-and-forget sync + offline outbox.** UI updates instantly
   from an in-memory `state` mirrored to localStorage; writes push to Supabase in the background

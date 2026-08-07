@@ -2,7 +2,7 @@
 
 ## Supported version
 
-Security fixes target the current `master` branch and the deployment at `https://cairn.surge.sh`.
+Security fixes target the current `main` branch and the deployment at `https://cairn.surge.sh`.
 
 ## Reporting a vulnerability
 
