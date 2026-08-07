@@ -3,14 +3,29 @@
 _Handoff doc. Read this + TODO.md + DECISIONS.md + CHANGELOG.md, then the code._
 _Last updated: 2026-08-03._
 
-**Current handoff checkpoint:** the product is now named **Treadway** (renamed from Trailhead,
-which collided with Salesforce). The rename + mark redesign is the newest release; the earned
-meal-plan Cheat Day and identity work below it are intact and current in behavior. No SQL or
-manual Supabase step is pending. Treat the LATEST RELEASE sections as current truth and
+**Current handoff checkpoint:** Treadway is being prepared as an honest public portfolio repository.
+The deployed PWA remains the primary product; the older Cairn SwiftUI code is now described as a
+separate native research track rather than as the repository lead. Public-facing README, screenshots
+from synthetic data, MIT license, security/contribution policies, web architecture, case study, Node
+verification, and GitHub Actions were added on 2026-08-06. A pre-existing Swift test compile error in
+`ArchiveSeedTests` was corrected; `swift test` now executes 62 passing tests, `cairncore-verify` reports
+57/57, and the macOS local-only Xcode target builds. No production data or private secret was added.
+The product remains named **Treadway** (renamed from Trailhead, which collided with Salesforce).
+No SQL or manual Supabase step is pending. Treat the first release section as current truth and
 `PRIOR RELEASE` sections as historical implementation context. The product name is a user-directed
 working brand only — NOT a cleared trademark (see DECISIONS + TODO).
 
-## LATEST RELEASE — Treadway rename + stepping-stone mark
+## LATEST RELEASE — public portfolio readiness
+The repository now presents the live Treadway PWA first, includes authentic synthetic-data UI
+screenshots, distinguishes verified behavior from device-only checks, and explains the system through
+a web architecture document and product-engineering case study. Public safeguards include an MIT
+license, responsible-disclosure policy, contribution rules, tightened ignore patterns, an automated
+web invariant check, and GitHub Actions for both web and Swift core verification. The public Supabase
+publishable key remains intentionally visible browser configuration; private VAPID/cron material is
+ignored and was not found in Git history. Normal product work should continue in this repository;
+commits pushed to the same GitHub remote update the existing portfolio URL and LinkedIn links.
+
+## PRIOR RELEASE — Treadway rename + stepping-stone mark
 Renamed Trailhead → **Treadway** across all user-visible copy and assets. The identity's metaphor
 changed with the name: the mark is now **four flat stones stepping into the distance along a
 rising path** (a treadway = a trail's walking surface) instead of a vertical cairn stack. `icon.svg`

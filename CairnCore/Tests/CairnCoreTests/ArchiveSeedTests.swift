@@ -92,6 +92,6 @@ final class AsiaSessionTests: XCTestCase {
     func testNoSessionSaturdayReturnsSunday() {
         let sat = FixedClock(mountain: 2026, month: 7, day: 25, hour: 19).now
         let next = session.nextSession(now: sat)
-        XCTAssertEqual(next?.start.map { MountainTime.day(for: $0) }, CalendarDay(year: 2026, month: 7, day: 26))
+        XCTAssertEqual(next.map { MountainTime.day(for: $0.start) }, CalendarDay(year: 2026, month: 7, day: 26))
     }
 }

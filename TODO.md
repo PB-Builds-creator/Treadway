@@ -31,11 +31,10 @@ Deploy = bump sw.js + `npx surge . cairn.surge.sh`. Currently at sw.js **v16**.
 - [x] **Phase 3 — Settings reorganization.** DONE (commit 9c4ab5b, sw.js v19). Flat 13-row list →
       5 iOS grouped section cards (Your day/Appearance/Reminders/Account/Learn) via `.setsection`/
       `.setlabel`/`.setcard` + staggered entrance. All data-acts + #remVal/#themeLbl preserved.
-- [ ] **Phase 4 — Polish + verify + detector + re-critique.** Remaining: verify light-theme Settings
-      + reduced-motion + keyboard on the new surfaces; run /impeccable critique to re-score (was 35/40);
-      confirm the visual evolution reads cohesive end-to-end; final CHANGELOG/DECISIONS. Detector already
-      clean through v19. Optional reworks the user OK'd for later: frosted sheet backdrop, secondary-button
-      depth, richer empty-state motion, apply grouped-card pattern to Manage/other sheets if desired.
+- [x] **Phase 4 — Polish + verify + detector + re-critique.** Completed in `7069c6f`; light/OLED,
+      reduced-motion, keyboard behavior, detector, cohesion review, CHANGELOG, and DECISIONS were closed out.
+      Optional later refinements remain: frosted sheet backdrop, secondary-button depth, richer empty-state
+      motion, and the grouped-card pattern in Manage/other sheets.
 **Guardrails:** craft-floor is the quality floor (depth shadows need offset+blur; motion exp ease-out;
 materials/blur/mask allowed when smooth). Reduced-motion must disable all new motion (blanket rule
 exists). Don't break gestures (`bindRowGestures`), sort_index ordering, or the a11y roles just added.
@@ -94,11 +93,11 @@ If a gesture fails, the likely culprit is touch-scroll stealing the gesture — 
 non-passive `touchmove` blocker in `bindRowGestures` (app.js) and `touch-action` on `.rowwrap`.
 
 ## Blocked / waiting on a phone
-- **Paxton's phone:** open `https://cairn.surge.sh` once so the new shell loads. Delete the old
-  Cairn Home Screen icon, then in Safari use Share → Add to Home Screen, confirm the name is
-  **Trailhead**, and add it. Open Trailhead, sign in if asked, then go to Settings → Reminders and
+- **Paxton's phone:** open `https://cairn.surge.sh` once so the new shell loads. Delete any old
+  Cairn or Trailhead Home Screen icon, then in Safari use Share → Add to Home Screen, confirm the name is
+  **Treadway**, and add it. Open Treadway, sign in if asked, then go to Settings → Reminders and
   turn reminders off/back on. Removing the shortcut does not delete synced account data.
-- **Her phone, whenever available:** do the same Cairn-icon removal, Trailhead re-add, and
+- **Her phone, whenever available:** do the same old-icon removal, Treadway re-add, and
   reminders off/on cycle, then complete the
   in-app six-digit pairing flow and real two-phone Proud nudge/quiet-hours/lock-screen test above.
   The owner is currently unlinked and her account ID is not documented, so do not guess among
@@ -133,8 +132,9 @@ Staged by what blocks charging money. Ordered; do top-down. "DONE" items shipped
    Can be drafted in-repo (matches privacy.html), owner gets it reviewed before charging.
 9. **Analytics.** None. Privacy-respecting (Plausible/Umami) fits the brand; needs an account.
 **Tier 2 — hobby vs product**
-10. **Accessibility.** ~13 aria-*, but zero `role=` and zero `alt=`. Clearest "built by pros"
-    signal and low-risk pure-code work — good next autonomous item.
+10. **Accessibility.** Task rows now have roles, names, state, keyboard activation, and focus-visible
+    treatment; contrast issues found in the polish pass are fixed. A complete VoiceOver and real-device
+    touch-target audit is still required before a broad public launch.
 11. **Landing page.** `index.html` IS the app; a stranger hits a login form with no explanation.
 12. **Automated tests.** All QA is manual. A small headless suite over streak/date/cheat-day logic
     would catch the most expensive class of regression.

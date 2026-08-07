@@ -10,6 +10,9 @@ Cairn.xcodeproj/
 # macOS
 .DS_Store
 
+# Local portfolio and browser-test fixtures
+.portfolio-preview.html
+
 # SECRETS — never commit. VAPID private key + CRON_SECRET.
 # Web/ is deployed publicly, so nothing secret may ever live there either.
 *KEEP-SECRET*

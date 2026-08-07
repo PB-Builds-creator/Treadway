@@ -2,6 +2,17 @@
 
 _Concise milestone log, newest first. Keep to meaningful milestones._
 
+## 2026-08-06
+- **Public portfolio readiness.** Repositioned the repository around the deployed Treadway PWA,
+  separated the Cairn-named SwiftUI prototype as a native research track, and added synthetic-data
+  product screenshots, a code-native banner, web architecture, an engineering case study, MIT license,
+  security policy, contribution guide, Node verification, and GitHub Actions. Updated stale Treadway/
+  deployment documentation and corrected a pre-existing optional-chaining compile error in one Swift
+  test. Verification: web syntax/invariants and HTML validation pass; `swift test` executes 62 tests
+  with zero failures; `cairncore-verify` reports 57/57; the macOS local-only Xcode target builds with
+  signing disabled. Secret-pattern scans found no private credential in current tracked files or Git
+  history; the ignored VAPID private-key file remains local-only.
+
 ## 2026-08-03
 - **Visual + motion evolution (App-Store-grade, 4 phases, sw.js v17→v19).** User-approved evolution
   of the visuals (bolder color + real depth/materials) with weighted-quiet motion; identity/structure/

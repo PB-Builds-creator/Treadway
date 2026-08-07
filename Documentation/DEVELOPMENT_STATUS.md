@@ -1,37 +1,38 @@
-# Cairn — Development Status
+# Treadway — Development Status
 
-_Personal daily discipline & checklist app for iPhone + Mac (SwiftUI, multiplatform)._
+Last updated: 2026-08-06
 
-Last updated: 2026-07-20
+## Product snapshot
 
-**Snapshot:** ~55 Swift source files. Core logic package (Phase 1) is compiled and
-verified (57/57 checks). Phases 2–8 authored in full.
+### Deployed Treadway PWA — primary product
 
-**✅ macOS app now BUILDS AND RUNS.** Built with Xcode 26.6 via `project.mac.yml`
-(free/local config), installed to `/Applications/Cairn.app`, and launched: it renders
-the Mac `NavigationSplitView` sidebar UI, initializes its local SwiftData store at
-`~/Library/Application Support/default.store`, and seeded the 7-task default routine +
-3 categories — no crash. Fixes applied to reach this: renamed `Category`→`TaskCategory`
-(SDK name clash), App Intents `static var`→`static let` (Swift 6 concurrency), passed a
-`Sendable` `NotificationManager.Prefs` snapshot instead of the `@MainActor` settings
-object, and gated the CloudKit/app-group container behind a `LOCAL_ONLY` flag (CloudKit
-traps async without entitlements). The full multiplatform + sync + widgets build
-(`project.yml`) still needs Xcode + a paid team; unchanged.
+The working product is an access-gated, installable PWA at `https://cairn.surge.sh`.
+It includes auth, per-user RLS, cross-device sync, offline continuity, recurring tasks,
+hydration, streak/rest/save behavior, Treadway Close, Weekly Trail, earned Cheat Days,
+narrow partner accountability, data export/deletion, themes, a guided tutorial, and
+scheduled web-push reminders.
 
-## Environment note (important)
+Desktop browser QA has covered 375×812 containment, light/OLED presentation, major
+state transitions, keyboard task activation, reduced-motion handling, and clean console
+behavior. The repository now adds repeatable syntax/PWA invariant checks. Real-iPhone
+gesture feel, safe-area pacing, VoiceOver, and end-to-end push delivery remain explicit
+manual checks; they are not implied by desktop or unit tests.
 
-This project was scaffolded in an environment with **Command Line Tools only (no
-full Xcode)**. Consequences:
+### Native Apple prototype — secondary research track
 
-- ✅ **`CairnCore`** (the pure business-logic package) is **built and unit-verified
-  here.** Run `cd CairnCore && swift run cairncore-verify` → 57/57 checks pass.
-- ⏳ The **app / widget / intents targets** (SwiftUI, SwiftData, CloudKit, WidgetKit,
-  App Intents, LocalAuthentication) are written as complete source but **have not
-  been compiled here**, because those SDKs require full Xcode. They are meant to be
-  opened and built in Xcode on your Mac. See `README.md` → "Build & run".
+The repository also contains roughly 55 Swift source files under the historical Cairn
+internal name. On 2026-08-06, the macOS local-only target built successfully with Xcode
+26.6 and code signing disabled. The multiplatform CloudKit/widget/App Intents distribution
+path still requires Apple signing and device-level validation and is not represented as
+feature-parity with the deployed web product.
 
-Anything marked ✅ below has been compiled/tested. Anything marked ✍️ is authored
-but must be built in Xcode.
+`CairnCore` is the Foundation-only domain package shared by the native prototype. Run
+`swift test` and `swift run cairncore-verify` from `CairnCore/` for its current result.
+
+## Native implementation detail
+
+Anything marked ✅ below has compiled tests or a recorded build verification. Anything
+marked ✍️ is authored but still needs the relevant signed Xcode/device verification.
 
 ## Legend
 ✅ done & verified · ✍️ authored, build in Xcode · ⬜ not started

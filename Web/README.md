@@ -1,71 +1,47 @@
-# Treadway — synced web app
+# Treadway web app
 
-A private daily-discipline checklist for **you and your girlfriend**. Each person
-signs in with their own email/password and gets their **own** list, synced across
-all their devices. Data lives in *your* Supabase project (free tier); no one else
-can read it (row-level security). Works offline and installs to the home screen.
+This folder is the deployed, installable Treadway PWA. It is a static client backed by Supabase Auth, Postgres/Row Level Security, and Edge Functions.
+
+## Current status
+
+- Live at [cairn.surge.sh](https://cairn.surge.sh).
+- Working access-gated private beta with cross-device sync and offline continuity.
+- Customer-facing product name: **Treadway**.
+- Live origin and compatibility identifiers intentionally remain `cairn.surge.sh`, `cairn_*`, and `window.CAIRN_CONFIG`.
 
 ## Files
+
+```text
+index.html             application shell and first paint
+app.js                 state, auth, data, views, gestures, and offline behavior
+styles.css             responsive design system and motion
+config.js              public browser configuration only
+manifest.webmanifest   installed-PWA metadata
+sw.js                  versioned application-shell cache
+privacy.html           public privacy policy
+setup.html             phone installation guide
+schema.sql             base database schema and RLS
+icon-* / icon.svg      installed identity assets
 ```
-Web/
-├── index.html      app shell (loads Supabase, config, styles, app)
-├── app.js          the app: auth, live sync, offline cache, all screens
-├── styles.css      design system (light + dark)
-├── config.js       your Supabase URL + public key  ← already filled in
-├── schema.sql      database tables + security (already run in Supabase)
-├── manifest.webmanifest · sw.js · icon-*.png   PWA / offline / home-screen icon
+
+## Run locally
+
+```bash
+python3 -m http.server 8080
 ```
 
-## Status
-- ✅ Supabase project created, `schema.sql` run, security verified.
-- ✅ `config.js` filled with your project URL + publishable key.
-- ⬜ Deploy to the web (below) → get your live URL.
+Open `http://localhost:8080`. The checked-in Supabase URL and publishable browser key are public client configuration. Never place private VAPID material, service-role keys, cron secrets, passwords, or production data in this directory.
 
-## Deploy it (free, ~2 minutes) — Netlify Drop
-1. Go to **https://app.netlify.com/drop**.
-2. Drag the **entire `Web` folder** onto the page.
-3. It uploads and gives you a live URL like `https://random-name.netlify.app`.
-4. (Optional) Make a free Netlify account to keep the URL and rename it
-   (Site settings → Change site name → e.g. `paxton-treadway` →
-   `https://paxton-treadway.netlify.app`).
+## Deploy
 
-That URL is the app. Open it on any device.
+The production origin currently uses Surge:
 
-### Alternative hosts (any static host works)
-- **Cloudflare Pages**: create a project → upload the `Web` folder.
-- **Vercel**: `npx vercel` inside `Web/`.
-- **GitHub Pages**: push `Web/` to a repo → enable Pages.
+```bash
+npx surge . cairn.surge.sh
+```
 
-## Create your two logins
-On the live URL:
-1. **You:** open it → *New here? Create an account* → your email + a password →
-   choose **Paxton's routine**.
-2. **Her:** she opens the same URL on her phone → *Create an account* → her email +
-   password → choose **Her routine**.
+Changing the origin is a migration, not a cosmetic rename. It must update Supabase Auth redirects, installed PWAs, and web-push subscriptions together.
 
-Each account only ever sees its own data. Sign in once per device and it stays
-signed in.
+## Verification
 
-> Sign-up is instant only if email confirmation is **off** in Supabase
-> (Authentication → Sign In / Providers → Email → "Confirm email" = off). If it's
-> on, you'll each get a confirmation email to click first.
-
-## Add to home screen (feels like a native app)
-- **iPhone (Safari):** open the URL → Share → **Add to Home Screen**. Launches
-  full-screen with the Treadway icon.
-- **Mac (Safari):** File → **Add to Dock**. **Chrome:** install icon in the address bar.
-
-## What works
-Today / Week / History / Settings · one-tap complete · hydration ring + quick-add ·
-recurrence (daily / specific days / weekly) · Mountain-Time daily reset · current &
-longest streaks · 30-day history · add/edit/delete tasks · accent + light/dark ·
-**live sync across your devices** · **offline** (changes queue and sync on reconnect).
-
-## Not included on web (native-only, by platform)
-Home-screen widgets, background push reminders, and Face ID — see the native Mac/iOS
-app in the parent folder for those.
-
-## Changing things later
-- Edit tasks/goals in the app (Settings → Manage tasks) — syncs automatically.
-- Change code/design → re-drag the folder to Netlify (or your host redeploys).
-- The `0930` / `0307` quick-PIN lock from the preview can be added on request.
+From the repository root, run `npm test`. After a meaningful deployment, compare the live assets with the local release and perform the device-specific checks listed in `Documentation/DEVELOPMENT_STATUS.md`.

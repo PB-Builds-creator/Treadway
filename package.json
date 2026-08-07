@@ -1,0 +1,12 @@
+{
+  "name": "treadway",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Verification tools for the Treadway private-beta PWA",
+  "scripts": {
+    "test": "node --check Web/app.js && node --check Web/sw.js && node --check Web/config.js && node scripts/verify-web.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
