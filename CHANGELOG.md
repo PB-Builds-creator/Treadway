@@ -14,7 +14,9 @@ _Concise milestone log, newest first. Keep to meaningful milestones._
   confidence, ranking, evidence provenance, determinism, immutability, privacy opt-in/out,
   grounding/prompt-injection instructions, bounded context, and malformed/low-evidence inputs. Dark/light card and evidence-sheet
   QA used synthetic data only; a portfolio screenshot and AI implementation case study document
-  the feature. Shell cache advanced to v20.
+  the feature. Shell cache advanced to v20. The release is live at `cairn.surge.sh`; production
+  `index.html`, `app.js`, `insight-engine.js`, `styles.css`, `sw.js`, and `privacy.html` matched the
+  committed local assets byte-for-byte after deployment.
 - **Public portfolio readiness.** Repositioned the repository around the deployed Treadway PWA,
   separated the Cairn-named SwiftUI prototype as a native research track, and added synthetic-data
   product screenshots, a code-native banner, web architecture, an engineering case study, MIT license,

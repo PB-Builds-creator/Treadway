@@ -30,7 +30,9 @@ metrics, confidence levels, ranking, evidence provenance, determinism, input imm
 privacy exclusion, explicit opt-in inclusion, anti-fabrication/prompt-injection instructions,
 bounded context, and empty/malformed inputs. The shell cache is v20 and includes
 `insight-engine.js`. Visual QA used only the temporary
-synthetic fixture, which must remain absent from commits and deployment.
+synthetic fixture, which must remain absent from commits and deployment. The release is live at
+`cairn.surge.sh`; post-deploy comparisons confirmed `index.html`, `app.js`, `insight-engine.js`,
+`styles.css`, `sw.js`, and `privacy.html` match the local release byte-for-byte.
 
 ## PRIOR RELEASE — public portfolio readiness
 The repository now presents the live Treadway PWA first, includes authentic synthetic-data UI
